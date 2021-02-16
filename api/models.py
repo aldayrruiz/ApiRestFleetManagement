@@ -1,12 +1,14 @@
 import uuid
 from django.db import models
 from django.db.models import UniqueConstraint
-from .utils import IncidentType, UserType
+from .utils import IncidentType
+from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 
 class VehicleType(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.CharField(max_length=50)
+    name = models.CharField(unique=True, max_length=50)
 
     def __str__(self):
         return self.name
@@ -25,7 +27,7 @@ class Vehicle(models.Model):
     # If a vehicle is available depending of maintenance, etc. Available field is not related with reservation.
     available = models.BooleanField(default=True)
     # Type: 4x4, bus, moto, etc
-    type = models.ForeignKey(VehicleType, null=True, on_delete=models.SET_NULL)
+    type = models.ForeignKey(VehicleType, related_name='vehicles', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name
@@ -34,18 +36,9 @@ class Vehicle(models.Model):
         db_table = 'Vehicle'
 
 
-class User(models.Model):
+class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    fullname = models.CharField(max_length=100)
-    username = models.CharField(max_length=50)
-    password = models.CharField(max_length=50)
-    type = models.CharField(
-        max_length=1,
-        choices=UserType.choices,
-        default=UserType.USUARIO
-    )
 
-    # Email, phone?
     allowed_types = models.ManyToManyField(
         VehicleType,
         through='AllowedTypes',
@@ -61,14 +54,12 @@ class User(models.Model):
     )
 
     def __str__(self):
-        return self.fullname
-
-    class Meta:
-        db_table = 'User'
+        return self.username
 
 
 class AllowedTypes(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     type = models.ForeignKey(VehicleType, on_delete=models.CASCADE)
 
     class Meta:
@@ -76,6 +67,9 @@ class AllowedTypes(models.Model):
         constraints = [
             UniqueConstraint(fields=['user', 'type'], name='constraint_user_type')
         ]
+
+    def __str__(self):
+        return '%s - %s' % (self.user, self.type)
 
 
 # It is intended to be a history of positions
@@ -94,7 +88,8 @@ class Track(models.Model):
 
 
 class Incident(models.Model):
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     # This position will be the last position of the vehicle when an incident is reported.
     position = models.OneToOneField(Track, null=True, on_delete=models.SET_NULL)
@@ -113,15 +108,18 @@ class Incident(models.Model):
         db_table = 'Incident'
 
     def __str__(self):
-        return '%s - %s - %s' % (self.type, self.user.fullname, self.vehicle.name)
+        return '%s - %s - %s' % (self.type, self.user, self.vehicle.name)
 
 
 class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     start = models.DateTimeField()
     end = models.DateTimeField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
+    vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'Reservation'
+
+    def __str__(self):
+        return '%s - %s - %s' % (self.user, self.vehicle.name, self.start)

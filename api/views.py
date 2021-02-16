@@ -1,77 +1,46 @@
-from .models import VehicleType, Vehicle
-from .serializers import VehicleTypeSerializer, VehicleSerializer, CreateVehicleSerializer
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
+from .serializers import *
 from rest_framework import generics
 
 
-# GET: List all vehicles
-class VehicleList(generics.ListAPIView):
+# GET/POST: List all vehicles or create a vehicle
+class VehicleList(generics.ListCreateAPIView):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
 
 
-# POST: Create one vehicle
-class CreateVehicle(generics.CreateAPIView):
+# GET: vehicles type detailed
+class VehicleDetail(generics.RetrieveAPIView):
     queryset = Vehicle.objects.all()
-    serializer_class = CreateVehicleSerializer
+    serializer_class = VehicleSerializer
 
 
-# GET: List all vehicles types
-class VehicleTypeList(generics.ListAPIView):
+# GET: List all vehicles types or create a vehicle type
+class VehicleTypeList(generics.ListCreateAPIView):
     queryset = VehicleType.objects.all()
     serializer_class = VehicleTypeSerializer
 
 
-# POST: Create one vehicle type
-class CreateVehicleType(generics.CreateAPIView):
+# GET: vehicles type detailed
+class VehicleTypeDetail(generics.RetrieveAPIView):
     queryset = VehicleType.objects.all()
     serializer_class = VehicleTypeSerializer
 
 
-
-"""
-@api_view(['GET', 'POST'])
-def vehicle_type_list(request):
-
-    if request.method == 'GET':
-        types = VehicleType.objects.all()
-        serializer = VehicleTypeSerializer(types, many=True)
-        return Response(serializer.data)
-
-    elif request.method == 'POST':
-        serializer = VehicleTypeSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# GET/POST: List all vehicles types or create a new reservation
+class ReservationList(generics.ListCreateAPIView):
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def vehicle_type_detail(request, pk):
-    # Retrieve, update or delete a vehicle type.
+# GET: Reservation detailed
+class ReservationDetail(generics.RetrieveDestroyAPIView):
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer
 
-    try:
-        vehicle_type = VehicleType.objects.get(pk=pk)
-    except VehicleType.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
-    # Object found and stored in vehicle_type variable
 
-    if request.method == 'GET':
-        serializer = VehicleTypeSerializer(vehicle_type)
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = VehicleTypeSerializer(vehicle_type, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        vehicle_type.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-"""
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

@@ -2,11 +2,12 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('create/vehicle/', views.CreateVehicle.as_view()),
-    path('list/vehicle/', views.VehicleList.as_view()),
-    path('create/vehicletype/', views.CreateVehicleType.as_view()),
-    path('list/vehicletype/', views.VehicleTypeList.as_view()),
-]
+    path('users/', views.UserList.as_view()),
+    path('vehicles/', views.VehicleList.as_view()),
+    path('vehicletypes/', views.VehicleTypeList.as_view()),
+    path('reservations/', views.ReservationList.as_view()),
 
-#path('list/vehicletypes', views.vehicle_type_list),
-#path('vehicle_type/<uuid:pk>/', views.vehicle_type_detail),
+    path('vehicles/<uuid:pk>/', views.VehicleDetail.as_view()),
+    path('vehicletypes/<uuid:pk>/', views.VehicleTypeDetail.as_view()),
+    path('reservations/<uuid:pk>/', views.ReservationDetail.as_view()),
+]

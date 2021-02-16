@@ -9,8 +9,3 @@ class IncidentType(models.TextChoices):
     PROBLEMAS_DE_USO = 'PU', _('Problemas de uso')
     OTRO = 'OT', _('Otro')
 
-
-class UserType(models.TextChoices):
-    # Name = 'Value', _('Label')
-    USUARIO = 'U', _('Usuario')
-    ADMINISTRADOR = 'A', _('Administrador')
