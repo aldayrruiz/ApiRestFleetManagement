@@ -5,16 +5,16 @@ from django.contrib.auth import get_user_model
 
 
 class VehicleSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(
-        required=False,
-        read_only=True,
-        validators=[UniqueValidator(queryset=Vehicle.objects.all())]
-    )
-
     class Meta:
         model = Vehicle
         fields = ['id', 'name', 'date_stored', 'days_to_use', 'available', 'type']
         depth = 1
+
+
+class CreateVehicleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehicle
+        fields = ['name', 'days_to_use', 'available', 'type']
 
     def validate(self, data):
         """
@@ -26,7 +26,7 @@ class VehicleSerializer(serializers.ModelSerializer):
 
 
 class VehicleTypeSerializer(serializers.ModelSerializer):
-    vehicles = serializers.PrimaryKeyRelatedField(many=True, queryset=Vehicle.objects.all())
+    vehicles = VehicleSerializer(many=True)
 
     class Meta:
         model = VehicleType
@@ -58,16 +58,17 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 class ReservationSerializer(serializers.ModelSerializer):
     # Incidents array in user field has vehicle's pk. NOT incident's pk
     user = serializers.ReadOnlyField(source='user.username')
+    vehicle = VehicleSerializer()
 
     class Meta:
         model = Reservation
         fields = ['id', 'start', 'end', 'user', 'vehicle']
-        depth = 1
 
 
 class UserSerializer(serializers.ModelSerializer):
     reservations = serializers.PrimaryKeyRelatedField(many=True, queryset=Reservation.objects.all())
+    # reservations = ReservationSerializer(many=True)
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'username', 'reservations']
+        fields = ['id', 'username', 'email', 'date_joined', 'reservations']

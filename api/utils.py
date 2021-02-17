@@ -8,4 +8,3 @@ class IncidentType(models.TextChoices):
     GOLPE = 'GO', _('Golpe')
     PROBLEMAS_DE_USO = 'PU', _('Problemas de uso')
     OTRO = 'OT', _('Otro')
-
