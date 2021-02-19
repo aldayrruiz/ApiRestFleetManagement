@@ -67,7 +67,7 @@ class User(AbstractUser):
         related_name='incidents'
     )
 
-    fleet = models.ForeignKey(Fleet, related_name='users', null=False, on_delete=models.SET_NULL)
+    fleet = models.ForeignKey(Fleet, related_name='users', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.username
