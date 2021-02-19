@@ -7,6 +7,7 @@ urlpatterns = [
     path('list/vehicletype/', views.VehicleTypeList.as_view()),
     path('list/reservation/', views.ReservationList.as_view()),
 
+    path('detail/user/<uuid:pk>/', views.UserDetail.as_view()),
     path('detail/vehicle/<uuid:pk>/', views.VehicleDetail.as_view()),
     path('detail/vehicletype/<uuid:pk>/', views.VehicleTypeDetail.as_view()),
     path('detail/reservation/<uuid:pk>/', views.ReservationDetail.as_view()),

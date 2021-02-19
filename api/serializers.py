@@ -1,14 +1,16 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from .models import *
 from django.contrib.auth import get_user_model
 
+DELAY = 10
+
 
 class VehicleSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(max_length=50, source='type.name')
+
     class Meta:
         model = Vehicle
         fields = ['id', 'name', 'date_stored', 'days_to_use', 'available', 'type']
-        depth = 1
 
 
 class CreateVehicleSerializer(serializers.ModelSerializer):
@@ -40,14 +42,16 @@ class CreateVehicleTypeSerializer(serializers.ModelSerializer):
 
 
 class CreateReservationSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    user = serializers.ReadOnlyField(source='user.username')
+
     class Meta:
         model = Reservation
-        fields = ['start', 'end', 'user', 'vehicle']
+        fields = ['id', 'start', 'end', 'user', 'vehicle']
 
     def validate(self, data):
-        """
-        Check reservation date is ok
-        """
+
+        # Check reservation's start date < end date
         if data['start'] > data['end']:
             raise serializers.ValidationError("Reservation's start date must be before of end date")
         # TODO: Check if there is a reservation of this vehicle at the same datetime already.
@@ -58,7 +62,7 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 class ReservationSerializer(serializers.ModelSerializer):
     # Incidents array in user field has vehicle's pk. NOT incident's pk
     user = serializers.ReadOnlyField(source='user.username')
-    vehicle = VehicleSerializer()
+    vehicle = serializers.ReadOnlyField(source='vehicle.name')
 
     class Meta:
         model = Reservation
@@ -66,9 +70,9 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    reservations = serializers.PrimaryKeyRelatedField(many=True, queryset=Reservation.objects.all())
+    # reservations = serializers.PrimaryKeyRelatedField(many=True, queryset=Reservation.objects.all())
     # reservations = ReservationSerializer(many=True)
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'username', 'email', 'date_joined', 'reservations']
+        fields = ['id', 'username', 'email', 'date_joined']

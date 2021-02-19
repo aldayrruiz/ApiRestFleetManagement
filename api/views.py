@@ -1,5 +1,7 @@
 from .serializers import *
 from rest_framework import generics
+from rest_framework import permissions
+from api.permissions import *
 
 
 """ VEHICLES """
@@ -49,12 +51,14 @@ class VehicleTypeDetail(generics.RetrieveAPIView):
 class ReservationList(generics.ListAPIView):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 # POST: List all vehicles types or create a new reservation
 class ReservationCreate(generics.CreateAPIView):
     queryset = Reservation.objects.all()
     serializer_class = CreateReservationSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -64,6 +68,7 @@ class ReservationCreate(generics.CreateAPIView):
 class ReservationDetail(generics.RetrieveDestroyAPIView):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
 
 """ USER """
@@ -72,3 +77,9 @@ class ReservationDetail(generics.RetrieveDestroyAPIView):
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsOwnerOrSuperuser]
