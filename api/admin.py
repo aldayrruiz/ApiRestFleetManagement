@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import VehicleType, Vehicle, AllowedTypes, User, Reservation, Track, Incident
+from .models import Fleet, VehicleType, Vehicle, AllowedTypes, User, Reservation, Track, Incident
 
 # Register your models here.
+admin.site.register(Fleet)
 admin.site.register(VehicleType)
 admin.site.register(Vehicle)
 admin.site.register(User, UserAdmin)
