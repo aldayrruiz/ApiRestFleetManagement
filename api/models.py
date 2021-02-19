@@ -29,13 +29,15 @@ class VehicleType(models.Model):
         db_table = 'VehicleType'
 
 
+# TODO: Implements a way to store the vehicle's time of user during a reservation.
+#       Solution: Adds a integer field (minutes) to count each time a new vehicle's track is added.
+#       Problems: I do not know how gps sends tracks (intervals).
+
 class Vehicle(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=50)
     # Useful to know when vehicle pass their days to use. Column days_to_use could be decremental too.
     date_stored = models.DateField(auto_now_add=True)
-    # Vehicle's days should be used after it was stored (date_stored)
-    days_to_use = models.IntegerField()
     # If a vehicle is available depending of maintenance, etc. Available field is not related with reservation.
     available = models.BooleanField(default=True)
     # Type: 4x4, bus, moto, etc
