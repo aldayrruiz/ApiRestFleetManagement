@@ -6,11 +6,21 @@ from api.permissions import *
 
 """ VEHICLES """
 
-
+# TODO: Change all for Viewsets
 # GET/POST: List all vehicles or create a vehicle
+
+
 class VehicleList(generics.ListAPIView):
-    queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
+
+    def get_queryset(self):
+        """
+         Get a list of vehicles corresponding to the user's fleet, allowed vehicle types and available=True.
+        """
+        user = self.request.user
+        allowed_types = AllowedTypes.objects.filter(user_id=user.id).values('type_id')
+        return Vehicle.objects.filter(fleet__id=user.fleet.id, type__in=allowed_types, available=True)
+
 
 # POST
 class VehicleCreate(generics.CreateAPIView):

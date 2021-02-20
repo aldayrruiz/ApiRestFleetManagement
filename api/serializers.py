@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import *
 from django.contrib.auth import get_user_model
 
-DELAY = 10
+DELAY = 1
 
 
 class VehicleSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class VehicleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'name', 'date_stored', 'days_to_use', 'available', 'type']
+        fields = ['id', 'name', 'date_stored', 'available', 'type']
 
 
 class CreateVehicleSerializer(serializers.ModelSerializer):
@@ -55,7 +55,12 @@ class CreateReservationSerializer(serializers.ModelSerializer):
         if data['start'] > data['end']:
             raise serializers.ValidationError("Reservation's start date must be before of end date")
         # TODO: Check if there is a reservation of this vehicle at the same datetime already.
-        # TODO: A reservation must be >= to date.now
+
+        reservations = Reservation.objects.filter(vehicle__id=data['vehicle'].id)
+
+        for reservation in reservations:
+            if data['start'] <= reservation.end or data['end'] >= reservation.start:
+                raise serializers.ValidationError("A reservation occurs at the same time.")
         return data
 
 

@@ -143,6 +143,7 @@ class Reservation(models.Model):
 
     class Meta:
         db_table = 'Reservation'
+        ordering = ['start']
 
     def __str__(self):
         return '{0} - {1} - {2}'.format(self.user, self.vehicle.name, self.start)
