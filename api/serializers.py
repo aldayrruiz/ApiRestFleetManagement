@@ -5,26 +5,18 @@ from django.contrib.auth import get_user_model
 DELAY = 1
 
 
+def is_reservation_valid(new_reservation, reservation):
+    if new_reservation['start'] >= reservation.end or new_reservation['end'] <= reservation.start:
+        return True
+    return False
+
+
 class VehicleSerializer(serializers.ModelSerializer):
     type = serializers.CharField(max_length=50, source='type.name')
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'name', 'date_stored', 'available', 'type']
-
-
-class CreateVehicleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Vehicle
-        fields = ['name', 'days_to_use', 'available', 'type']
-
-    def validate(self, data):
-        """
-        Check days to use is not negative.
-        """
-        if data['days_to_use'] <= 0:
-            raise serializers.ValidationError("Vehicle's days to use must be > 0")
-        return data
+        fields = ['id', 'name', 'date_stored', 'type']
 
 
 class VehicleTypeSerializer(serializers.ModelSerializer):
@@ -33,12 +25,6 @@ class VehicleTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleType
         fields = ['id', 'name', 'vehicles']
-
-
-class CreateVehicleTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VehicleType
-        fields = ['name']
 
 
 class CreateReservationSerializer(serializers.ModelSerializer):
@@ -54,12 +40,11 @@ class CreateReservationSerializer(serializers.ModelSerializer):
         # Check reservation's start date < end date
         if data['start'] > data['end']:
             raise serializers.ValidationError("Reservation's start date must be before of end date")
-        # TODO: Check if there is a reservation of this vehicle at the same datetime already.
 
         reservations = Reservation.objects.filter(vehicle__id=data['vehicle'].id)
 
         for reservation in reservations:
-            if data['start'] <= reservation.end or data['end'] >= reservation.start:
+            if not is_reservation_valid(data, reservation):
                 raise serializers.ValidationError("A reservation occurs at the same time.")
         return data
 

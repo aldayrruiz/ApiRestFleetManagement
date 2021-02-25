@@ -38,8 +38,6 @@ class Vehicle(models.Model):
     name = models.CharField(max_length=50)
     # Useful to know when vehicle pass their days to use. Column days_to_use could be decremental too.
     date_stored = models.DateField(auto_now_add=True)
-    # If a vehicle is available depending of maintenance, etc. Available field is not related with reservation.
-    available = models.BooleanField(default=True)
     # Type: 4x4, bus, moto, etc
     type = models.ForeignKey(VehicleType, related_name='vehicles', null=True, on_delete=models.SET_NULL)
     # Not to delete vehicle if fleet is deleted.
