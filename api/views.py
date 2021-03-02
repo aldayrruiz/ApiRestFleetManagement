@@ -1,7 +1,8 @@
 from .serializers import *
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status, viewsets, permissions
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from api.permissions import IsVehicleAccessible, get_vehicles
 
 
 # Use this function for development purposes while authentication is not available.
@@ -9,16 +10,6 @@ from django.shortcuts import get_object_or_404
 # Fix the errors getting the user by self.request.user.
 def get_aldayr():
     return User.objects.get(username='aldayr')
-
-
-def get_vehicles(user):
-    """
-    Returns a queryset of vehicles the user has access.
-    :param user: user model instance.
-    :return: a queryset of vehicles you have access.
-    """
-    allowed_types = user.allowed_types.all().values('id')
-    return Vehicle.objects.filter(fleet__id=user.fleet.id, type__in=allowed_types)
 
 
 def is_vehicle_accessible(user, vehicle_id):
@@ -94,6 +85,19 @@ class ReservationViewSet(viewsets.ViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # UNCOMMENT WHEN AUTHENTICATION IN CLIENT SIDE IS IMPLEMENTED. REMOVE is_vehicle_accessible()
+    # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE FLEET AND VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
+    # def get_permissions(self):
+    #     """
+    #     Instantiates and returns the list of permissions that this view requires.
+    #     """
+    #     if self.action == 'list':
+    #         permission_classes = [permissions.IsAuthenticated]
+    #     else:
+    #         # You must be authenticated and have access to the vehicle.
+    #         permission_classes = [permissions.IsAuthenticated, IsVehicleAccessible]
+    #     return [permission() for permission in permission_classes]
+
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
@@ -103,4 +107,3 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # permission_classes = [IsOwnerOrSuperuser]
