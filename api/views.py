@@ -30,6 +30,13 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer = VehicleSerializer(vehicle)
         return Response(serializer.data)
 
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
 
 class VehicleTypeViewSet(viewsets.ViewSet):
 
@@ -54,6 +61,13 @@ class VehicleTypeViewSet(viewsets.ViewSet):
         serializer = VehicleTypeSerializer(vehicle_type)
         return Response(serializer.data)
 
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
 
 class ReservationViewSet(viewsets.ViewSet):
 
@@ -67,9 +81,6 @@ class ReservationViewSet(viewsets.ViewSet):
         user = self.request.user
         serializer = CreateReservationSerializer(data=self.request.data)
 
-        # Verify if you have access to the vehicle. Try to permission_classes later, I couldn't do it.
-        if not is_vehicle_accessible(user, self.request.data['vehicle']):
-            return Response({'non_field_errors': ['Vehicle inaccessible']}, status=status.HTTP_401_UNAUTHORIZED)
         # Verify if the data request is valid
         if serializer.is_valid():
             serializer.save(user=user)
