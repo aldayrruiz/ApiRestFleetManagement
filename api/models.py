@@ -9,12 +9,6 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
 
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
-
-
 # Flota: Valladolid, etc.
 class Fleet(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -154,3 +148,12 @@ class Reservation(models.Model):
 
     def __str__(self):
         return '{0} - {1} - {2}'.format(self.user, self.vehicle.name, self.start)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    """
+    Token is generated automatically when a user is created.
+    """
+    if created:
+        Token.objects.create(user=instance)
