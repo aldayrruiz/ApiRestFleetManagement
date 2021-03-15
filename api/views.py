@@ -89,13 +89,20 @@ class ReservationViewSet(viewsets.ViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def retrieve(self, request, pk=None):
+        user = self.request.user
+        queryset = user.reservations.all()
+        reservation = get_object_or_404(queryset, pk=pk)
+        serializer = ReservationSerializer(reservation, many=False)
+        return Response(serializer.data)
+
     # UNCOMMENT WHEN AUTHENTICATION IN CLIENT SIDE IS IMPLEMENTED. REMOVE is_vehicle_accessible()
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE FLEET AND VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'list':
+        if self.action == 'list' or 'retrieve':
             permission_classes = [permissions.IsAuthenticated]
         else:
             # You must be authenticated and have access to the vehicle.

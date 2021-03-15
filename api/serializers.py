@@ -11,22 +11,6 @@ def is_reservation_valid(new_reservation, reservation):
     return False
 
 
-class VehicleSerializer(serializers.ModelSerializer):
-    type = serializers.CharField(max_length=50, source='type.name')
-
-    class Meta:
-        model = Vehicle
-        fields = ['id', 'name', 'type']
-
-
-class VehicleTypeSerializer(serializers.ModelSerializer):
-    vehicles = VehicleSerializer(many=True)
-
-    class Meta:
-        model = VehicleType
-        fields = ['id', 'name', 'vehicles']
-
-
 class CreateReservationSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     user = serializers.ReadOnlyField(source='user.username')
@@ -66,3 +50,20 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ['id', 'username', 'email', 'date_joined']
+
+
+class VehicleSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(max_length=50, source='type.name')
+    reservations = ReservationSerializer(many=True)
+
+    class Meta:
+        model = Vehicle
+        fields = ['id', 'name', 'type', 'reservations']
+
+
+class VehicleTypeSerializer(serializers.ModelSerializer):
+    vehicles = VehicleSerializer(many=True)
+
+    class Meta:
+        model = VehicleType
+        fields = ['id', 'name', 'vehicles']
