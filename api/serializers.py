@@ -67,3 +67,21 @@ class VehicleTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleType
         fields = ['id', 'name', 'vehicles']
+
+
+class CreateTicketSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    owner = serializers.ReadOnlyField(source='owner.username')
+
+    class Meta:
+        model = Ticket
+        fields = ['id', 'owner', 'reservation', 'description']
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    reservation = serializers.ReadOnlyField(source='reservation.id')
+    owner = serializers.ReadOnlyField(source='owner.username')
+
+    class Meta:
+        model = Ticket
+        fields = ['id', 'owner', 'reservation', 'description', 'date_stored']

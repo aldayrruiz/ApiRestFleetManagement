@@ -96,7 +96,6 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer = ReservationSerializer(reservation, many=False)
         return Response(serializer.data)
 
-    # UNCOMMENT WHEN AUTHENTICATION IN CLIENT SIDE IS IMPLEMENTED. REMOVE is_vehicle_accessible()
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE FLEET AND VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
     def get_permissions(self):
         """
@@ -118,3 +117,24 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+class TicketViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        user = self.request.user
+        queryset = user.tickets.all()
+        serializer = TicketSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        user = self.request.user
+        serializer = CreateTicketSerializer(data=self.request.data)
+
+        # Verify if the data request is valid
+        if serializer.is_valid():
+            serializer.save(owner=user)
+            return Response(serializer.data)
+        # If serializer is not valid send errors.
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

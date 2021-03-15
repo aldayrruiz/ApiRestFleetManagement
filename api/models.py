@@ -198,6 +198,19 @@ class Reservation(models.Model):
         return '{0} - {1} - {2}'.format(self.user, self.vehicle.name, self.start)
 
 
+class Ticket(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    date_stored = models.DateField(auto_now_add=True)
+    description = models.TextField()
+    reservation = models.ForeignKey(Reservation, related_name='tickets', on_delete=models.CASCADE)
+
+    # Person who request other person to cancel his reservation.
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tickets', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'Ticket'
+
+
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     """
