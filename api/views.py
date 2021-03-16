@@ -3,6 +3,7 @@ from rest_framework import generics, status, viewsets, permissions
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from api.permissions import IsVehicleAccessible, get_vehicles
+from api.emailtickets import send_email
 
 
 def is_vehicle_accessible(user, vehicle_id):
@@ -134,6 +135,8 @@ class TicketViewSet(viewsets.ViewSet):
         # Verify if the data request is valid
         if serializer.is_valid():
             serializer.save(owner=user)
+            reservation = Reservation.objects.get(pk=serializer.data['reservation'])
+            send_email(reservation=reservation, description=serializer.data['description'])
             return Response(serializer.data)
         # If serializer is not valid send errors.
         else:
