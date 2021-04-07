@@ -3,8 +3,7 @@ import ssl
 import json
 
 
-def send_email(reservation, description):
-
+def send_emails(admins, reservation, ticket):
     with open('api/emailconfig.json') as json_file:
         data = json.load(json_file)
 
@@ -13,14 +12,27 @@ def send_email(reservation, description):
     sender = data['sender']
     password = data['password']
 
-    receiver = reservation.user.email
+    vehicle_desired = reservation.vehicle
+    requester = ticket.owner
 
+    # TODO: Change email message for html one.
     message = """\
-    Subject: Has recibido un ticket
-
-    Alguien mas quiere el vehiculo {0} que has reservado el dia {1}""".format(reservation.vehicle.name, reservation.start)
+    Subject: Se ha presentado un ticket.
+    
+    El usuario {0} ha presentado un ticket para el vehiculo {1} con el siguiente motivo:
+    {2}
+    El motivo del propietario de la reserva es el siguiente:
+    {3}"""\
+        .format(
+        requester.username,
+        vehicle_desired.name,
+        ticket.description,
+        reservation.description
+    )
 
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
         server.login(sender, password)
-        server.sendmail(sender, receiver, message)
+        # Send emails to admins
+        for admin in admins:
+            server.sendmail(sender, admin.email, message)

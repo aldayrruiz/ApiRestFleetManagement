@@ -17,7 +17,7 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ['id', 'start', 'end', 'user', 'vehicle']
+        fields = ['id', 'start', 'end', 'description', 'user', 'vehicle']
 
     def validate(self, data):
 
@@ -40,7 +40,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ['id', 'start', 'end', 'user', 'vehicle']
+        fields = ['id', 'start', 'end', 'description', 'user', 'vehicle']
 
 
 class UserSerializer(serializers.ModelSerializer):
