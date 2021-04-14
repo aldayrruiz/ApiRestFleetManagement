@@ -184,10 +184,11 @@ class Incident(models.Model):
 
 class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    title = models.CharField(max_length=50)
     date_stored = models.DateField(auto_now_add=True)
     start = models.DateTimeField()
     end = models.DateTimeField()
-    description = models.TextField(default="")
+    description = models.TextField(default='')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
 

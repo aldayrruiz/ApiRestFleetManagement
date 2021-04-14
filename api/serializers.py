@@ -17,7 +17,7 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ['id', 'start', 'end', 'description', 'user', 'vehicle']
+        fields = ['id', 'title', 'start', 'end', 'description', 'user', 'vehicle']
 
     def validate(self, data):
 
@@ -40,7 +40,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ['id', 'start', 'end', 'description', 'user', 'vehicle']
+        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'user', 'vehicle']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -52,17 +52,39 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'date_joined']
 
 
-class VehicleSerializer(serializers.ModelSerializer):
+# NOT include reservations of vehicle. Perfect many vehicles.
+class SimpleVehicleSerializer(serializers.ModelSerializer):
     type = serializers.CharField(max_length=50, source='type.name')
+    fleet = serializers.CharField(max_length=50, source='fleet.name')
+
+    class Meta:
+        model = Vehicle
+        fields = ['id', 'name', 'date_stored', 'type', 'fleet']
+
+
+# Include reservations of vehicle. Perfect a single vehicle.
+class DetailedVehicleSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(max_length=50, source='type.name')
+    fleet = serializers.CharField(max_length=50, source='fleet.name')
     reservations = ReservationSerializer(many=True)
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'name', 'type', 'reservations']
+        fields = ['id', 'name', 'date_stored', 'type', 'fleet', 'reservations']
+
+
+class CreateVehicleSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    type = serializers.CharField(max_length=50, source='type.name')
+
+    class Meta:
+        model = Vehicle
+        # Fleet must be taken of admin fleet
+        fields = ['id', 'name', 'type']
 
 
 class VehicleTypeSerializer(serializers.ModelSerializer):
-    vehicles = VehicleSerializer(many=True)
+    vehicles = SimpleVehicleSerializer(many=True)
 
     class Meta:
         model = VehicleType

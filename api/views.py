@@ -29,7 +29,7 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         user = self.request.user
         queryset = get_vehicles(user)
-        serializer = VehicleSerializer(queryset, many=True)
+        serializer = SimpleVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
@@ -39,7 +39,7 @@ class VehicleViewSet(viewsets.ViewSet):
         user = self.request.user
         queryset = get_vehicles(user)
         vehicle = get_object_or_404(queryset, pk=pk)
-        serializer = VehicleSerializer(vehicle)
+        serializer = DetailedVehicleSerializer(vehicle)
         return Response(serializer.data)
 
     def get_permissions(self):
@@ -85,7 +85,11 @@ class ReservationViewSet(viewsets.ViewSet):
 
     def list(self, request):
         user = self.request.user
-        queryset = user.reservations.all()
+        vehicle_id = request.GET.get('vehicleId')
+        if vehicle_id:
+            queryset = user.reservations.filter(vehicle_id=vehicle_id)
+        else:
+            queryset = user.reservations.all()
         serializer = ReservationSerializer(queryset, many=True)
         return Response(serializer.data)
 
