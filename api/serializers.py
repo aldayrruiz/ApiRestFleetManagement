@@ -13,11 +13,11 @@ def is_reservation_valid(new_reservation, reservation):
 
 class CreateReservationSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
-    user = serializers.ReadOnlyField(source='user.username')
+    owner = serializers.ReadOnlyField(source='owner.username')
 
     class Meta:
         model = Reservation
-        fields = ['id', 'title', 'start', 'end', 'description', 'user', 'vehicle']
+        fields = ['id', 'title', 'start', 'end', 'description', 'owner', 'vehicle']
 
     def validate(self, data):
 
@@ -35,12 +35,12 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 
 class ReservationSerializer(serializers.ModelSerializer):
     # Incidents array in user field has vehicle's pk. NOT incident's pk
-    user = serializers.ReadOnlyField(source='user.username')
+    owner = serializers.ReadOnlyField(source='owner.username')
     vehicle = serializers.ReadOnlyField(source='vehicle.name')
 
     class Meta:
         model = Reservation
-        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'user', 'vehicle']
+        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle']
 
 
 class UserSerializer(serializers.ModelSerializer):

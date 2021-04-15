@@ -99,7 +99,7 @@ class ReservationViewSet(viewsets.ViewSet):
 
         # Verify if the data request is valid
         if serializer.is_valid():
-            serializer.save(user=user)
+            serializer.save(owner=user)
             return Response(serializer.data)
         # If serializer is not valid send errors.
         else:

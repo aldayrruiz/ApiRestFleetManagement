@@ -103,7 +103,7 @@ class User(AbstractBaseUser):
     incidents = models.ManyToManyField(
         Vehicle,
         through='Incident',
-        through_fields=('user', 'vehicle'),
+        through_fields=('owner', 'vehicle'),
         related_name='incidents'
     )
 
@@ -160,7 +160,7 @@ class Track(models.Model):
 
 class Incident(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     # This position will be the last position of the vehicle when an incident is reported.
     position = models.OneToOneField(Track, null=True, on_delete=models.SET_NULL)
@@ -179,7 +179,7 @@ class Incident(models.Model):
         db_table = 'Incident'
 
     def __str__(self):
-        return '{0} - {1} - {2}'.format(self.type, self.user, self.vehicle.name)
+        return '{0} - {1} - {2}'.format(self.type, self.owner, self.vehicle.name)
 
 
 class Reservation(models.Model):
@@ -189,7 +189,7 @@ class Reservation(models.Model):
     start = models.DateTimeField()
     end = models.DateTimeField()
     description = models.TextField(default='')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
 
     class Meta:
@@ -197,7 +197,7 @@ class Reservation(models.Model):
         ordering = ['start']
 
     def __str__(self):
-        return '{0} - {1} - {2}'.format(self.user, self.vehicle.name, self.start)
+        return '{0} - {1}'.format(self.owner, self.title)
 
 
 class Ticket(models.Model):
