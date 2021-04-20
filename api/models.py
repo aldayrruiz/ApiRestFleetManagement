@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.db.models import UniqueConstraint
-from .utils import IncidentType
+from .utils import IncidentType, TicketStatus
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.conf import settings
 from django.db.models.signals import post_save
@@ -202,15 +202,24 @@ class Reservation(models.Model):
 
 class Ticket(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    title = models.CharField(max_length=50)
     date_stored = models.DateField(auto_now_add=True)
     description = models.TextField()
     reservation = models.ForeignKey(Reservation, related_name='tickets', on_delete=models.CASCADE)
-
     # Person who request other person to cancel his reservation.
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tickets', on_delete=models.CASCADE)
 
+    status = models.CharField(
+        max_length=8,
+        choices=TicketStatus.choices,
+        default=TicketStatus.UNSOLVED
+    )
+
     class Meta:
         db_table = 'Ticket'
+
+    def __str__(self):
+        return '{0} - {1}'.format(self.title, self.status)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

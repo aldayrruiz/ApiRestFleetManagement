@@ -8,3 +8,10 @@ class IncidentType(models.TextChoices):
     GOLPE = 'GO', _('Golpe')
     PROBLEMAS_DE_USO = 'PU', _('Problemas de uso')
     OTRO = 'OT', _('Otro')
+
+
+class TicketStatus(models.TextChoices):
+    UNSOLVED = 'UNSOLVED', _('Unsolved')
+    ACCEPTED = 'ACCEPTED', _('Accepted')
+    DENIED = 'DENIED', _('Denied')
+

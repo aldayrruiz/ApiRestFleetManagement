@@ -4,7 +4,7 @@ import json
 
 
 def send_emails(admins, reservation, ticket):
-    with open('api/resources/config.json') as json_file:
+    with open('api/resources/email/config.json') as json_file:
         data = json.load(json_file)
 
     port = data['port']

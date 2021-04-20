@@ -9,7 +9,8 @@ def get_vehicles(user):
     :return: a queryset of vehicles the user have access.
     """
     allowed_types = user.allowed_types.all().values('id')
-    return Vehicle.objects.filter(fleet__id=user.fleet.id, type__in=allowed_types)
+    fleet_id = user.fleet_id
+    return Vehicle.objects.filter(fleet_id=fleet_id, type__in=allowed_types)
 
 
 class IsOwnerOrSuperuser(permissions.BasePermission):

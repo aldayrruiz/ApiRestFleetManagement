@@ -59,7 +59,7 @@ class VehicleTypeViewSet(viewsets.ViewSet):
         """
         user = self.request.user
         queryset = user.allowed_types.all()
-        serializer = VehicleTypeSerializer(queryset, many=True)
+        serializer = SimpleVehicleTypeSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
@@ -70,7 +70,7 @@ class VehicleTypeViewSet(viewsets.ViewSet):
         user = self.request.user
         queryset = user.allowed_types.all()
         vehicle_type = get_object_or_404(queryset, pk=pk)
-        serializer = VehicleTypeSerializer(vehicle_type)
+        serializer = SimpleVehicleTypeSerializer(vehicle_type)
         return Response(serializer.data)
 
     def get_permissions(self):
@@ -90,7 +90,7 @@ class ReservationViewSet(viewsets.ViewSet):
             queryset = user.reservations.filter(vehicle_id=vehicle_id)
         else:
             queryset = user.reservations.all()
-        serializer = ReservationSerializer(queryset, many=True)
+        serializer = SimpleReservationSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request):
@@ -109,7 +109,7 @@ class ReservationViewSet(viewsets.ViewSet):
         user = self.request.user
         queryset = user.reservations.all()
         reservation = get_object_or_404(queryset, pk=pk)
-        serializer = ReservationSerializer(reservation, many=False)
+        serializer = SimpleReservationSerializer(reservation, many=False)
         return Response(serializer.data)
 
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE FLEET AND VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
@@ -127,12 +127,12 @@ class ReservationViewSet(viewsets.ViewSet):
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = SimpleUserSerializer
 
 
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = SimpleUserSerializer
 
 
 class TicketViewSet(viewsets.ViewSet):
@@ -140,7 +140,7 @@ class TicketViewSet(viewsets.ViewSet):
     def list(self, request):
         user = self.request.user
         queryset = user.tickets.all()
-        serializer = TicketSerializer(queryset, many=True)
+        serializer = SimpleTicketSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request):
@@ -152,8 +152,16 @@ class TicketViewSet(viewsets.ViewSet):
             ticket = serializer.save(owner=user)
             reservation = Reservation.objects.get(pk=serializer.data['reservation'])
             admins = get_responsible_admin(ticket)
-            send_emails(admins=admins, reservation=reservation, ticket=ticket)
+            # TODO: Uncomment this to send emails
+            # send_emails(admins=admins, reservation=reservation, ticket=ticket)
             return Response(serializer.data)
         # If serializer is not valid send errors.
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        user = self.request.user
+        queryset = user.tickets.all()
+        ticket = get_object_or_404(queryset, pk=pk)
+        serializer = SimpleTicketSerializer(ticket, many=False)
+        return Response(serializer.data)
