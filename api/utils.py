@@ -4,10 +4,10 @@ from django.utils.translation import gettext_lazy as _
 
 class IncidentType(models.TextChoices):
     # Name = 'Value', _('Label')
-    PINCHAZO = 'PI', _('Pinchazo')
-    GOLPE = 'GO', _('Golpe')
-    PROBLEMAS_DE_USO = 'PU', _('Problemas de uso')
-    OTRO = 'OT', _('Otro')
+    TIRE_PUNCTURE = 'TIRE_PUNCTURE', _('Tire puncture')
+    BANG = 'BANG', _('Bang')
+    USAGE_PROBLEMS = 'USAGE_PROBLEMS', _('Usage problems')
+    OTHERS = 'OTHERS', _('Others')
 
 
 class TicketStatus(models.TextChoices):

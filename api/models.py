@@ -142,7 +142,7 @@ class AllowedTypes(models.Model):
 # It is intended to be a history of positions
 class Track(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    datetime = models.DateTimeField(auto_now_add=True)
+    date_stored = models.DateTimeField(auto_now_add=True)
 
     # GPS Position
     latitude = models.DecimalField(max_digits=13, decimal_places=10)
@@ -158,37 +158,13 @@ class Track(models.Model):
         return '{0} ({1:.5g}{2:.5g}}{3:.5g}})'.format(self.vehicle.name, self.latitude, self.longitude, self.altitude)
 
 
-class Incident(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
-    # This position will be the last position of the vehicle when an incident is reported.
-    position = models.OneToOneField(Track, null=True, on_delete=models.SET_NULL)
-    datetime = models.DateTimeField(auto_now_add=True)
-
-    type = models.CharField(
-        max_length=2,
-        choices=IncidentType.choices,
-        default=IncidentType.OTRO
-    )
-
-    description = models.CharField(max_length=255)
-    solved = models.BooleanField(default=False)
-
-    class Meta:
-        db_table = 'Incident'
-
-    def __str__(self):
-        return '{0} - {1} - {2}'.format(self.type, self.owner, self.vehicle.name)
-
-
 class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=50)
     date_stored = models.DateField(auto_now_add=True)
     start = models.DateTimeField()
     end = models.DateTimeField()
-    description = models.TextField(default='')
+    description = models.TextField()
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
 
@@ -198,6 +174,31 @@ class Reservation(models.Model):
 
     def __str__(self):
         return '{0} - {1}'.format(self.owner, self.title)
+
+
+class Incident(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    title = models.CharField(max_length=50)
+    date_stored = models.DateTimeField(auto_now_add=True)
+    description = models.TextField()
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
+    # This position will be the last position of the vehicle when an incident is reported.
+    # position = models.OneToOneField(Track, null=True, on_delete=models.SET_NULL)
+
+    type = models.CharField(
+        max_length=2,
+        choices=IncidentType.choices,
+        default=IncidentType.OTRO
+    )
+
+    solved = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'Incident'
+
+    def __str__(self):
+        return self.title
 
 
 class Ticket(models.Model):
