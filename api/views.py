@@ -1,9 +1,10 @@
-from .serializers import *
-from rest_framework import generics, status, viewsets, permissions
-from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from api.permissions import IsVehicleAccessible, get_vehicles
-from api.emailtickets import send_emails
+from rest_framework import generics, viewsets
+from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.response import Response
+
+from api.permissions import *
+from .serializers import *
 
 
 def get_responsible_admin(ticket):
@@ -103,13 +104,13 @@ class ReservationViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         # If serializer is not valid send errors.
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         user = self.request.user
         queryset = user.reservations.all()
         reservation = get_object_or_404(queryset, pk=pk)
-        serializer = SimpleReservationSerializer(reservation, many=False)
+        serializer = SimpleReservationSerializer(reservation)
         return Response(serializer.data)
 
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE FLEET AND VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
@@ -135,6 +136,44 @@ class UserDetail(generics.RetrieveAPIView):
     serializer_class = SimpleUserSerializer
 
 
+class IncidentViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        user = self.request.user
+        queryset = Incident.objects.filter(owner=user)
+        serializer = SimpleIncidentSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        user = self.request.user
+        serializer = CreateIncidentSerializer(data=self.request.data)
+
+        if serializer.is_valid():
+            serializer.save(owner=user)
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        user = self.request.user
+        queryset = Incident.objects.filter(owner=user)
+        incident = get_object_or_404(queryset, pk=pk)
+        serializer = SimpleIncidentSerializer(incident)
+        return Response(serializer.data)
+
+    # THIS RESTRICT TO REQUESTER CREATE AN INCIDENT OF RESERVATION WHICH IS NOT OWNER.
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'list' or 'retrieve':
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            # You must be authenticated and have access to the vehicle.
+            permission_classes = [permissions.IsAuthenticated, IsOwnerReservation]
+        return [permission() for permission in permission_classes]
+
+
 class TicketViewSet(viewsets.ViewSet):
 
     def list(self, request):
@@ -157,11 +196,11 @@ class TicketViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         # If serializer is not valid send errors.
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         user = self.request.user
         queryset = user.tickets.all()
         ticket = get_object_or_404(queryset, pk=pk)
-        serializer = SimpleTicketSerializer(ticket, many=False)
+        serializer = SimpleTicketSerializer(ticket)
         return Response(serializer.data)

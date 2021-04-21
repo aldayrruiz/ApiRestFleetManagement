@@ -100,13 +100,6 @@ class User(AbstractBaseUser):
         related_name='allowed_types'
     )
 
-    incidents = models.ManyToManyField(
-        Vehicle,
-        through='Incident',
-        through_fields=('owner', 'vehicle'),
-        related_name='incidents'
-    )
-
     fleet = models.ForeignKey(Fleet, related_name='users', null=True, on_delete=models.SET_NULL)
 
     USERNAME_FIELD = 'email'
@@ -168,6 +161,13 @@ class Reservation(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
 
+    incidents = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through='Incident',
+        through_fields=('reservation', 'owner'),
+        related_name='incidents'
+    )
+
     class Meta:
         db_table = 'Reservation'
         ordering = ['start']
@@ -187,9 +187,9 @@ class Incident(models.Model):
     # position = models.OneToOneField(Track, null=True, on_delete=models.SET_NULL)
 
     type = models.CharField(
-        max_length=2,
+        max_length=14,
         choices=IncidentType.choices,
-        default=IncidentType.OTRO
+        default=IncidentType.OTHERS
     )
 
     solved = models.BooleanField(default=False)

@@ -58,6 +58,15 @@ class SimpleReservationSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle']
 
 
+class SimpleIncidentSerializer(serializers.ModelSerializer):
+    owner = SimpleUserSerializer
+    reservation = SimpleReservationSerializer()
+
+    class Meta:
+        model = Incident
+        fields = ['id', 'title', 'date_stored', 'description', 'owner', 'reservation', 'type']
+
+
 # Use as single or many tickets
 class SimpleTicketSerializer(serializers.ModelSerializer):
     reservation = SimpleReservationSerializer()
@@ -82,7 +91,7 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ['id', 'title', 'start', 'end', 'description', 'owner', 'vehicle']
+        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle']
 
     def validate(self, data):
 
@@ -100,12 +109,22 @@ class CreateReservationSerializer(serializers.ModelSerializer):
         return data
 
 
+class CreateIncidentSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    solved = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Incident
+        fields = ['id', 'title', 'description', 'owner', 'reservation', 'type', 'solved']
+
+
 class CreateTicketSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
+    status = serializers.ChoiceField(choices=TicketStatus.choices, read_only=True)
 
     class Meta:
         model = Ticket
-        fields = ['id', 'title', 'date_stored', 'description', 'reservation', 'owner']
+        fields = ['id', 'title', 'date_stored', 'description', 'reservation', 'owner', 'status']
 
 
 # Include reservations of vehicle. Perfect a single vehicle.

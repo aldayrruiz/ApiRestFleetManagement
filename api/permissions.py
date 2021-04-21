@@ -47,3 +47,14 @@ class IsVehicleAccessible(permissions.BasePermission):
         vehicles = get_vehicles(request.user)
         # request.data['vehicle'] contains the vehicle id.
         return vehicles.filter(id=request.data['vehicle']).exists()
+
+
+class IsOwnerReservation(permissions.BasePermission):
+    """
+    This class gives permission to the owner of a reservation
+    """
+
+    def has_permission(self, request, view):
+        user = request.user
+        reservations = user.incidents.all()
+        return reservations.filter(id=request.data['reservation']).exists()
