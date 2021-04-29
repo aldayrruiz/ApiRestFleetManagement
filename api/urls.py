@@ -1,4 +1,4 @@
-from django.urls import re_path
+from django.urls import re_path, path
 from api.roles.user.views import *
 from api.roles.admin.views import *
 from rest_framework.routers import DefaultRouter
@@ -15,7 +15,8 @@ router.register(r'tickets', TicketViewSet, basename='tickets')
 router.register(r'incidents', IncidentViewSet, basename='incidents')
 
 urlpatterns += [
-    re_path(r'^login/?$', obtain_auth_token, name='login')
+    re_path(r'^login/?$', obtain_auth_token, name='login'),
+    path('admin/login', AdminAuthToken.as_view())
 ]
 
 # Admin endpoints (web)
