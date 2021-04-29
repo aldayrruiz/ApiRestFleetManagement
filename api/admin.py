@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Fleet, VehicleType, Vehicle, AllowedTypes, User, Reservation, Track, Incident, Ticket
+from api.models import Fleet, VehicleType, Vehicle, AllowedTypes, User, Reservation, Track, Incident, Ticket
 
 # Register your models here.
 admin.site.register(Fleet)

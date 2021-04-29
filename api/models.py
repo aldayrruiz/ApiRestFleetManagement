@@ -24,6 +24,7 @@ class Fleet(models.Model):
 class VehicleType(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(unique=True, max_length=50)
+    fleet = models.ForeignKey(Fleet, related_name='vehicletypes', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name
@@ -100,7 +101,7 @@ class User(AbstractBaseUser):
         related_name='allowed_types'
     )
 
-    fleet = models.ForeignKey(Fleet, related_name='users', null=True, on_delete=models.SET_NULL)
+    fleet = models.ForeignKey(Fleet, related_name='user', null=True, on_delete=models.SET_NULL)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

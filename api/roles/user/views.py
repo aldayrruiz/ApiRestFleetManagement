@@ -3,15 +3,15 @@ from rest_framework import generics, viewsets
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.response import Response
 
-from api.permissions import *
-from .serializers import *
+from api.roles.user.permissions import *
+from api.roles.user.serializers import *
 
 
 def get_responsible_admin(ticket):
     """
     Returns a queryset of admins that could resolve the ticket.
     :param ticket: Ticket requested by a user that need the vehicle
-    :return: queryset of users (admins)
+    :return: queryset of user (admins)
     """
     fleet_id = ticket.owner.fleet_id
     admins = User.objects.filter(is_admin=True, fleet_id=fleet_id)

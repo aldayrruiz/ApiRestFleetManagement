@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import *
+from api.models import *
 from django.contrib.auth import get_user_model
 
 DELAY = 1
@@ -78,12 +78,12 @@ class SimpleTicketSerializer(serializers.ModelSerializer):
 
 
 class CreateVehicleSerializer(serializers.ModelSerializer):
-    type = serializers.CharField(max_length=50, source='type.name')
+    # type = serializers.CharField(max_length=50, source='type.name')
 
     class Meta:
         model = Vehicle
         # Fleet must be taken of admin fleet
-        fields = ['id', 'name', 'type']
+        fields = ['id', 'name', 'type', 'fleet']
 
 
 class CreateReservationSerializer(serializers.ModelSerializer):
