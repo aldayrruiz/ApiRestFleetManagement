@@ -5,19 +5,20 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
 
 router = DefaultRouter()
-urlpatterns = router.urls
 
 # User endpoints (mobile)
-router.register(r'vehicles', VehicleViewSet, basename='vehicle')
-router.register(r'vehicletypes', VehicleTypeViewSet, basename='vehicletype')
-router.register(r'reservations', ReservationViewSet, basename='reservation')
-router.register(r'tickets', TicketViewSet, basename='tickets')
-router.register(r'incidents', IncidentViewSet, basename='incidents')
-
-urlpatterns += [
-    re_path(r'^login/?$', obtain_auth_token, name='login'),
-    path('admin/login', AdminAuthToken.as_view())
-]
+router.register(r'api/members/vehicles', VehicleViewSet, basename='vehicle')
+router.register(r'api/members/vehicletypes', VehicleTypeViewSet, basename='vehicletype')
+router.register(r'api/members/reservations', ReservationViewSet, basename='reservation')
+router.register(r'api/members/tickets', TicketViewSet, basename='tickets')
+router.register(r'api/members/incidents', IncidentViewSet, basename='incidents')
 
 # Admin endpoints (web)
-router.register(r'admin/vehicles', AdminVehicleViewSet, basename='adminvehicle')
+router.register(r'api/admin/vehicles', AdminVehicleViewSet, basename='adminvehicle')
+
+urlpatterns = router.urls
+
+urlpatterns += [
+    re_path(r'^api/members/login/?$', obtain_auth_token, name='login'),
+    path('api/admin/login', AdminAuthToken.as_view())
+]
