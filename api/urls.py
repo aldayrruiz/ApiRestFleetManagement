@@ -20,5 +20,5 @@ urlpatterns = router.urls
 
 urlpatterns += [
     re_path(r'^api/members/login/?$', obtain_auth_token, name='login'),
-    path('api/admin/login', AdminAuthToken.as_view())
+    path('api/admin/login/', AdminAuthToken.as_view())
 ]

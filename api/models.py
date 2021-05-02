@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.db.models import UniqueConstraint
-from .utils import IncidentType, TicketStatus
+from api.utils import *
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.conf import settings
 from django.db.models.signals import post_save
@@ -99,6 +99,12 @@ class User(AbstractBaseUser):
         through='AllowedTypes',
         through_fields=('user', 'type'),
         related_name='allowed_types'
+    )
+
+    role = models.CharField(
+        max_length=11,
+        choices=Role.choices,
+        default=Role.USER
     )
 
     fleet = models.ForeignKey(Fleet, related_name='user', null=True, on_delete=models.SET_NULL)
