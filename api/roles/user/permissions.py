@@ -2,15 +2,14 @@ from rest_framework import permissions
 from api.models import Vehicle
 
 
-def get_vehicles(user):
+def get_allowed_vehicles(user):
     """
     Returns a queryset of vehicles the user has access.
     :param user: user model instance.
     :return: a queryset of vehicles the user have access.
     """
     allowed_types = user.allowed_types.all().values('id')
-    fleet_id = user.fleet_id
-    return Vehicle.objects.filter(fleet_id=fleet_id, type__in=allowed_types)
+    return Vehicle.objects.filter(type__in=allowed_types)
 
 
 class IsOwnerOrSuperuser(permissions.BasePermission):
@@ -39,12 +38,12 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 class IsVehicleAccessible(permissions.BasePermission):
     """
     Use this class when you have to restrict people create a reservation of a vehicle.
-    This permission takes the fleet linked to the user (requester) and his allowed vehicles types.
-    So a user can't reserve a vehicle that is not in his fleet or doesn't have a access the vehicle type.
+    This permission takes allowed vehicles types.
+    So a user can't reserve a vehicle not allowed to him.
     """
 
     def has_permission(self, request, view):
-        vehicles = get_vehicles(request.user)
+        vehicles = get_allowed_vehicles(request.user)
         # request.data['vehicle'] contains the vehicle id.
         return vehicles.filter(id=request.data['vehicle']).exists()
 

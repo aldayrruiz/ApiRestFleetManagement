@@ -13,13 +13,12 @@ def get_responsible_admin(ticket):
     :param ticket: Ticket requested by a user that need the vehicle
     :return: queryset of user (admins)
     """
-    fleet_id = ticket.owner.fleet_id
-    admins = User.objects.filter(is_admin=True, fleet_id=fleet_id)
+    admins = User.objects.filter(is_admin=True)
     return admins
 
 
 def is_vehicle_accessible(user, vehicle_id):
-    return get_vehicles(user).filter(id=vehicle_id).exists()
+    return get_allowed_vehicles(user).filter(id=vehicle_id).exists()
 
 
 class VehicleViewSet(viewsets.ViewSet):
@@ -29,7 +28,7 @@ class VehicleViewSet(viewsets.ViewSet):
         Returns a list of vehicles user requester has access.
         """
         user = self.request.user
-        queryset = get_vehicles(user)
+        queryset = get_allowed_vehicles(user)
         serializer = SimpleVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -38,7 +37,7 @@ class VehicleViewSet(viewsets.ViewSet):
         Returns the vehicle if user requester has access.
         """
         user = self.request.user
-        queryset = get_vehicles(user)
+        queryset = get_allowed_vehicles(user)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = DetailedVehicleSerializer(vehicle)
         return Response(serializer.data)
@@ -113,7 +112,7 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer = SimpleReservationSerializer(reservation)
         return Response(serializer.data)
 
-    # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE FLEET AND VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
+    # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.

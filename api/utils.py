@@ -18,12 +18,10 @@ class TicketStatus(models.TextChoices):
 
 class Role(models.TextChoices):
     """
-    Super admin: Create fleet, visualize all fleets, remove and give privileges
     Fleet admin: Just know about his fleet and have create/update/delete privileges
     to create vehicles, create users but cannot crete new fleets.
     User: Just know about his fleet, it has not access to web admin site.
     """
-    SUPER_ADMIN = 'SUPER_ADMIN', _('Super admin'),
-    FLEET_ADMIN = 'FLEET_ADMIN', _('Fleet admin'),
+    ADMIN = 'ADMIN', _('ADMIN'),
     USER = 'USER', _('User')
 

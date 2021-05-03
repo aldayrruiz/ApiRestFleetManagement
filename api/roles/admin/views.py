@@ -12,10 +12,10 @@ class AdminVehicleViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        Returns a list a vehicles from admin fleet.
+        Returns all vehicles.
         """
         user = self.request.user
-        queryset = Vehicle.objects.filter(fleet=user.fleet)
+        queryset = Vehicle.objects.all()
         serializer = SimpleVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -25,7 +25,7 @@ class AdminVehicleViewSet(viewsets.ViewSet):
 
         # Verify if data request is valid
         if serializer.is_valid():
-            serializer.save(fleet=user.fleet)
+            serializer.save()
             return Response(serializer.data)
         # If serializer is not valid send errors
         else:
@@ -33,7 +33,7 @@ class AdminVehicleViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         user = self.request.user
-        queryset = Vehicle.objects.filter(fleet=user.fleet)
+        queryset = Vehicle.objects.all()
         vehicle = get_object_or_404(queryset, pk=pk)
         vehicle.delete()
         return Response(status=HTTP_204_NO_CONTENT)
@@ -43,29 +43,29 @@ class VehicleTypeViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        Returns vehicles types of the fleet of the admin (requester).
+        Returns all vehicles types.
         """
         user = self.request.user
-        queryset = VehicleType.objects.filter(fleet=user.fleet)
+        queryset = VehicleType.objects.all()
         serializer = SimpleVehicleTypeSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         """
-        Returns the vehicle type if it is in admin fleet.
+        Returns the vehicle type.
         """
         user = self.request.user
-        queryset = VehicleType.objects.filter(fleet=user.fleet)
+        queryset = VehicleType.objects.all()
         vehicle_type = get_object_or_404(queryset, pk=pk)
         serializer = SimpleVehicleTypeSerializer(vehicle_type)
         return Response(serializer.data)
 
     def destroy(self, request, pk=None):
         """
-        Destroy the vehicle type if is in admin fleet.
+        Destroy the vehicle type.
         """
         user = self.request.user
-        queryset = VehicleType.objects.filter(fleet=user.fleet)
+        queryset = VehicleType.objects.all()
         vehicle_type = get_object_or_404(queryset, pk=pk)
         vehicle_type.delete()
         # TODO: Show error if vehicles are linked to vehicleType.

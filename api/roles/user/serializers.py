@@ -20,12 +20,6 @@ CreateXSerializer: This serializer must be used to update, create values (User, 
 """
 
 
-class SimpleFleetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Fleet
-        fields = ['id', 'name']
-
-
 class SimpleVehicleTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleType
@@ -35,11 +29,10 @@ class SimpleVehicleTypeSerializer(serializers.ModelSerializer):
 # NOT include reservations of vehicle. Perfect for many get vehicles.
 class SimpleVehicleSerializer(serializers.ModelSerializer):
     type = SimpleVehicleTypeSerializer()
-    fleet = SimpleFleetSerializer()
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'name', 'date_stored', 'type', 'fleet']
+        fields = ['id', 'name', 'date_stored', 'type']
 
 
 class SimpleUserSerializer(serializers.ModelSerializer):
@@ -82,8 +75,7 @@ class CreateVehicleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vehicle
-        # Fleet must be taken of admin fleet
-        fields = ['id', 'name', 'type', 'fleet']
+        fields = ['id', 'name', 'type']
 
 
 class CreateReservationSerializer(serializers.ModelSerializer):
@@ -130,9 +122,8 @@ class CreateTicketSerializer(serializers.ModelSerializer):
 # Include reservations of vehicle. Perfect a single vehicle.
 class DetailedVehicleSerializer(serializers.ModelSerializer):
     type = SimpleVehicleTypeSerializer()
-    fleet = SimpleFleetSerializer()
     reservations = SimpleReservationSerializer(many=True)
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'name', 'date_stored', 'type', 'fleet', 'reservations']
+        fields = ['id', 'name', 'date_stored', 'type', 'reservations']

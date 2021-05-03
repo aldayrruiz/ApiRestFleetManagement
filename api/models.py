@@ -9,22 +9,9 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
 
-# Flota: Valladolid, etc.
-class Fleet(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.CharField(unique=True, max_length=50)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = 'Fleet'
-
-
 class VehicleType(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(unique=True, max_length=50)
-    fleet = models.ForeignKey(Fleet, related_name='vehicletypes', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name
@@ -44,8 +31,6 @@ class Vehicle(models.Model):
     date_stored = models.DateField(auto_now_add=True)
     # Type: 4x4, bus, moto, etc
     type = models.ForeignKey(VehicleType, related_name='vehicles', null=True, on_delete=models.SET_NULL)
-    # Not to delete vehicle if fleet is deleted.
-    fleet = models.ForeignKey(Fleet, related_name='vehicles', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name
@@ -106,8 +91,6 @@ class User(AbstractBaseUser):
         choices=Role.choices,
         default=Role.USER
     )
-
-    fleet = models.ForeignKey(Fleet, related_name='user', null=True, on_delete=models.SET_NULL)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
