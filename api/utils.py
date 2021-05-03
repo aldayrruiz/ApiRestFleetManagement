@@ -22,6 +22,6 @@ class Role(models.TextChoices):
     to create vehicles, create users but cannot crete new fleets.
     User: Just know about his fleet, it has not access to web admin site.
     """
-    ADMIN = 'ADMIN', _('ADMIN'),
+    ADMIN = 'ADMIN', _('Admin'),
     USER = 'USER', _('User')
 

@@ -2,9 +2,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED
 from rest_framework.response import Response
-
+from rest_framework import permissions
 from rest_framework.authtoken.views import ObtainAuthToken
 
+from api.roles.admin.permissions import IsAdmin
 from api.roles.user.serializers import *
 
 
@@ -37,6 +38,10 @@ class AdminVehicleViewSet(viewsets.ViewSet):
         vehicle = get_object_or_404(queryset, pk=pk)
         vehicle.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        return [permission() for permission in permission_classes]
 
 
 class VehicleTypeViewSet(viewsets.ViewSet):
@@ -71,6 +76,10 @@ class VehicleTypeViewSet(viewsets.ViewSet):
         # TODO: Show error if vehicles are linked to vehicleType.
         return Response(status=HTTP_204_NO_CONTENT)
 
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        return [permission() for permission in permission_classes]
+
 
 class AdminReservationViewSet(viewsets.ViewSet):
 
@@ -84,6 +93,10 @@ class AdminReservationViewSet(viewsets.ViewSet):
         Incident.objects.filter(reservation=reservation).delete()
         reservation.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        return [permission() for permission in permission_classes]
 
 
 class AdminAuthToken(ObtainAuthToken):
