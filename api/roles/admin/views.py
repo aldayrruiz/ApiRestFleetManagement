@@ -84,8 +84,7 @@ class VehicleTypeViewSet(viewsets.ViewSet):
 class AdminReservationViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
-        user = self.request.user
-        queryset = user.reservations.all()
+        queryset = Reservation.objects.all()
         reservation = get_object_or_404(queryset, pk=pk)
         # Delete tickets of reservation
         reservation.tickets.all().delete()

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from rest_framework.response import Response
 
 from api.roles.user.permissions import *
@@ -112,6 +112,17 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer = SimpleReservationSerializer(reservation)
         return Response(serializer.data)
 
+    def destroy(self, request, pk=None):
+        user = self.request.user
+        queryset = user.reservations.all()
+        reservation = get_object_or_404(queryset, pk=pk)
+        # Delete tickets of reservation
+        reservation.tickets.all().delete()
+        # Delete incidents of reservation
+        Incident.objects.filter(reservation=reservation).delete()
+        reservation.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
+
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
     def get_permissions(self):
         """
@@ -203,3 +214,10 @@ class TicketViewSet(viewsets.ViewSet):
         ticket = get_object_or_404(queryset, pk=pk)
         serializer = SimpleTicketSerializer(ticket)
         return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        user = self.request.user
+        queryset = user.tickets.all()
+        ticket = get_object_or_404(queryset, pk=pk)
+        ticket.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
