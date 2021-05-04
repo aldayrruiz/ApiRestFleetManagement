@@ -7,6 +7,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 
 from api.roles.admin.permissions import IsAdmin
 from api.roles.user.serializers import *
+from api.roles.admin.serializers import *
 
 
 class AdminVehicleViewSet(viewsets.ViewSet):
@@ -96,6 +97,19 @@ class AdminReservationViewSet(viewsets.ViewSet):
     def get_permissions(self):
         permission_classes = [permissions.IsAuthenticated, IsAdmin]
         return [permission() for permission in permission_classes]
+
+
+class RegistrationViewSet(viewsets.ViewSet):
+
+    def create(self, request):
+        user = self.request.user
+        serializer = RegistrationSerializer(data=self.request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class AdminAuthToken(ObtainAuthToken):
