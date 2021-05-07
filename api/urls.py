@@ -15,6 +15,7 @@ router.register(r'api/members/incidents', IncidentViewSet, basename='incidents')
 
 # Admin endpoints (web)
 router.register(r'api/admin/vehicles', AdminVehicleViewSet, basename='adminvehicle')
+router.register(r'api/admin/vehicletypes', AdminVehicleTypeViewSet, basename='adminvehicletype')
 router.register(r'api/admin/register', RegistrationViewSet, basename='register')
 
 urlpatterns = router.urls

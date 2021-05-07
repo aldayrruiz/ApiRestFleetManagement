@@ -3,6 +3,12 @@ from api.models import *
 from django.contrib.auth import get_user_model
 
 
+class CreateVehicleTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleType
+        fields = ['id', 'name']
+
+
 class RegistrationSerializer(serializers.ModelSerializer):
 
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)

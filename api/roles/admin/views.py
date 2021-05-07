@@ -45,7 +45,7 @@ class AdminVehicleViewSet(viewsets.ViewSet):
         return [permission() for permission in permission_classes]
 
 
-class VehicleTypeViewSet(viewsets.ViewSet):
+class AdminVehicleTypeViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
@@ -55,6 +55,16 @@ class VehicleTypeViewSet(viewsets.ViewSet):
         queryset = VehicleType.objects.all()
         serializer = SimpleVehicleTypeSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    def create(self, request):
+        user = self.request.user
+        serializer = CreateVehicleTypeSerializer(data=self.request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         """
