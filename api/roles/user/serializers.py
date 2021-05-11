@@ -70,6 +70,12 @@ class SimpleTicketSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'date_stored', 'description', 'reservation', 'owner', 'status']
 
 
+class CreateVehicleTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleType
+        fields = ['id', 'name']
+
+
 class CreateVehicleSerializer(serializers.ModelSerializer):
     # type = serializers.CharField(max_length=50, source='type.name')
 
@@ -127,3 +133,31 @@ class DetailedVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = ['id', 'name', 'date_stored', 'type', 'reservations']
+
+
+class RegistrationSerializer(serializers.ModelSerializer):
+
+    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    role = serializers.ChoiceField(choices=Role.choices)
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'username', 'role', 'password', 'password2']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def save(self):
+        user = User(email=self.validated_data['email'],
+                    username=self.validated_data['username'],
+                    role=self.validated_data['role'])
+
+        password = self.validated_data['password']
+        password2 = self.validated_data['password2']
+
+        if password != password2:
+            raise serializers.ValidationError({'password': 'Passwords must match.'})
+
+        user.set_password(password)
+        user.save()
+        return user

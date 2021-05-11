@@ -1,5 +1,6 @@
 from rest_framework import permissions
-from api.models import Vehicle
+from api.models import *
+from api.utils import Role
 
 
 def get_allowed_vehicles(user):
@@ -35,25 +36,40 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return obj.user == request.user
 
 
-class IsVehicleAccessible(permissions.BasePermission):
+class IsVehicleAccessibleOrAdmin(permissions.BasePermission):
     """
     Use this class when you have to restrict people create a reservation of a vehicle.
-    This permission takes allowed vehicles types.
+    This permission takes in count allowed vehicles types.
     So a user can't reserve a vehicle not allowed to him.
+
+    If requester is admin. It returns True, so he will have access.
     """
 
     def has_permission(self, request, view):
-        vehicles = get_allowed_vehicles(request.user)
+        requester = request.user
+        if requester.role == Role.ADMIN:
+            return True
+
+        vehicles = get_allowed_vehicles(requester)
         # request.data['vehicle'] contains the vehicle id.
         return vehicles.filter(id=request.data['vehicle']).exists()
 
 
-class IsOwnerReservation(permissions.BasePermission):
+class IsOwnerReservationOrAdmin(permissions.BasePermission):
     """
-    This class gives permission to the owner of a reservation
+    This class gives permission to the owner of a reservation.
+
+    If requester is admin. It returns True, so he will have access.
     """
 
     def has_permission(self, request, view):
-        user = request.user
-        reservations = user.incidents.all()
+        requester = request.user
+        if requester.role == Role.ADMIN:
+            return True
+        reservations = requester.reservations.all()
         return reservations.filter(id=request.data['reservation']).exists()
+
+
+class IsAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.role == Role.ADMIN
