@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from api.roles.user.permissions import *
@@ -340,6 +340,55 @@ class TicketViewSet(viewsets.ViewSet):
             # You must be authenticated and have access to the vehicle.
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
+
+
+class UserViewSet(viewsets.ViewSet):
+    """
+    This entire endpoint class and its methods (endpoints) are only available if requester is admin.
+    """
+
+    def list(self, request):
+        """
+        It returns all users.
+        :param request:
+        :return: users
+        """
+        queryset = get_user_model().objects.all()
+        serializer = SimpleUserSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        """
+        It returns the user given an id.
+        :param request:
+        :param pk: user id
+        :return:
+        """
+        queryset = get_user_model().objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        serializer = SimpleUserSerializer(user)
+        return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        """
+        It deletes an user and all his relations (reservations, incidents, tickets).
+        If requester tries to delete himself, server respond with 403 ERROR.
+        :param request:
+        :param pk: user id
+        :return:
+        """
+        requester = self.request.user
+        queryset = get_user_model().objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        if requester == user:
+            return Response(status=HTTP_403_FORBIDDEN)
+        user.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
+
+    # Create method is located in /register endpoint
+
+    def get_permissions(self):
+        return [permission() for permission in [IsAdmin]]
 
 
 class RegistrationViewSet(viewsets.ViewSet):

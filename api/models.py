@@ -50,7 +50,7 @@ class MyUserManager(BaseUserManager):
             email=self.normalize_email(email),
             username=username,
         )
-
+        user.role = Role.USER
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -64,6 +64,7 @@ class MyUserManager(BaseUserManager):
         user.is_admin = True
         user.is_staff = True
         user.is_superuser = True
+        user.role = Role.ADMIN
         user.save(using=self._db)
         return user
 

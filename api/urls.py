@@ -7,6 +7,7 @@ router = DefaultRouter()
 
 # User endpoints (mobile)
 router.register(r'api/vehicles', VehicleViewSet, basename='vehicle')
+router.register(r'api/users', UserViewSet, basename='user')
 router.register(r'api/vehicletypes', VehicleTypeViewSet, basename='vehicletype')
 router.register(r'api/reservations', ReservationViewSet, basename='reservation')
 router.register(r'api/tickets', TicketViewSet, basename='tickets')
