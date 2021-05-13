@@ -1,0 +1,64 @@
+- model: api.vehicletype
+  pk: 34fb7a79-7726-4474-a55f-85576e61dd38
+  fields:
+    name: Derivado
+- model: api.vehicletype
+  pk: 70ef9efe-9048-41b7-a5f0-c9049ddf55ca
+  fields:
+    name: Todo Terreno
+- model: api.vehicletype
+  pk: ecf42a21-f2fa-4ad4-ab69-81bc97db9db1
+  fields:
+    name: Turismo
+- model: api.vehicle
+  pk: 3a61ea29-f316-43bc-b8f5-4de8f6d11f66
+  fields:
+    name: Audi Derivado
+    date_stored: 2021-05-13
+    type: 34fb7a79-7726-4474-a55f-85576e61dd38
+- model: api.vehicle
+  pk: 7274014c-486a-4ad4-bcfa-71ac99344a2c
+  fields:
+    name: Audi 39x Turismo
+    date_stored: 2021-05-13
+    type: 34fb7a79-7726-4474-a55f-85576e61dd38
+- model: api.vehicle
+  pk: b8a0cb38-a77d-4484-ac45-72b7952f6fea
+  fields:
+    name: Godzilla Todo Terreno
+    date_stored: 2021-05-13
+    type: 70ef9efe-9048-41b7-a5f0-c9049ddf55ca
+- model: api.vehicle
+  pk: bdeac8d9-8a47-4976-b9f9-5cf84c9b84bf
+  fields:
+    name: Tesla Model 3 Turismo
+    date_stored: 2021-05-13
+    type: ecf42a21-f2fa-4ad4-ab69-81bc97db9db1
+- model: api.user
+  pk: 584f0f6d-5960-4121-98af-d098ec715510
+  fields:
+    # password: password
+    password: pbkdf2_sha256$216000$budoOcniGxva$z0UMbFRGPN5OXUym4nNeQ7otx1gEMvqqRrHBbzSvXts=
+    email: aldayr468@gmail.com
+    username: normaluser
+    date_joined: 2021-05-13 08:53:54.581603+00:00
+    last_login: 2021-05-13 08:57:44.744746+00:00
+    is_admin: false
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    role: USER
+- model: api.user
+  pk: bff07983-1cf2-4bf8-8c45-b60ef1c57e9f
+  fields:
+    # password: randomPass123
+    password: pbkdf2_sha256$216000$ZddwMfBBbul2$yz+3HwmRCEGmvdZaXGha1x+1i0wopjbi+cIZi4BnVT4=
+    email: aldayr.ruiz@opendeusto.es
+    username: aldayr
+    date_joined: 2021-05-13 08:16:47.565567+00:00
+    last_login: 2021-05-13 08:53:27.338332+00:00
+    is_admin: true
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    role: ADMIN
