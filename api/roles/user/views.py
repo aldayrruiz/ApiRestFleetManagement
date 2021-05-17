@@ -393,7 +393,11 @@ class UserViewSet(viewsets.ViewSet):
         requester = self.request.user
         queryset = get_user_model().objects.all()
         user = get_object_or_404(queryset, pk=pk)
-
+        serializer = UpdateUserSerializer(user, self.request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     # Create method is located in /register endpoint
     def get_permissions(self):
