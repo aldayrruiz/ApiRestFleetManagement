@@ -385,8 +385,17 @@ class UserViewSet(viewsets.ViewSet):
         user.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
-    # Create method is located in /register endpoint
+# TODO: Complete it
+    def update(self, request, pk=None):
+        """
+        It update the data of a user.
+        """
+        requester = self.request.user
+        queryset = get_user_model().objects.all()
+        user = get_object_or_404(queryset, pk=pk)
 
+
+    # Create method is located in /register endpoint
     def get_permissions(self):
         return [permission() for permission in [IsAdmin]]
 
