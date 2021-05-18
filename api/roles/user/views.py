@@ -139,6 +139,16 @@ class VehicleTypeViewSet(viewsets.ViewSet):
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+    def update(self, request, pk=None):
+        requester = self.request.user
+        queryset = VehicleType.objects.all()
+        vehicle_type = get_object_or_404(queryset, pk=pk)
+        serializer = CreateVehicleTypeSerializer(vehicle_type, self.request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
     def destroy(self, request, pk=None):
         """
         It deletes the vehicle type.
@@ -154,7 +164,7 @@ class VehicleTypeViewSet(viewsets.ViewSet):
         return Response(status=HTTP_204_NO_CONTENT)
 
     def get_permissions(self):
-        if self.action == 'destroy' or self.action == 'create':
+        if self.action == 'destroy' or self.action == 'create' or self.action == 'update':
             permission_classes = [IsAdmin]
         else:
             permission_classes = [permissions.IsAuthenticated]
@@ -385,7 +395,6 @@ class UserViewSet(viewsets.ViewSet):
         user.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
-# TODO: Complete it
     def update(self, request, pk=None):
         """
         It update the data of a user.

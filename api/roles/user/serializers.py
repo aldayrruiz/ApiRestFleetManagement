@@ -41,7 +41,6 @@ class SimpleUserSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'username', 'date_joined']
 
 
-# TODO: Complete it!
 class UpdateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
