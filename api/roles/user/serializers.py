@@ -36,9 +36,11 @@ class SimpleVehicleSerializer(serializers.ModelSerializer):
 
 
 class SimpleUserSerializer(serializers.ModelSerializer):
+    allowed_types = SimpleVehicleTypeSerializer(read_only=True, many=True)
+
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'username', 'date_joined']
+        fields = ['id', 'email', 'username', 'date_joined', 'allowed_types']
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):

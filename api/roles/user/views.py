@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, \
+    HTTP_200_OK
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from api.roles.user.permissions import *
@@ -440,3 +441,26 @@ class AdminAuthToken(ObtainAuthToken):
         return Response({
             'token': token.key
         })
+
+
+class AllowedVehicleTypes(viewsets.ViewSet):
+
+    def update(self, request, pk=None):
+        """
+        Request data: [id1, id2, ...]
+        """
+        # Get user
+        user_queryset = get_user_model().objects.all()
+        user = get_object_or_404(user_queryset, pk=pk)
+
+        # Get vehicle types to replace older ones
+        vehicle_types_ids = self.request.data
+        updated_allowed_types = VehicleType.objects.filter(id__in=vehicle_types_ids)
+
+        # If size of request data is not the same as vehicle types found in db return BAD REQUEST.
+        if len(updated_allowed_types) != len(vehicle_types_ids):
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        # Otherwise, replace allowed vehicle types and send OK
+        user.allowed_types.set(updated_allowed_types)
+        return Response(status=HTTP_200_OK)
