@@ -96,7 +96,7 @@ class CreateVehicleTypeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-class CreateVehicleSerializer(serializers.ModelSerializer):
+class CreateOrUpdateVehicleSerializer(serializers.ModelSerializer):
     # type = serializers.CharField(max_length=50, source='type.name')
 
     class Meta:

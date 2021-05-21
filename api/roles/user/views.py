@@ -63,12 +63,22 @@ class VehicleViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
-        serializer = CreateVehicleSerializer(data=self.request.data)
+        serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        queryset = Vehicle.objects.all()
+        vehicle = get_object_or_404(queryset, pk=pk)
+        serializer = CreateOrUpdateVehicleSerializer(vehicle, self.request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 
     def destroy(self, request, pk=None):
         """
