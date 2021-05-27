@@ -4,8 +4,8 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTT
     HTTP_200_OK
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
-from api.roles.user.permissions import *
-from api.roles.user.serializers import *
+from api.permissions import *
+from api.serializers import *
 
 
 def get_responsible_admin(ticket):
