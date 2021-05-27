@@ -421,7 +421,7 @@ class UserViewSet(viewsets.ViewSet):
 
     # Create method is located in /register endpoint
     def get_permissions(self):
-        return [permission() for permission in [IsAdmin]]
+        return [permission() for permission in [permissions.IsAuthenticated, IsAdmin]]
 
 
 class RegistrationViewSet(viewsets.ViewSet):
@@ -436,7 +436,7 @@ class RegistrationViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         # Only admin can register users.
-        return [permission() for permission in [IsAdmin]]
+        return [permission() for permission in [permissions.IsAuthenticated, IsAdmin]]
 
 
 class AdminAuthToken(ObtainAuthToken):
@@ -453,6 +453,7 @@ class AdminAuthToken(ObtainAuthToken):
         })
 
 
+# TODO: Vehicles Types are unrealistic. Just manage vehicles.
 class AllowedVehicleTypes(viewsets.ViewSet):
 
     def update(self, request, pk=None):
