@@ -98,7 +98,7 @@ class VehicleViewSet(viewsets.ViewSet):
         Instantiates and returns the list of permissions that this view requires.
         """
         if self.action == 'create' or self.action == 'destroy':
-            permission_classes = [IsAdmin]
+            permission_classes = [permissions.IsAuthenticated, IsAdmin]
         # This include 'list' and 'retrieve'.
         # HTTP methods like update and partial update are not supported yet.
         else:
@@ -176,7 +176,7 @@ class VehicleTypeViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         if self.action == 'destroy' or self.action == 'create' or self.action == 'update':
-            permission_classes = [IsAdmin]
+            permission_classes = [permissions.IsAuthenticated, IsAdmin]
         else:
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
