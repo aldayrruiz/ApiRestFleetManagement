@@ -1,5 +1,5 @@
 from django.urls import re_path, path
-from api.roles.user.views import *
+from api.views import *
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
 
