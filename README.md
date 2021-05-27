@@ -9,6 +9,10 @@ To install packages and libraries, use the following command:
 pip install -r requirements.txt
 ```
 
+### Config env
+To configure the variables you must edit the `.env` file
+
+
 ### Create Database
 To create database use the following commands:
 ```
