@@ -1,4 +1,3 @@
-# Include reservations of vehicle. Perfect a single vehicle.
 from rest_framework import serializers
 
 from reservations.serializers.simple import SimpleReservationSerializer
@@ -10,4 +9,4 @@ class DetailedVehicleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'name', 'date_stored', 'reservations']
+        fields = ['id', 'model', 'brand', 'number_plate', 'date_stored', 'reservations']
