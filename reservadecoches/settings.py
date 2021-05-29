@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,12 +29,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'users.User'
 
 # Application definition
 
 INSTALLED_APPS = [
-    'api.apps.ApiConfig',
+    'vehicles.apps.VehiclesConfig',
+    'users.apps.UsersConfig',
+    'allowed_vehicles.apps.AllowedVehiclesConfig',
+    'reservations.apps.ReservationsConfig',
+    'incidents.apps.IncidentsConfig',
+    'tickets.apps.TicketsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
