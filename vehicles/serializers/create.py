@@ -8,4 +8,4 @@ class CreateOrUpdateVehicleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'name']
+        fields = ['id', 'model', 'brand', 'number_plate']

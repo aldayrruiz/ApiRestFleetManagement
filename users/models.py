@@ -13,8 +13,8 @@ from vehicles.models import Vehicle
 
 class Role(models.TextChoices):
     """
-    to create vehicles, create users but cannot crete new fleets.
-    User: Just know about his fleet, it has not access to web admin site.
+    Admin has access to mobile app and admin web site.
+    User has access only to mobile app.
     """
     ADMIN = 'ADMIN', _('Admin'),
     USER = 'USER', _('User')
@@ -87,6 +87,9 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+    class Meta:
+        db_table = 'User'
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
