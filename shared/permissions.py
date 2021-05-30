@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from users.models import Role
+from applications.users.models import Role
 
 
 class IsOwnerReservationOrAdmin(permissions.BasePermission):
