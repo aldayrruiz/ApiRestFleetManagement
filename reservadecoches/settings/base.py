@@ -6,12 +6,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Application definition
 
 INSTALLED_APPS = [
-    'vehicles.apps.VehiclesConfig',
-    'users.apps.UsersConfig',
-    'allowed_vehicles.apps.AllowedVehiclesConfig',
-    'reservations.apps.ReservationsConfig',
-    'incidents.apps.IncidentsConfig',
-    'tickets.apps.TicketsConfig',
+    'applications.vehicles.apps.VehiclesConfig',
+    'applications.users.apps.UsersConfig',
+    'applications.allowed_vehicles.apps.AllowedVehiclesConfig',
+    'applications.reservations.apps.ReservationsConfig',
+    'applications.incidents.apps.IncidentsConfig',
+    'applications.tickets.apps.TicketsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

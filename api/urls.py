@@ -1,13 +1,13 @@
-from django.urls import re_path, path
+from django.urls import re_path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
-from allowed_vehicles.views import AllowedVehicleViewSet
-from incidents.views import IncidentViewSet
-from reservations.views import ReservationViewSet
-from tickets.views import TicketViewSet
-from users.views import UserViewSet, AdminAuthToken, RegistrationViewSet
-from vehicles.views import VehicleViewSet
+from applications.allowed_vehicles.views import AllowedVehicleViewSet
+from applications.incidents.views import IncidentViewSet
+from applications.reservations.views import ReservationViewSet
+from applications.tickets.views import TicketViewSet
+from applications.users.views import UserViewSet, AdminAuthToken, RegistrationViewSet
+from applications.vehicles.views import VehicleViewSet
 
 router = DefaultRouter()
 
