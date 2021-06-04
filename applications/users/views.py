@@ -6,11 +6,11 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
-from shared.permissions import IsAdmin
 from applications.users.models import Role
 from applications.users.serializers.create import RegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
-from applications.users.serializers.special import UpdateUserSerializer
+from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer
+from shared.permissions import IsAdmin
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -37,7 +37,7 @@ class UserViewSet(viewsets.ViewSet):
         """
         queryset = get_user_model().objects.all()
         user = get_object_or_404(queryset, pk=pk)
-        serializer = SimpleUserSerializer(user)
+        serializer = SingleUserSerializer(user)
         return Response(serializer.data)
 
     def destroy(self, request, pk=None):

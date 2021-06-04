@@ -1,6 +1,16 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from applications.vehicles.serializers.simple import SimpleVehicleSerializer
+
+
+class SingleUserSerializer(serializers.ModelSerializer):
+    allowed_vehicles = SimpleVehicleSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'email', 'username', 'date_joined', 'allowed_vehicles']
+
 
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
