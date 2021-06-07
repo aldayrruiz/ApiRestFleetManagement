@@ -16,7 +16,7 @@ class TicketStatus(models.TextChoices):
 class Ticket(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=50)
-    date_stored = models.DateField(auto_now_add=True)
+    date_stored = models.DateTimeField(auto_now_add=True)
     description = models.TextField()
     reservation = models.ForeignKey(Reservation, related_name='tickets', on_delete=models.CASCADE)
     # Person who request other person to cancel his reservation.

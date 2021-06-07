@@ -4,21 +4,13 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
 from applications.reservations.models import Reservation
-from shared.permissions import IsOwnerReservationOrAdmin
 from applications.tickets.models import Ticket
 from applications.tickets.serializers.create import CreateTicketSerializer
 from applications.tickets.serializers.simple import SimpleTicketSerializer
-from applications.users.models import Role, User
-
-
-def get_responsible_admin(ticket):
-    """
-    Returns a queryset of admins that could resolve the ticket.
-    :param ticket: Ticket requested by a user that need the vehicle
-    :return: queryset of user (admins)
-    """
-    admins = User.objects.filter(is_admin=True)
-    return admins
+from applications.users.models import Role
+from applications.users.services import get_admin
+from shared.permissions import IsOwnerReservationOrAdmin
+from utils.email.emailtickets import send_ticket_created_email
 
 
 class TicketViewSet(viewsets.ViewSet):
@@ -47,9 +39,8 @@ class TicketViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             ticket = serializer.save(owner=user)
             reservation = Reservation.objects.get(pk=serializer.data['reservation'])
-            admins = get_responsible_admin(ticket)
-            # TODO: Uncomment this to send emails
-            # send_emails(admins=admins, reservation=reservation, ticket=ticket)
+            admin = get_admin()
+            send_ticket_created_email(admin, ticket)
             return Response(serializer.data)
         # If serializer is not valid send errors.
         else:
