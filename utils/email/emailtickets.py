@@ -33,7 +33,7 @@ def send_email(email_config, receiver_email, message):
 
 
 # Send an email to the admin when a ticket is created
-def send_ticket_created_email(admin, ticket):
+def send_created_ticket_email(admin, ticket):
     email_config = read_config()
 
     sender_email = email_config['sender_email']

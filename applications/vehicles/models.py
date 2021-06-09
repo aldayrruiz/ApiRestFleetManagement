@@ -20,9 +20,10 @@ class Vehicle(models.Model):
     )
 
     date_stored = models.DateField(auto_now_add=True)
+    is_disabled = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{0} {1}'.format(self.model, self.brand)
+        return '{0} {1}'.format(self.brand, self.model)
 
     class Meta:
         db_table = 'Vehicle'

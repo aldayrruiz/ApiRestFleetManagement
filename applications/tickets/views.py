@@ -1,16 +1,17 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, viewsets
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_200_OK
 
-from applications.reservations.models import Reservation
+from applications.reservations.utils import is_reservation_already_started
 from applications.tickets.models import Ticket
 from applications.tickets.serializers.create import CreateTicketSerializer
 from applications.tickets.serializers.simple import SimpleTicketSerializer
+from applications.tickets.services.solver import solve_ticket
 from applications.users.models import Role
 from applications.users.services import get_admin
 from shared.permissions import IsOwnerReservationOrAdmin
-from utils.email.emailtickets import send_ticket_created_email
+from utils.email.emailtickets import send_created_ticket_email
 
 
 class TicketViewSet(viewsets.ViewSet):
@@ -37,10 +38,13 @@ class TicketViewSet(viewsets.ViewSet):
 
         # Verify if the data request is valid
         if serializer.is_valid():
+            reservation = serializer.validated_data['reservation']
+            if is_reservation_already_started(reservation):
+                return Response(status=HTTP_400_BAD_REQUEST)
+
             ticket = serializer.save(owner=user)
-            reservation = Reservation.objects.get(pk=serializer.data['reservation'])
             admin = get_admin()
-            send_ticket_created_email(admin, ticket)
+            send_created_ticket_email(admin, ticket)
             return Response(serializer.data)
         # If serializer is not valid send errors.
         else:
@@ -65,6 +69,16 @@ class TicketViewSet(viewsets.ViewSet):
         ticket = get_object_or_404(queryset, pk=pk)
         ticket.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+    def update(self, request, pk=None):
+        ticket = Ticket.objects.get(pk=pk)
+        data = self.request.data
+        new_status = data['new_status']
+        error = solve_ticket(ticket, new_status)
+        errors = {'errors': error}
+        if error:
+            return Response(errors, status=HTTP_400_BAD_REQUEST)
+        return Response(status=HTTP_200_OK)
 
     def get_permissions(self):
         if self.action == 'create':
