@@ -9,13 +9,13 @@ class SingleUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'username', 'date_joined', 'allowed_vehicles']
+        fields = ['id', 'email', 'username', 'date_joined', 'allowed_vehicles', 'is_disabled']
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'username', 'password', 'date_joined']
+        fields = ['id', 'email', 'username', 'password', 'date_joined', 'is_disabled']
         extra_kwargs = {
             'password': {'write_only': True},
         }
