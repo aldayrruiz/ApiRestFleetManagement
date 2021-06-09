@@ -1,7 +1,6 @@
 from applications.reservations.utils import is_reservation_already_started
 from applications.tickets.models import TicketStatus
-from utils.email.emailtickets import send_accepted_ticket_email, send_denied_ticket_email, \
-    send_reservation_deleted_email
+from utils.email.tickets import send_reservation_deleted_email, send_accepted_ticket_email, send_denied_ticket_email
 
 
 def solve_ticket(ticket, new_status):

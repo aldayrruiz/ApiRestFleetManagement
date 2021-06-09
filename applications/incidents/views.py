@@ -7,7 +7,9 @@ from applications.incidents.models import Incident
 from applications.incidents.serializers.create import CreateIncidentSerializer
 from applications.incidents.serializers.simple import SimpleIncidentSerializer
 from applications.users.models import Role
+from applications.users.services import get_admin
 from shared.permissions import IsOwnerReservationOrAdmin
+from utils.email.incidents import send_created_incident_email
 
 
 class IncidentViewSet(viewsets.ViewSet):
@@ -33,7 +35,8 @@ class IncidentViewSet(viewsets.ViewSet):
         serializer = CreateIncidentSerializer(data=self.request.data)
 
         if serializer.is_valid():
-            serializer.save(owner=user)
+            incident = serializer.save(owner=user)
+            send_created_incident_email(get_admin(), incident)
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
