@@ -11,7 +11,7 @@ from applications.tickets.services.solver import solve_ticket
 from applications.users.models import Role
 from applications.users.services import get_admin
 from shared.permissions import IsOwnerReservationOrAdmin
-from utils.email.emailtickets import send_created_ticket_email
+from utils.email.tickets import send_created_ticket_email
 
 
 class TicketViewSet(viewsets.ViewSet):

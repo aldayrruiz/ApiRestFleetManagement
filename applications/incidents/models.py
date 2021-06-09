@@ -9,10 +9,10 @@ from applications.reservations.models import Reservation
 
 class IncidentType(models.TextChoices):
     # Name = 'Value', _('Label')
-    TIRE_PUNCTURE = 'TIRE_PUNCTURE', _('Tire puncture')
-    BANG = 'BANG', _('Bang')
-    USAGE_PROBLEMS = 'USAGE_PROBLEMS', _('Usage problems')
-    OTHERS = 'OTHERS', _('Others')
+    TIRE_PUNCTURE = 'TIRE_PUNCTURE', _('Pinchazo')
+    BANG = 'BANG', _('Golpe')
+    USAGE_PROBLEMS = 'USAGE_PROBLEMS', _('Problemas de uso')
+    OTHERS = 'OTHERS', _('Otros')
 
 
 class Incident(models.Model):
@@ -22,8 +22,6 @@ class Incident(models.Model):
     description = models.TextField()
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
-    # This position will be the last position of the vehicle when an incident is reported.
-    # position = models.OneToOneField(Track, null=True, on_delete=models.SET_NULL)
 
     type = models.CharField(
         max_length=14,
