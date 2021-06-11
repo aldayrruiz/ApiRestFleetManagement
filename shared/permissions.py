@@ -64,3 +64,9 @@ class IsVehicleAllowedOrAdmin(permissions.BasePermission):
         vehicles = requester.allowed_vehicles.all()
         # request.data['vehicle'] contains the vehicle id.
         return vehicles.filter(id=request.data['vehicle']).exists()
+
+
+class IsNotDisabled(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return not request.user.is_disabled

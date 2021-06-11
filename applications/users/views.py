@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
 from rest_framework.authtoken.models import Token
@@ -10,6 +9,7 @@ from applications.users.models import Role
 from applications.users.serializers.create import RegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer
+from applications.users.services import get_user_queryset
 from shared.permissions import IsAdmin
 
 
@@ -24,7 +24,7 @@ class UserViewSet(viewsets.ViewSet):
         :param request:
         :return: users
         """
-        queryset = get_user_model().objects.all()
+        queryset = get_user_queryset()
         serializer = SimpleUserSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -35,7 +35,7 @@ class UserViewSet(viewsets.ViewSet):
         :param pk: user id
         :return:
         """
-        queryset = get_user_model().objects.all()
+        queryset = get_user_queryset()
         user = get_object_or_404(queryset, pk=pk)
         serializer = SingleUserSerializer(user)
         return Response(serializer.data)
@@ -49,11 +49,11 @@ class UserViewSet(viewsets.ViewSet):
         :return:
         """
         requester = self.request.user
-        queryset = get_user_model().objects.all()
+        queryset = get_user_queryset()
         user = get_object_or_404(queryset, pk=pk)
         if requester == user:
             return Response(status=HTTP_403_FORBIDDEN)
-        user.delete()
+        user.is_disabled = True
         return Response(status=HTTP_204_NO_CONTENT)
 
     def update(self, request, pk=None):
@@ -61,7 +61,7 @@ class UserViewSet(viewsets.ViewSet):
         It update the data of a user.
         """
         requester = self.request.user
-        queryset = get_user_model().objects.all()
+        queryset = get_user_queryset()
         user = get_object_or_404(queryset, pk=pk)
         serializer = UpdateUserSerializer(user, self.request.data)
         if serializer.is_valid():

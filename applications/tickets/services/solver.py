@@ -13,7 +13,7 @@ def solve_ticket(ticket, new_status):
     elif new_status == TicketStatus.ACCEPTED:
         send_reservation_deleted_email(reservation)
         send_accepted_ticket_email(ticket)
-        reservation.delete()
+        reservation.is_cancelled = True
     elif new_status == TicketStatus.DENIED:
         send_denied_ticket_email(ticket)
     else:

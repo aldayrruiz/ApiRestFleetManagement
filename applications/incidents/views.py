@@ -8,7 +8,7 @@ from applications.incidents.serializers.create import CreateIncidentSerializer
 from applications.incidents.serializers.simple import SimpleIncidentSerializer
 from applications.users.models import Role
 from applications.users.services import get_admin
-from shared.permissions import IsOwnerReservationOrAdmin
+from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled
 from utils.email.incidents import send_created_incident_email
 
 
@@ -55,8 +55,8 @@ class IncidentViewSet(viewsets.ViewSet):
         Instantiates and returns the list of permissions that this view requires.
         """
         if self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated, IsOwnerReservationOrAdmin]
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled, IsOwnerReservationOrAdmin]
         else:
             # You must be authenticated and have access to the vehicle.
-            permission_classes = [permissions.IsAuthenticated]
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]

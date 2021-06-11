@@ -3,12 +3,11 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
-from shared.permissions import IsAdmin
-from applications.users.models import Role
-from applications.vehicles.models import Vehicle
+from applications.allowed_vehicles.services import get_allowed_vehicles_queryset
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer
+from shared.permissions import IsAdmin, IsNotDisabled
 
 
 class VehicleViewSet(viewsets.ViewSet):
@@ -21,10 +20,7 @@ class VehicleViewSet(viewsets.ViewSet):
         :return: vehicles
         """
         requester = self.request.user
-        if requester.role == Role.ADMIN:
-            queryset = Vehicle.objects.all()
-        else:
-            queryset = requester.allowed_vehicles.all()
+        queryset = get_allowed_vehicles_queryset(requester)
         serializer = SimpleVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -37,10 +33,7 @@ class VehicleViewSet(viewsets.ViewSet):
         :return: vehicle desired.
         """
         requester = self.request.user
-        if requester.role == Role.ADMIN:
-            queryset = Vehicle.objects.all()
-        else:
-            queryset = requester.allowed_vehicles.all()
+        queryset = get_allowed_vehicles_queryset(requester)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = DetailedVehicleSerializer(vehicle)
         return Response(serializer.data)
@@ -60,7 +53,8 @@ class VehicleViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
-        queryset = Vehicle.objects.all()
+        requester = self.request.user
+        queryset = get_allowed_vehicles_queryset(requester)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = CreateOrUpdateVehicleSerializer(vehicle, self.request.data)
         if serializer.is_valid():
@@ -76,9 +70,10 @@ class VehicleViewSet(viewsets.ViewSet):
         :param pk: uuid of the vehicle
         :return:
         """
-        queryset = Vehicle.objects.all()
+        requester = self.request.user
+        queryset = get_allowed_vehicles_queryset(requester)
         vehicle = get_object_or_404(queryset, pk=pk)
-        vehicle.delete()
+        vehicle.is_disabled = True
         return Response(status=HTTP_204_NO_CONTENT)
 
     def get_permissions(self):
@@ -90,5 +85,5 @@ class VehicleViewSet(viewsets.ViewSet):
         # This include 'list' and 'retrieve'.
         # HTTP methods like update and partial update are not supported yet.
         else:
-            permission_classes = [permissions.IsAuthenticated]
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]

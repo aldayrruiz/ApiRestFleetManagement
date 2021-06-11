@@ -14,3 +14,10 @@ class VehicleSearcher(BaseVehicleService):
 
     def get(self, pk=None):
         return self.queryset.get(pk=pk)
+
+
+def get_vehicle_queryset(even_disabled=False):
+    if even_disabled:
+        Vehicle.objects.all()
+    else:
+        Vehicle.objects.filter(is_disabled=False)

@@ -3,12 +3,11 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
-from applications.incidents.models import Incident
 from applications.reservations.models import Reservation
 from applications.reservations.serializers.create import CreateReservationSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
-from shared.permissions import IsVehicleAllowedOrAdmin
 from applications.users.models import Role
+from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
 
 
 class ReservationViewSet(viewsets.ViewSet):
@@ -64,17 +63,13 @@ class ReservationViewSet(viewsets.ViewSet):
         else:
             queryset = requester.reservations.all()
         reservation = get_object_or_404(queryset, pk=pk)
-        # Delete tickets of reservation
-        reservation.tickets.all().delete()
-        # Delete incidents of reservation
-        Incident.objects.filter(reservation=reservation).delete()
-        reservation.delete()
+        reservation.is_cancelled = True
         return Response(status=HTTP_204_NO_CONTENT)
 
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
     def get_permissions(self):
         if self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated, IsVehicleAllowedOrAdmin]
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled, IsVehicleAllowedOrAdmin]
         else:
-            permission_classes = [permissions.IsAuthenticated]
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]

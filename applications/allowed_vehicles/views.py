@@ -1,10 +1,11 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from applications.allowed_vehicles.services import AllowedVehicleUpdater
 from applications.users.services import UserSearcher
 from applications.vehicles.services import VehicleSearcher
+from shared.permissions import IsAdmin
 
 
 class AllowedVehicleViewSet(viewsets.ViewSet):
@@ -29,3 +30,9 @@ class AllowedVehicleViewSet(viewsets.ViewSet):
         updater = AllowedVehicleUpdater(user)
         updater.update_allowed_vehicles(new_allowed_vehicles)
         return Response(status=HTTP_200_OK)
+
+    def get_permissions(self):
+        """
+        Only admin can modify vehicle privileges of users.
+        """
+        return [permission() for permission in [permissions.IsAuthenticated, IsAdmin]]
