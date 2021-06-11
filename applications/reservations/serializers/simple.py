@@ -12,4 +12,4 @@ class SimpleReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle']
+        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle', 'cancelled']

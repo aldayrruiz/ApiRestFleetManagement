@@ -14,7 +14,7 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle']
+        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle', 'cancelled']
 
     def validate(self, data):
 
@@ -24,7 +24,7 @@ class CreateReservationSerializer(serializers.ModelSerializer):
         if data['start'] > data['end']:
             raise serializers.ValidationError("Reservation's start date must be before of end date")
 
-        reservations = Reservation.objects.filter(vehicle__id=data['vehicle'].id)
+        reservations = Reservation.objects.filter(vehicle__id=data['vehicle'].id, is_cancelled=False)
 
         for reservation in reservations:
             if not is_reservation_valid(data, reservation):

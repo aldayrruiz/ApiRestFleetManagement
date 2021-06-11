@@ -10,7 +10,7 @@ from applications.tickets.serializers.simple import SimpleTicketSerializer
 from applications.tickets.services.solver import solve_ticket
 from applications.users.models import Role
 from applications.users.services import get_admin
-from shared.permissions import IsOwnerReservationOrAdmin
+from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled
 from utils.email.tickets import send_created_ticket_email
 
 
@@ -82,8 +82,8 @@ class TicketViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         if self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated, IsOwnerReservationOrAdmin]
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled, IsOwnerReservationOrAdmin]
         else:
             # You must be authenticated and have access to the vehicle.
-            permission_classes = [permissions.IsAuthenticated]
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]

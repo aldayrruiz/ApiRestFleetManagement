@@ -19,3 +19,10 @@ class UserSearcher(BaseUserService):
 
 def get_admin():
     return get_user_model().objects.filter(role=Role.ADMIN).first()
+
+
+def get_user_queryset(even_disabled=False):
+    if even_disabled:
+        return get_user_model().objetcs.all()
+    else:
+        return get_user_model().objects.filter(is_disabled=False)
