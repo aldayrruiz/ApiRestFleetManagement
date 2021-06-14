@@ -9,21 +9,20 @@ class SingleUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'name', 'surname', 'date_joined', 'allowed_vehicles', 'is_disabled']
+        fields = ['id', 'email', 'fullname', 'date_joined', 'allowed_vehicles', 'is_disabled']
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'name', 'surname', 'password', 'date_joined', 'is_disabled']
+        fields = ['id', 'email', 'fullname', 'password', 'date_joined', 'is_disabled']
         extra_kwargs = {
             'password': {'write_only': True},
         }
 
     def update(self, instance, validated_data):
         instance.email = validated_data.get('email', instance.email)
-        instance.name = validated_data.get('name', instance.name)
-        instance.surname = validated_data.get('surname', instance.surname)
+        instance.fullname = validated_data.get('fullname', instance.firstname)
         password = validated_data.get('password', instance.password)
         instance.set_password(password)
         instance.save()

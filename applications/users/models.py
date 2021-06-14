@@ -21,30 +21,26 @@ class Role(models.TextChoices):
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, name, surname, password=None):
+    def create_user(self, email, fullname, password=None):
         if not email:
             raise ValueError('Users must have an email address.')
-        if not name:
-            raise ValueError('Users must have a name.')
-        if not surname:
-            raise ValueError('Users must have a surname.')
+        if not fullname:
+            raise ValueError('Users must have a fullname.')
 
         user = self.model(
             email=self.normalize_email(email),
-            name=name,
-            surname=surname
+            fullname=fullname,
         )
         user.role = Role.USER
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, name, surname, password=None):
+    def create_superuser(self, email, fullname, password=None):
         user = self.create_user(
             email,
             password=password,
-            name=name,
-            surname=surname
+            fullname=fullname,
         )
         user.is_admin = True
         user.is_staff = True
@@ -57,8 +53,7 @@ class MyUserManager(BaseUserManager):
 class User(AbstractBaseUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     email = models.EmailField(verbose_name='email', max_length=255, unique=True)
-    name = models.CharField(verbose_name='name', max_length=50)
-    surname = models.CharField(verbose_name='surname', max_length=50)
+    fullname = models.CharField(verbose_name='fullname', max_length=70)
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
     is_admin = models.BooleanField(default=False)
@@ -81,12 +76,12 @@ class User(AbstractBaseUser):
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name', 'surname']
+    REQUIRED_FIELDS = ['fullname']
 
     objects = MyUserManager()
 
     def __str__(self):
-        return '{} {} ({})'.format(self.name, self.surname, self.email)
+        return '{} ({})'.format(self.fullname, self.email)
 
     def has_perm(self, perm, obj=None):
         return self.is_admin
