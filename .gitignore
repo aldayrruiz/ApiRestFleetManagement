@@ -117,3 +117,4 @@ media/
 
 # Ignore .idea
 .idea/
+/static/
