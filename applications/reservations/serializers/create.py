@@ -14,7 +14,7 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle', 'cancelled']
+        fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle', 'is_cancelled']
 
     def validate(self, data):
 

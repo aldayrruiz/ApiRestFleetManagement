@@ -99,5 +99,7 @@ class AdminAuthToken(ObtainAuthToken):
             return Response(status=HTTP_401_UNAUTHORIZED)
         token, created = Token.objects.get_or_create(user=user)
         return Response({
-            'token': token.key
+            'token': token.key,
+            'user_id': user.id,
+            'role': user.role
         })
