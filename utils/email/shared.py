@@ -3,16 +3,15 @@ import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-import yaml
+from decouple import config
+
+smtp_port = config('SMTP_PORT')
+smtp_server = config('SMTP_SERVER')
+sender_email = config('SENDER_EMAIL')
+sender_password = config('SENDER_PASSWORD')
 
 
-def read_config():
-    with open('utils/email/config.yaml') as config_file:
-        data = yaml.load(config_file, Loader=yaml.FullLoader)
-    return data
-
-
-def create_message(sender_email, receiver_email, subject, body):
+def create_message(receiver_email, subject, body):
     # Create a multipart message and set headers
     message = MIMEMultipart()
     message["From"] = sender_email
@@ -24,8 +23,7 @@ def create_message(sender_email, receiver_email, subject, body):
     return message.as_string()
 
 
-def send_email(email_config, receiver_email, message):
-    smtp_port, smtp_server, sender_email, sender_password = email_config.values()
+def send_email(receiver_email, message):
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
         server.login(sender_email, sender_password)

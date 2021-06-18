@@ -5,7 +5,7 @@ from applications.allowed_vehicles.views import AllowedVehicleViewSet
 from applications.incidents.views import IncidentViewSet
 from applications.reservations.views import ReservationViewSet
 from applications.tickets.views import TicketViewSet
-from applications.users.views import UserViewSet, AdminAuthToken, RegistrationViewSet
+from applications.users.views import UserViewSet, Login, RegistrationViewSet
 from applications.vehicles.views import VehicleViewSet
 
 router = DefaultRouter()
@@ -21,5 +21,5 @@ router.register(r'register', RegistrationViewSet, basename='register')
 urlpatterns = router.urls
 
 urlpatterns += [
-    re_path(r'^login/?$', AdminAuthToken.as_view(), name='login')
+    re_path(r'^login/?$', Login.as_view(), name='login')
 ]

@@ -1,19 +1,15 @@
-from utils.email.shared import read_config, send_email, create_message
+from utils.email.shared import send_email, create_message
 
 
 # Send an email to the admin when a ticket is created
 def send_created_ticket_email(admin, ticket):
-    email_config = read_config()
-
-    sender_email = email_config['sender_email']
     receiver_email = admin.email
+    message = get_ticket_was_created_message(receiver_email=receiver_email, ticket=ticket)
+    send_email(receiver_email=receiver_email, message=message)
 
-    message = get_ticket_was_created_message(sender_email, receiver_email, ticket)
-    send_email(email_config, receiver_email, message)
 
-
-def get_ticket_was_created_message(sender_email, receiver_email, ticket):
-    owner = ticket.owner.username
+def get_ticket_was_created_message(receiver_email, ticket):
+    owner = ticket.owner.fullname
     reservation = ticket.reservation
     vehicle = reservation.vehicle
 
@@ -40,21 +36,17 @@ def get_ticket_was_created_message(sender_email, receiver_email, ticket):
         ticket.description
     )
 
-    return create_message(sender_email, receiver_email, subject, body)
+    return create_message(receiver_email=receiver_email, subject=subject, body=body)
 
 
 # Send an email to ticket's owner when the ticket is denied
 def send_denied_ticket_email(ticket):
-    email_config = read_config()
-
-    sender_email = email_config['sender_email']
     receiver_email = ticket.owner.email
+    message = get_denied_ticket_message(ticket)
+    send_email(receiver_email=receiver_email, message=message)
 
-    message = get_denied_ticket_message(sender_email, ticket)
-    send_email(email_config, receiver_email, message)
 
-
-def get_denied_ticket_message(sender_email, ticket):
+def get_denied_ticket_message(ticket):
     receiver_email = ticket.owner.email
     subject = 'Ticket denegado'
     body = """
@@ -63,21 +55,17 @@ def get_denied_ticket_message(sender_email, ticket):
     Descripción: {1}
     """.format(ticket.title, ticket.description)
 
-    return create_message(sender_email, receiver_email, subject, body)
+    return create_message(receiver_email=receiver_email, subject=subject, body=body)
 
 
 # Send an email to ticket's owner when the ticket is accepted
 def send_accepted_ticket_email(ticket):
-    email_config = read_config()
-
-    sender_email = email_config['sender_email']
     receiver_email = ticket.owner.email
+    message = get_accepted_ticket_message(ticket=ticket)
+    send_email(receiver_email=receiver_email, message=message)
 
-    message = get_accepted_ticket_message(sender_email, ticket)
-    send_email(email_config, receiver_email, message)
 
-
-def get_accepted_ticket_message(sender_email, ticket):
+def get_accepted_ticket_message(ticket):
     reservation = ticket.reservation
     vehicle = reservation.vehicle
     receiver_email = ticket.owner.email
@@ -104,21 +92,17 @@ def get_accepted_ticket_message(sender_email, ticket):
         reservation.end
     )
 
-    return create_message(sender_email, receiver_email, subject, body)
+    return create_message(receiver_email=receiver_email, subject=subject, body=body)
 
 
 # Send an email to reservation's owner when his reservation is deleted by a ticket.
 def send_reservation_deleted_email(reservation):
-    email_config = read_config()
-
-    sender_email = email_config['sender_email']
     receiver_email = reservation.owner.email
+    message = get_reservation_deleted_message(reservation=reservation)
+    send_email(receiver_email=receiver_email, message=message)
 
-    message = get_reservation_deleted_message(sender_email, reservation)
-    send_email(email_config, receiver_email, message)
 
-
-def get_reservation_deleted_message(sender_email, reservation):
+def get_reservation_deleted_message(reservation):
     vehicle = reservation.vehicle
     receiver_email = reservation.owner.email
 
@@ -143,4 +127,4 @@ def get_reservation_deleted_message(sender_email, reservation):
         reservation.end
     )
 
-    return create_message(sender_email, receiver_email, subject, body)
+    return create_message(receiver_email=receiver_email, subject=subject, body=body)
