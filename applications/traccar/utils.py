@@ -3,15 +3,15 @@ import json
 import requests
 from decouple import config
 
-base_url = config('TRACCAR_URL') + ':' + config('TRACCAR_PORT') + '/api/'
+base_url = '{}:{}/api/'.format(config('TRACCAR_URL'), config('TRACCAR_PORT'))
 auth = (config('TRACCAR_USER'), config('TRACCAR_PASSWORD'))
 
 headers = {'Content-Type': 'application/json'}
 
 
-def get(target, data):
+def get(target, params):
     url = base_url + target
-    return requests.get(url, auth=auth)
+    return requests.get(url, params=params, auth=auth)
 
 
 def post(target, data):

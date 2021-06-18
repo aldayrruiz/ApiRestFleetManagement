@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
@@ -8,7 +9,7 @@ from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerial
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer
 from shared.permissions import IsAdmin, IsNotDisabled
-from applications.traccar.utils import post, put
+from applications.traccar.utils import get, post, put
 from applications.traccar.models import Device
 
 
@@ -91,6 +92,20 @@ class VehicleViewSet(viewsets.ViewSet):
         vehicle = get_object_or_404(queryset, pk=pk)
         vehicle.is_disabled = True
         return Response(status=HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['get'], name='positions')
+    def positions(self, request, pk=None):
+        requester = self.request.user
+        queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
+        vehicle = get_object_or_404(queryset, pk=pk)
+        # in IS0 8601 format. eg. 1963-11-22T18:30:00Z
+        date_from = self.request.query_params.get('from')
+        date_to = self.request.query_params.get('to')
+        params = {'uniqueId': vehicle.gps_device.id, 'from': date_from, 'to': date_to}
+        response = get(target='positions', params=params)
+        if not response.ok:
+            return Response({'errors': 'Could not receive positions.'}, status=response.status_code)
+        return Response(response.json())
 
     def get_permissions(self):
         """
