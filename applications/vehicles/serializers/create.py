@@ -4,8 +4,8 @@ from applications.vehicles.models import Vehicle
 
 
 class CreateOrUpdateVehicleSerializer(serializers.ModelSerializer):
-    # type = serializers.CharField(max_length=50, source='type.name')
+    gps_device = serializers.ReadOnlyField(source='gps_device.imei')
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'model', 'brand', 'number_plate', 'is_disabled']
+        fields = ['id', 'model', 'brand', 'number_plate', 'is_disabled', 'gps_device']

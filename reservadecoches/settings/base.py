@@ -6,6 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Application definition
 
 INSTALLED_APPS = [
+    'applications.traccar.apps.TraccarConfig',
     'applications.vehicles.apps.VehiclesConfig',
     'applications.users.apps.UsersConfig',
     'applications.allowed_vehicles.apps.AllowedVehiclesConfig',

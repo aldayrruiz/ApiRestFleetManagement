@@ -8,6 +8,8 @@ from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerial
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer
 from shared.permissions import IsAdmin, IsNotDisabled
+from applications.traccar.utils import post
+from applications.traccar.models import Device
 
 
 class VehicleViewSet(viewsets.ViewSet):
@@ -47,7 +49,15 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
         if serializer.is_valid():
-            serializer.save()
+            imei = serializer.initial_data['gps_device']
+            name = '{} {}'.format(serializer.validated_data['brand'], serializer.validated_data['model'])
+            response = post('devices', data={'uniqueId': imei, 'name': name})
+            if not response.ok:
+                return Response({'errors': 'Error trying to create gps device'}, status=response.status_code)
+            json_device = response.json()
+            device = Device(id=json_device['id'], imei=json_device['uniqueId'], name=json_device['name'])
+            device.save()
+            serializer.save(gps_device=device)
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
