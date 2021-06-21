@@ -1,7 +1,11 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
 from applications.users.models import Role
+
+logger = logging.getLogger(__name__)
 
 
 class BaseUserService:
@@ -26,3 +30,12 @@ def get_user_queryset(even_disabled=False):
         return get_user_model().objetcs.all()
     else:
         return get_user_model().objects.filter(is_disabled=False)
+
+
+def get_user_or_404(queryset, pk):
+    try:
+        user = queryset.get(pk=pk)
+        logger.debug('User with id {} was found: {}'.format(user.id, user.fullname))
+        return user
+    except get_user_model().DoesNotExist:
+        logger.exception('User with id {} not found.'.format(pk))

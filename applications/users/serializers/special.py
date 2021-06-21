@@ -22,7 +22,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.email = validated_data.get('email', instance.email)
-        instance.fullname = validated_data.get('fullname', instance.firstname)
+        instance.fullname = validated_data.get('fullname', instance.fullname)
         password = validated_data.get('password', instance.password)
         instance.set_password(password)
         instance.save()
