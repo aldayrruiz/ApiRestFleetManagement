@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
@@ -13,6 +15,9 @@ from applications.traccar.utils import get, post, put
 from applications.traccar.models import Device
 
 
+logger = logging.getLogger(__name__)
+
+
 class VehicleViewSet(viewsets.ViewSet):
 
     def list(self, request):
@@ -22,6 +27,7 @@ class VehicleViewSet(viewsets.ViewSet):
         :param request:
         :return: vehicles
         """
+        logger.info('List vehicles request received.')
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester)
         serializer = SimpleVehicleSerializer(queryset, many=True)
@@ -35,6 +41,7 @@ class VehicleViewSet(viewsets.ViewSet):
         :param pk: uuid of the vehicle
         :return: vehicle desired.
         """
+        logger.info('Retrieve vehicle request received.')
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester)
         vehicle = get_object_or_404(queryset, pk=pk)
@@ -48,36 +55,48 @@ class VehicleViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
+        logger.info('Create user request received.')
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
-        if serializer.is_valid():
-            imei = serializer.initial_data['gps_device']
-            name = '{} {}'.format(serializer.validated_data['brand'], serializer.validated_data['model'])
-            response = post('devices', data={'uniqueId': imei, 'name': name})
-            if not response.ok:
-                return Response({'errors': 'Error trying to create gps device'}, status=response.status_code)
-            json_device = response.json()
-            device = Device(id=json_device['id'], imei=json_device['uniqueId'], name=json_device['name'])
-            device.save()
-            serializer.save(gps_device=device)
-            return Response(serializer.data)
-        else:
+
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+        imei = serializer.initial_data['gps_device']
+        name = '{} {}'.format(serializer.validated_data['brand'], serializer.validated_data['model'])
+        response = post('devices', data={'uniqueId': imei, 'name': name})
+
+        if not response.ok:
+            logger.error('Traccar sent a device creation response (status {}).'.format(response.status_code))
+            return Response({'errors': 'Error trying to create gps device'}, status=response.status_code)
+
+        json_device = response.json()
+        device = Device(id=json_device['id'], imei=json_device['uniqueId'], name=json_device['name'])
+        device.save()
+        serializer.save(gps_device=device)
+        return Response(serializer.data)
+
     def update(self, request, pk=None):
+        logger.info('Update vehicle request received.')
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = CreateOrUpdateVehicleSerializer(vehicle, self.request.data)
-        if serializer.is_valid():
-            device = vehicle.gps_device
-            imei = serializer.initial_data['gps_device']
-            name = '{} {}'.format(serializer.validated_data['brand'], serializer.validated_data['model'])
-            response = put('devices', data={'id': device.id, 'uniqueId': imei, 'name': name})
-            if not response.ok:
-                return Response({'errors': 'Error trying to edit gps device'}, status=response.status_code)
-            serializer.save(gps_device=device)
-            return Response(serializer.data)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        device = vehicle.gps_device
+        imei = serializer.initial_data['gps_device']
+        name = '{} {}'.format(serializer.validated_data['brand'], serializer.validated_data['model'])
+        response = put('devices', data={'id': device.id, 'uniqueId': imei, 'name': name})
+
+        if not response.ok:
+            return Response({'errors': 'Error trying to edit gps device'}, status=response.status_code)
+
+        serializer.save(gps_device=device)
+        return Response(serializer.data)
 
     def destroy(self, request, pk=None):
         """
@@ -118,3 +137,8 @@ class VehicleViewSet(viewsets.ViewSet):
         else:
             permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]
+
+
+def log_error_serializing(serializer):
+    logger.error("Vehicle couldn't be serialized with {} because of {}"
+                 .format(serializer.__class__.__name__, serializer.errors))

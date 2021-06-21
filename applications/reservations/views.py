@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -8,6 +10,8 @@ from applications.reservations.serializers.create import CreateReservationSerial
 from applications.reservations.serializers.simple import SimpleReservationSerializer
 from applications.users.models import Role
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
+
+logger = logging.getLogger(__name__)
 
 
 class ReservationViewSet(viewsets.ViewSet):
@@ -20,6 +24,7 @@ class ReservationViewSet(viewsets.ViewSet):
         :return: Returns a list of reservations.
         """
         take_all = bool(self.request.query_params.get('take_all'))
+        logger.info('List reservations request received. [take_all: {}]'.format(take_all))
         requester = self.request.user
         if requester.role == Role.ADMIN and take_all is True:
             queryset = Reservation.objects.all()
@@ -35,18 +40,19 @@ class ReservationViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
+        logger.info('Create reservation request received.')
         requester = self.request.user
         serializer = CreateReservationSerializer(data=self.request.data)
 
-        # Verify if the data request is valid
-        if serializer.is_valid():
-            serializer.save(owner=requester)
-            return Response(serializer.data)
-        # If serializer is not valid send errors.
-        else:
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+        serializer.save(owner=requester)
+        return Response(serializer.data)
+
     def retrieve(self, request, pk=None):
+        logger.info('Retrieve reservation request received.')
         requester = self.request.user
         if requester.role == Role.ADMIN:
             queryset = Reservation.objects.all()
@@ -57,6 +63,7 @@ class ReservationViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def destroy(self, request, pk=None):
+        logger.info('Destroy reservation request received.')
         requester = self.request.user
         if requester == Role.ADMIN:
             queryset = Reservation.objects.all()
@@ -73,3 +80,8 @@ class ReservationViewSet(viewsets.ViewSet):
         else:
             permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]
+
+
+def log_error_serializing(serializer):
+    logger.error("Reservation couldn't be serialized with {} because of {}."
+                 .format(serializer.__class__.__name__, serializer.errors))

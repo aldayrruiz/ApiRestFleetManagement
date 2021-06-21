@@ -76,7 +76,7 @@ class UserViewSet(viewsets.ViewSet):
             serializer.save()
             logger.info('User was updated successfully.')
             return Response(serializer.data)
-        log_serializer_not_valid(serializer)
+        log_error_serializing(serializer)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     # Create method is located in /register endpoint
@@ -90,12 +90,13 @@ class RegistrationViewSet(viewsets.ViewSet):
         logger.info('Register user request received.')
         serializer = RegistrationSerializer(data=self.request.data)
 
-        if serializer.is_valid():
-            user = serializer.save()
-            logger.info('User register successfully: {}'.format(user.fullname))
-            return Response(serializer.data)
-        log_serializer_not_valid(serializer)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        user = serializer.save()
+        logger.info('User register successfully: {}'.format(user.fullname))
+        return Response(serializer.data)
 
     def get_permissions(self):
         # Only admin can register users.
@@ -123,6 +124,6 @@ class Login(ObtainAuthToken):
         })
 
 
-def log_serializer_not_valid(serializer):
+def log_error_serializing(serializer):
     logger.error("User couldn't be serialized with {} because of {}."
                  .format(serializer.__class__.__name__, serializer.errors))
