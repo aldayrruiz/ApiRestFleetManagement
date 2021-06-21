@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
@@ -7,6 +9,8 @@ from applications.users.services import UserSearcher
 from applications.vehicles.services import VehicleSearcher
 from shared.permissions import IsAdmin
 
+logger = logging.getLogger(__name__)
+
 
 class AllowedVehicleViewSet(viewsets.ViewSet):
 
@@ -14,6 +18,7 @@ class AllowedVehicleViewSet(viewsets.ViewSet):
         """
         Request data: [id1, id2, ...]
         """
+        logger.info('Update user allowed vehicles request received.')
         user_searcher = UserSearcher()
         user = user_searcher.get(pk=pk)
 
@@ -24,6 +29,7 @@ class AllowedVehicleViewSet(viewsets.ViewSet):
 
         # If size of request data is not the same as vehicle types found in db return BAD REQUEST.
         if len(new_allowed_vehicles) != len(vehicle_ids):
+            logger.error('')
             return Response(status=HTTP_400_BAD_REQUEST)
 
         # Otherwise, replace allowed vehicle types and send OK

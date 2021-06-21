@@ -1,3 +1,4 @@
+import logging
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
@@ -9,6 +10,12 @@ smtp_port = config('SMTP_PORT')
 smtp_server = config('SMTP_SERVER')
 sender_email = config('SENDER_EMAIL')
 sender_password = config('SENDER_PASSWORD')
+
+logger = logging.getLogger(__name__)
+
+
+if not (smtp_port and smtp_server and sender_email and sender_password):
+    logger.critical('Email configuration was not found (see .env file).')
 
 
 def create_message(receiver_email, subject, body):

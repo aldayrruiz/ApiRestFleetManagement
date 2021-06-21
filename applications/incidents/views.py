@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, viewsets
 from rest_framework.response import Response
@@ -11,6 +13,8 @@ from applications.users.services import get_admin
 from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled
 from utils.email.incidents import send_created_incident_email
 
+logger = logging.getLogger(__name__)
+
 
 class IncidentViewSet(viewsets.ViewSet):
 
@@ -22,6 +26,7 @@ class IncidentViewSet(viewsets.ViewSet):
         :return:
         """
         take_all = bool(self.request.query_params.get('take_all'))
+        logger.info('List incidents request received. [take_all: {}]'.format(take_all))
         requester = self.request.user
         if requester.role == Role.ADMIN and take_all is True:
             queryset = Incident.objects.all()
@@ -31,17 +36,20 @@ class IncidentViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        logger.info('Create incident request received.')
         user = self.request.user
         serializer = CreateIncidentSerializer(data=self.request.data)
 
-        if serializer.is_valid():
-            incident = serializer.save(owner=user)
-            send_created_incident_email(get_admin(), incident)
-            return Response(serializer.data)
-        else:
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+        incident = serializer.save(owner=user)
+        send_created_incident_email(get_admin(), incident)
+        return Response(serializer.data)
+
     def retrieve(self, request, pk=None):
+        logger.info('Retrieve incident request received.')
         user = self.request.user
         queryset = Incident.objects.filter(owner=user)
         incident = get_object_or_404(queryset, pk=pk)
@@ -60,3 +68,8 @@ class IncidentViewSet(viewsets.ViewSet):
             # You must be authenticated and have access to the vehicle.
             permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]
+
+
+def log_error_serializing(serializer):
+    logger.error("Incident couldn't be serialized with {} because of {}."
+                 .format(serializer.__class__.__name__, serializer.errors))

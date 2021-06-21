@@ -61,7 +61,7 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'datefmt': '[%d/%b/%Y %H:%M:%S]',
-            'format': '{asctime} {levelname} {message}',
+            'format': '{asctime} - {name} - {levelname} {message}',
             'style': '{',
         },
         'simple': {
