@@ -71,6 +71,7 @@ class ReservationViewSet(viewsets.ViewSet):
             queryset = requester.reservations.all()
         reservation = get_object_or_404(queryset, pk=pk)
         reservation.is_cancelled = True
+        reservation.save()
         return Response(status=HTTP_204_NO_CONTENT)
 
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.

@@ -82,6 +82,7 @@ class TicketViewSet(viewsets.ViewSet):
             queryset = requester.tickets.all()
         ticket = get_object_or_404(queryset, pk=pk)
         ticket.delete()
+        ticket.save()
         return Response(status=HTTP_204_NO_CONTENT)
 
     # Solve a ticket
