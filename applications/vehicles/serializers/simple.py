@@ -1,11 +1,12 @@
 from rest_framework import serializers
 
+from applications.traccar.serializers.simple import SimpleDeviceSerializer
 from applications.vehicles.models import Vehicle
 
 
 class SimpleVehicleSerializer(serializers.ModelSerializer):
 
-    gps_device = serializers.ReadOnlyField(source='gps_device.imei')
+    gps_device = SimpleDeviceSerializer()
 
     class Meta:
         model = Vehicle

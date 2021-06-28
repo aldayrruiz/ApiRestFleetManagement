@@ -112,20 +112,6 @@ class VehicleViewSet(viewsets.ViewSet):
         vehicle.is_disabled = True
         return Response(status=HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['get'], name='positions')
-    def positions(self, request, pk=None):
-        requester = self.request.user
-        queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
-        vehicle = get_object_or_404(queryset, pk=pk)
-        # in IS0 8601 format. eg. 1963-11-22T18:30:00Z
-        date_from = self.request.query_params.get('from')
-        date_to = self.request.query_params.get('to')
-        params = {'uniqueId': vehicle.gps_device.id, 'from': date_from, 'to': date_to}
-        response = get(target='positions', params=params)
-        if not response.ok:
-            return Response({'errors': 'Could not receive positions.'}, status=response.status_code)
-        return Response(response.json())
-
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
