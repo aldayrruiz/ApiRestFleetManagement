@@ -54,7 +54,7 @@ class TicketViewSet(viewsets.ViewSet):
 
         if is_reservation_already_started(reservation):
             logger.error('Error creating a ticket. Reservation already started at {}.'.format(reservation.start))
-            return Response(status=HTTP_400_BAD_REQUEST)
+            return Response({'errors': 'Reservation already started'}, status=HTTP_400_BAD_REQUEST)
 
         # Create Ticket and send email to admin
         ticket = serializer.save(owner=user)
