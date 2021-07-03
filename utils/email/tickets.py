@@ -4,11 +4,11 @@ from utils.email.shared import send_email, create_message
 # Send an email to the admin when a ticket is created
 def send_created_ticket_email(admin, ticket):
     receiver_email = admin.email
-    message = get_ticket_was_created_message(receiver_email=receiver_email, ticket=ticket)
+    message = get_ticket_created_message(receiver_email=receiver_email, ticket=ticket)
     send_email(receiver_email=receiver_email, message=message)
 
 
-def get_ticket_was_created_message(receiver_email, ticket):
+def get_ticket_created_message(receiver_email, ticket):
     owner = ticket.owner.fullname
     reservation = ticket.reservation
     vehicle = reservation.vehicle
