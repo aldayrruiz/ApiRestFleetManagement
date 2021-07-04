@@ -26,8 +26,9 @@ class UserViewSet(viewsets.ViewSet):
         :param request:
         :return: users
         """
-        logger.info('List users request received.')
-        queryset = get_user_queryset()
+        even_disabled = bool(self.request.query_params.get('even_disabled'))
+        logger.info('List users request received. [even_disabled: {}]'.format(even_disabled))
+        queryset = get_user_queryset(even_disabled=even_disabled)
         serializer = SimpleUserSerializer(queryset, many=True)
         return Response(serializer.data)
 

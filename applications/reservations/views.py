@@ -11,6 +11,8 @@ from applications.reservations.serializers.simple import SimpleReservationSerial
 from applications.users.models import Role
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
 
+from utils.dates import get_date_from_str_utc
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,13 +26,13 @@ class ReservationViewSet(viewsets.ViewSet):
         :return: Returns a list of reservations.
         """
         take_all = bool(self.request.query_params.get('take_all'))
-        logger.info('List reservations request received. [take_all: {}]'.format(take_all))
+        vehicle_id = self.request.query_params.get('vehicleId')
+        _from = get_date_from_str_utc(self.request.query_params.get('from'))
+        _to = get_date_from_str_utc(self.request.query_params.get('to'))
+        logger.info('List reservations request received. [take_all: {}, vehicleId: {}, from: {}, to: {}]'
+                    .format(take_all, vehicle_id, _from, _to))
         requester = self.request.user
-        if requester.role == Role.ADMIN and take_all is True:
-            queryset = Reservation.objects.all()
-        # If requester is not ADMIN and take_all is not True. Just get the requester reservations.
-        else:
-            queryset = requester.reservations.all()
+        queryset = get_reservations(requester, take_all, vehicle_id, _from, _to)
         serializer = SimpleReservationSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -86,3 +88,20 @@ class ReservationViewSet(viewsets.ViewSet):
 def log_error_serializing(serializer):
     logger.error("Reservation couldn't be serialized with {} because of {}."
                  .format(serializer.__class__.__name__, serializer.errors))
+
+
+def get_reservations(requester, take_all=False, vehicle_id=None, _from=None, _to=None):
+
+    if requester.role == Role.ADMIN and take_all:
+        queryset = Reservation.objects.all()
+    else:
+        queryset = requester.reservations.all()
+
+    if vehicle_id:
+        queryset = Reservation.objects.filter(vehicle_id=vehicle_id)
+
+    if _from and _to:
+        queryset = queryset.filter(start__gte=_from, end__lte=_to)
+    else:
+        queryset = queryset[:50]
+    return queryset
