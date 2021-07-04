@@ -27,7 +27,7 @@ def get_admin():
 
 def get_user_queryset(even_disabled=False):
     if even_disabled:
-        return get_user_model().objetcs.all()
+        return get_user_model().objects.all()
     else:
         return get_user_model().objects.filter(is_disabled=False)
 
