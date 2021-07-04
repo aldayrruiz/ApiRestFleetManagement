@@ -6,7 +6,7 @@ ISO_PATTERN = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
 def get_date_from_str_utc(str_date=None, pattern=ISO_PATTERN):
-    if str_date is None:
+    if str_date in [None, '']:
         return None
     date = datetime.strptime(str_date, pattern)
     date = datetime(date.year,
