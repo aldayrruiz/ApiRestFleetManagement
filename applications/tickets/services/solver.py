@@ -1,4 +1,4 @@
-from applications.reservations.utils import is_reservation_already_started
+from applications.reservations.utils import is_reservation_already_started, delete_reservation
 from applications.tickets.models import TicketStatus
 from utils.email.tickets import send_reservation_deleted_email, send_accepted_ticket_email, send_denied_ticket_email
 
@@ -13,10 +13,8 @@ def solve_ticket(ticket, new_status):
     elif new_status == TicketStatus.ACCEPTED:
         send_reservation_deleted_email(reservation)
         send_accepted_ticket_email(ticket)
-        reservation.is_cancelled = True
+        delete_reservation(reservation)
     elif new_status == TicketStatus.DENIED:
         send_denied_ticket_email(ticket)
     else:
         return "Unsupported status"
-
-    ticket.status = new_status

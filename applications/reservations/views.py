@@ -8,6 +8,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from applications.reservations.models import Reservation
 from applications.reservations.serializers.create import CreateReservationSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
+from applications.reservations.utils import is_reservation_already_started, delete_reservation
 from applications.users.models import Role
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
 
@@ -72,8 +73,11 @@ class ReservationViewSet(viewsets.ViewSet):
         else:
             queryset = requester.reservations.all()
         reservation = get_object_or_404(queryset, pk=pk)
-        reservation.is_cancelled = True
-        reservation.save()
+
+        if is_reservation_already_started(reservation):
+            return Response({'errors': 'Reservation has already started.'}, status=HTTP_400_BAD_REQUEST)
+
+        delete_reservation(reservation)
         return Response(status=HTTP_204_NO_CONTENT)
 
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
