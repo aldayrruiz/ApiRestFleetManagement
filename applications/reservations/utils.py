@@ -15,7 +15,7 @@ def is_reservation_already_started(reservation):
 
 
 def delete_reservation(reservation):
-    tickets = reservation.tickets
+    tickets = reservation.tickets.all()
     for ticket in tickets:
         send_accepted_ticket_email(ticket)
     reservation.delete()
