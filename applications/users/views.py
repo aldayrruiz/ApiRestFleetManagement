@@ -8,7 +8,8 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTT
 
 from applications.users.serializers.create import RegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
-from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer
+from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
+    PartialUpdateUserSerializer
 from applications.users.services import get_user_queryset, get_user_or_404
 from shared.permissions import IsAdmin
 
@@ -55,12 +56,12 @@ class UserViewSet(viewsets.ViewSet):
         """
         logger.info('Destroy user request received.')
         requester = self.request.user
-        queryset = get_user_queryset()
+        queryset = get_user_queryset(even_disabled=True)
         user = get_user_or_404(queryset, pk=pk)
         if requester == user:
             logger.warning("User couldn't delete himself.")
             return Response(status=HTTP_403_FORBIDDEN)
-        user.is_disabled = True
+        user.delete()
         logger.info('User was disabled.')
         return Response(status=HTTP_204_NO_CONTENT)
 
@@ -70,12 +71,25 @@ class UserViewSet(viewsets.ViewSet):
         """
         logger.info('Update user request received.')
         requester = self.request.user
-        queryset = get_user_queryset()
+        queryset = get_user_queryset(even_disabled=True)
         user = get_user_or_404(queryset, pk=pk)
         serializer = UpdateUserSerializer(user, self.request.data)
         if serializer.is_valid():
             serializer.save()
             logger.info('User was updated successfully.')
+            return Response(serializer.data)
+        log_error_serializing(serializer)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        logger.info('Partial update user request received.')
+        requester = self.request.user
+        queryset = get_user_queryset(even_disabled=True)
+        user = get_user_or_404(queryset, pk)
+        serializer = PartialUpdateUserSerializer(user, request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info('User was partial updated successfully.')
             return Response(serializer.data)
         log_error_serializing(serializer)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
