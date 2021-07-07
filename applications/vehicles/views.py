@@ -2,7 +2,6 @@ import logging
 
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
@@ -27,9 +26,10 @@ class VehicleViewSet(viewsets.ViewSet):
         :param request:
         :return: vehicles
         """
-        logger.info('List vehicles request received.')
+        even_disabled = bool(self.request.query_params.get('evenDisabled'))
+        logger.info('List vehicles request received. [evenDisabled: {}]'.format(even_disabled))
         requester = self.request.user
-        queryset = get_allowed_vehicles_queryset(requester)
+        queryset = get_allowed_vehicles_queryset(requester, even_disabled=even_disabled)
         serializer = SimpleVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -41,9 +41,10 @@ class VehicleViewSet(viewsets.ViewSet):
         :param pk: uuid of the vehicle
         :return: vehicle desired.
         """
+        even_disabled = bool(self.request.query_params.get('evenDisabled'))
         logger.info('Retrieve vehicle request received.')
         requester = self.request.user
-        queryset = get_allowed_vehicles_queryset(requester)
+        queryset = get_allowed_vehicles_queryset(requester, even_disabled=even_disabled)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = DetailedVehicleSerializer(vehicle)
         return Response(serializer.data)
@@ -79,7 +80,7 @@ class VehicleViewSet(viewsets.ViewSet):
     def update(self, request, pk=None):
         logger.info('Update vehicle request received.')
         requester = self.request.user
-        queryset = get_allowed_vehicles_queryset(requester)
+        queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = CreateOrUpdateVehicleSerializer(vehicle, self.request.data)
 
@@ -116,7 +117,7 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'create' or self.action == 'destroy':
+        if self.action in ['create', 'destroy']:
             permission_classes = [permissions.IsAuthenticated, IsAdmin]
         # This include 'list' and 'retrieve'.
         # HTTP methods like update and partial update are not supported yet.
