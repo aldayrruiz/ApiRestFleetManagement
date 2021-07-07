@@ -8,10 +8,13 @@ TIMEZONE = 'UTC'
 
 
 def is_reservation_already_started(reservation):
-    timezone = pytz.timezone(TIMEZONE)
-    now = datetime.now().astimezone(timezone)
-
+    now = _get_now_utc()
     return reservation.start < now
+
+
+def is_reservation_already_ended(reservation):
+    now = _get_now_utc()
+    return reservation.end < now
 
 
 def delete_reservation(reservation):
@@ -19,3 +22,8 @@ def delete_reservation(reservation):
     for ticket in tickets:
         send_accepted_ticket_email(ticket)
     reservation.delete()
+
+
+def _get_now_utc():
+    timezone = pytz.timezone(TIMEZONE)
+    return datetime.now().astimezone(timezone)

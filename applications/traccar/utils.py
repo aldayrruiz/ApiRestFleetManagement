@@ -6,12 +6,12 @@ from decouple import config
 base_url = '{}:{}/api/'.format(config('TRACCAR_URL'), config('TRACCAR_PORT'))
 auth = (config('TRACCAR_USER'), config('TRACCAR_PASSWORD'))
 
-headers = {'Content-Type': 'application/json'}
+headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
 
 def get(target, params):
     url = base_url + target
-    return requests.get(url, params=params, auth=auth)
+    return requests.get(url, headers=headers, params=params, auth=auth)
 
 
 def post(target, data):

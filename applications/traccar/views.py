@@ -3,9 +3,13 @@ import logging
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from applications.allowed_vehicles.services import get_allowed_vehicles_queryset
+from applications.reservations.models import Reservation
+from applications.reservations.utils import is_reservation_already_ended
 from applications.traccar.utils import get
+from utils.dates import from_date_to_str_date_traccar
 
 logger = logging.getLogger(__name__)
 
@@ -29,3 +33,25 @@ class PositionViewSet(viewsets.ViewSet):
             return Response({'errors': 'Could not receive positions.'}, status=response.status_code)
         return Response(response.json())
 
+
+class ReportsRouteViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        reservation_id = self.request.query_params.get('reservationId')
+        logger.info('List positions of reservation.'.format(reservation_id))
+        if reservation_id in [None, '', 'undefined']:
+            return Response({'errors': 'You did not pass reservationId param.'}, status=HTTP_400_BAD_REQUEST)
+
+        queryset = Reservation.objects.all()
+        reservation = get_object_or_404(queryset, pk=reservation_id)
+        if not is_reservation_already_ended(reservation):
+            return Response({'errors': 'Reservation has not ended already.'}, status=HTTP_400_BAD_REQUEST)
+
+        device_id = reservation.vehicle.gps_device.id
+        start_str = from_date_to_str_date_traccar(reservation.start)
+        end_str = from_date_to_str_date_traccar(reservation.end)
+        params = {'deviceId': device_id, 'from': start_str, 'to': end_str}
+        response = get(target='reports/route', params=params)
+        if not response.ok:
+            return Response({'error': 'Could not receive positions form Traccar.'}, status=response.status_code)
+        return Response(response.json())
