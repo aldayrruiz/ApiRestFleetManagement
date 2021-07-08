@@ -9,8 +9,8 @@ auth = (config('TRACCAR_USER'), config('TRACCAR_PASSWORD'))
 headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
 
-def get(target, params):
-    url = base_url + target
+def get(target, params, pk=None):
+    url = _get_url(target, pk)
     return requests.get(url, headers=headers, params=params, auth=auth)
 
 
@@ -25,3 +25,14 @@ def put(target, data):
     payload = json.dumps(data)
     return requests.put(url, headers=headers, data=payload, auth=auth)
 
+
+def delete(target, pk):
+    url = _get_url(target, pk)
+    return requests.delete(url, headers=headers, auth=auth)
+
+
+def _get_url(target, pk=None):
+    if pk is None:
+        return '{}{}'.format(base_url, target)
+    else:
+        return '{}{}/{}'.format(base_url, target, pk)

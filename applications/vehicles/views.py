@@ -10,7 +10,7 @@ from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerial
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer
 from shared.permissions import IsAdmin, IsNotDisabled
-from applications.traccar.utils import get, post, put
+from applications.traccar.utils import post, put, delete
 from applications.traccar.models import Device
 
 
@@ -110,7 +110,10 @@ class VehicleViewSet(viewsets.ViewSet):
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester)
         vehicle = get_object_or_404(queryset, pk=pk)
-        vehicle.is_disabled = True
+        response = delete('devices', vehicle.gps_device.id)
+        if not response.ok:
+            return Response({'errors': 'Error trying to delete gps device'}, status=response.status_code)
+        vehicle.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
     def get_permissions(self):
