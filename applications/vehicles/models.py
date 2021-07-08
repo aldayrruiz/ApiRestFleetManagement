@@ -5,8 +5,8 @@ from django.db import models
 
 from applications.traccar.models import Device
 
-# In Spain vehicle's number plates have 6 characters, except for motorbikes
-LENGTH_NUMBER_PLATE = 6
+# In Spain vehicle's number plates have 7 characters, except for motorbikes
+LENGTH_NUMBER_PLATE = 7
 
 
 class Vehicle(models.Model):
