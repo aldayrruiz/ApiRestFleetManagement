@@ -11,7 +11,7 @@ from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
     PartialUpdateUserSerializer
 from applications.users.services import get_user_queryset, get_user_or_404
-from shared.permissions import IsAdmin
+from shared.permissions import IsAdmin, IsNotDisabled
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class UserViewSet(viewsets.ViewSet):
         :return:
         """
         logger.info('Retrieve user request received.')
-        queryset = get_user_queryset()
+        queryset = get_user_queryset(even_disabled=True)
         user = get_user_or_404(queryset, pk=pk)
         serializer = SingleUserSerializer(user)
         return Response(serializer.data)
@@ -82,6 +82,12 @@ class UserViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, pk=None):
+        """
+        It is used just for disable and enable users. Just admins can do this.
+        :param request:
+        :param pk:
+        :return:
+        """
         logger.info('Partial update user request received.')
         requester = self.request.user
         queryset = get_user_queryset(even_disabled=True)
@@ -96,7 +102,13 @@ class UserViewSet(viewsets.ViewSet):
 
     # Create method is located in /register endpoint
     def get_permissions(self):
-        return [permission() for permission in [permissions.IsAuthenticated, IsAdmin]]
+        if self.action in ['list', 'retrieve', 'update']:
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
+        # ['create', 'destroy', 'partial_update']:
+        else:
+            permission_classes = [permissions.IsAuthenticated, IsAdmin]
+
+        return [permission() for permission in permission_classes]
 
 
 class RegistrationViewSet(viewsets.ViewSet):
