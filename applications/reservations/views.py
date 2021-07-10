@@ -26,11 +26,11 @@ class ReservationViewSet(viewsets.ViewSet):
         :param request:
         :return: Returns a list of reservations.
         """
-        take_all = bool(self.request.query_params.get('take_all'))
+        take_all = bool(self.request.query_params.get('takeAll'))
         vehicle_id = self.request.query_params.get('vehicleId')
         _from = get_date_from_str_utc(self.request.query_params.get('from'))
         _to = get_date_from_str_utc(self.request.query_params.get('to'))
-        logger.info('List reservations request received. [take_all: {}, vehicleId: {}, from: {}, to: {}]'
+        logger.info('List reservations request received. [takeAll: {}, vehicleId: {}, from: {}, to: {}]'
                     .format(take_all, vehicle_id, _from, _to))
         requester = self.request.user
         queryset = get_reservations(requester, take_all, vehicle_id, _from, _to)

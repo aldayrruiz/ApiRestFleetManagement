@@ -25,8 +25,8 @@ class IncidentViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
-        take_all = bool(self.request.query_params.get('take_all'))
-        logger.info('List incidents request received. [take_all: {}]'.format(take_all))
+        take_all = bool(self.request.query_params.get('takeAll'))
+        logger.info('List incidents request received. [takeAll: {}]'.format(take_all))
         requester = self.request.user
         if requester.role == Role.ADMIN and take_all is True:
             queryset = Incident.objects.all()
