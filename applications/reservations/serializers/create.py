@@ -22,11 +22,11 @@ class CreateReservationSerializer(serializers.ModelSerializer):
 
         # Check reservation's start date < end date
         if data['start'] > data['end']:
-            raise serializers.ValidationError("Reservation's start date must be before of end date")
+            raise serializers.ValidationError("La fecha de la comienzo debe ser anterior a la final")
 
         reservations = Reservation.objects.filter(vehicle__id=data['vehicle'].id, is_cancelled=False)
 
         for reservation in reservations:
             if not is_reservation_valid(data, reservation):
-                raise serializers.ValidationError("A reservation occurs at the same time.")
+                raise serializers.ValidationError("Una reserva ocurre al mismo tiempo")
         return data

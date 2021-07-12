@@ -1,7 +1,7 @@
 import logging
 
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
@@ -75,7 +75,7 @@ class ReservationViewSet(viewsets.ViewSet):
         reservation = get_object_or_404(queryset, pk=pk)
 
         if is_reservation_already_started(reservation):
-            return Response({'errors': 'Reservation has already started.'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'errors': 'La reserva ya ha comenzado.'}, status=HTTP_400_BAD_REQUEST)
 
         delete_reservation(reservation)
         return Response(status=HTTP_204_NO_CONTENT)
