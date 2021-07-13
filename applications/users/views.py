@@ -137,6 +137,11 @@ class Login(ObtainAuthToken):
                                            context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+
+        if user.is_disabled:
+            logger.info('User.isdisable = True -> Cannot login')
+            return Response({'errors': 'Usuario deshabilitado, contactar con el administrador'}, HTTP_403_FORBIDDEN)
+
         token, created = Token.objects.get_or_create(user=user)
         if created:
             logger.debug('Token was created because.')
