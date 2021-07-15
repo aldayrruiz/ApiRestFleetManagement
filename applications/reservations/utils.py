@@ -1,23 +1,19 @@
 import logging
-from datetime import datetime
-
-import pytz
 
 from applications.tickets.models import TicketStatus
+from utils.dates import get_now_utc
 from utils.email.tickets import send_accepted_ticket_email, send_denied_ticket_email
-
-TIMEZONE = 'UTC'
 
 logger = logging.getLogger(__name__)
 
 
 def is_reservation_already_started(reservation):
-    now = _get_now_utc()
+    now = get_now_utc()
     return reservation.start < now
 
 
 def is_reservation_already_ended(reservation):
-    now = _get_now_utc()
+    now = get_now_utc()
     return reservation.end < now
 
 
@@ -47,7 +43,3 @@ def delete_reservation(reservation, new_ticket_st=TicketStatus.DENIED):
         send_email(ticket)
     reservation.delete()
 
-
-def _get_now_utc():
-    timezone = pytz.timezone(TIMEZONE)
-    return datetime.now().astimezone(timezone)

@@ -54,7 +54,9 @@ class TicketViewSet(viewsets.ViewSet):
 
         if is_reservation_already_started(reservation):
             logger.error('Error creating a ticket. Reservation already started at {}.'.format(reservation.start))
-            return Response({'errors': 'Reservation already started'}, status=HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': 'No puedes crear un ticket de una reserva que ya ha comenzado'},
+                status=HTTP_400_BAD_REQUEST)
 
         # Create Ticket and send email to admin
         ticket = serializer.save(owner=user)
@@ -100,7 +102,7 @@ class TicketViewSet(viewsets.ViewSet):
 
     def check_if_not_mine(self, request, obj):
         if self.request.user is obj.owner:
-            raise PermissionDenied('You cannot create a ticket of your reservation')
+            raise PermissionDenied('No puedes crear un ticket de tu propia reserva')
 
     def check_if_not_admin_reservation(self, request, obj):
         # TODO: Check if reservation is not by an admin, because normal user cannot create a ticket of a

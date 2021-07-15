@@ -1,6 +1,7 @@
 import logging
 
 from rest_framework import viewsets, permissions
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
@@ -12,7 +13,7 @@ from applications.reservations.utils import is_reservation_already_started, dele
 from applications.users.models import Role
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
 
-from utils.dates import get_date_from_str_utc
+from utils.dates import get_date_from_str_utc, is_after_now
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,8 @@ class ReservationViewSet(viewsets.ViewSet):
             log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+        self.check_reservation_creation(request, serializer.validated_data)
+
         serializer.save(owner=requester)
         return Response(serializer.data)
 
@@ -87,6 +90,15 @@ class ReservationViewSet(viewsets.ViewSet):
         else:
             permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]
+
+    def check_reservation_creation(self, request, validated_data):
+        if not is_after_now(validated_data['start']):
+            raise ValidationError('No se puede reservar para una fecha anterior a la actual')
+
+        vehicle = validated_data['vehicle']
+        if vehicle.is_disabled:
+            logger.error('Cannot reserve a vehicle disabled: {} {}'.format(vehicle.brand, vehicle.model))
+            raise ValidationError('No se puede reservar un vehículo deshabilitado')
 
 
 def log_error_serializing(serializer):
