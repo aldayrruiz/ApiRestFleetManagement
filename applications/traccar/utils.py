@@ -15,13 +15,13 @@ def get(target, params, pk=None):
 
 
 def post(target, data):
-    url = base_url + target
+    url = _get_url(target)
     payload = json.dumps(data)
     return requests.post(url, headers=headers, data=payload, auth=auth)
 
 
 def put(target, data):
-    url = '{}{}/{}'.format(base_url, target, data['id'])
+    url = _get_url(target, data['id'])
     payload = json.dumps(data)
     return requests.put(url, headers=headers, data=payload, auth=auth)
 
