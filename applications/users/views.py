@@ -152,6 +152,8 @@ class Login(ObtainAuthToken):
         return Response({
             'token': token.key,
             'user_id': user.id,
+            'email': user.email,
+            'fullname': user.fullname,
             'role': user.role
         })
 
