@@ -8,7 +8,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from applications.allowed_vehicles.services import get_allowed_vehicles_queryset
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
-from applications.vehicles.serializers.special import DetailedVehicleSerializer
+from applications.vehicles.serializers.special import DetailedVehicleSerializer, PartialUpdateVehicleSerializer
 from shared.permissions import IsAdmin, IsNotDisabled
 from applications.traccar.utils import post, put, delete
 from applications.traccar.models import Device
@@ -99,6 +99,27 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer.save(gps_device=device)
         return Response(serializer.data)
 
+    def partial_update(self, request, pk=None):
+        """
+        It is used just for disable and enable users. Just admins can do this.
+        :param request:
+        :param pk:
+        :return:
+        """
+        logger.info('Partial update vehicle request received.')
+        requester = self.request.user
+        queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
+        vehicle = get_object_or_404(queryset, pk=pk)
+        serializer = PartialUpdateVehicleSerializer(vehicle, request.data, partial=True)
+
+        if not serializer.is_valid():
+            logger.error('Could not partial update vehicle.')
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        logger.info('Vehicle was partial updated successfully.')
+        return Response(serializer.data)
+
     def destroy(self, request, pk=None):
         """
         It deletes the vehicle.
@@ -120,7 +141,7 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action in ['create', 'destroy']:
+        if self.action in ['create', 'destroy', 'partial_update']:
             permission_classes = [permissions.IsAuthenticated, IsAdmin]
         # This include 'list' and 'retrieve'.
         # HTTP methods like update and partial update are not supported yet.
