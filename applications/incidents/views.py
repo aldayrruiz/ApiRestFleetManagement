@@ -51,7 +51,10 @@ class IncidentViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         logger.info('Retrieve incident request received.')
         user = self.request.user
-        queryset = Incident.objects.filter(owner=user)
+        if user.role == Role.ADMIN:
+            queryset = Incident.objects.all()
+        else:
+            queryset = Incident.objects.filter(owner=user)
         incident = get_object_or_404(queryset, pk=pk)
         serializer = SimpleIncidentSerializer(incident)
         return Response(serializer.data)
