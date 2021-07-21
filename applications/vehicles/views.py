@@ -96,6 +96,8 @@ class VehicleViewSet(viewsets.ViewSet):
         if not response.ok:
             return Response({'errors': 'Error trying to edit gps device'}, status=response.status_code)
 
+        device.imei = imei
+        device.name = name
         serializer.save(gps_device=device)
         return Response(serializer.data)
 

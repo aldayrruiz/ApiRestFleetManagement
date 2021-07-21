@@ -20,7 +20,7 @@ class Vehicle(models.Model):
         validators=[MinLengthValidator(LENGTH_NUMBER_PLATE)],
         unique=True
     )
-    gps_device = models.OneToOneField(Device, null=True, on_delete=models.SET_NULL)
+    gps_device = models.OneToOneField(Device, null=True, on_delete=models.CASCADE)
 
     date_stored = models.DateField(auto_now_add=True)
     is_disabled = models.BooleanField(default=False)
