@@ -98,6 +98,7 @@ class VehicleViewSet(viewsets.ViewSet):
 
         device.imei = imei
         device.name = name
+        device.save()
         serializer.save(gps_device=device)
         return Response(serializer.data)
 
@@ -131,7 +132,7 @@ class VehicleViewSet(viewsets.ViewSet):
         :return:
         """
         requester = self.request.user
-        queryset = get_allowed_vehicles_queryset(requester)
+        queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
         vehicle = get_object_or_404(queryset, pk=pk)
         response = delete('devices', vehicle.gps_device.id)
         if not response.ok:
