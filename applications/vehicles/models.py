@@ -25,6 +25,10 @@ class Vehicle(models.Model):
     date_stored = models.DateField(auto_now_add=True)
     is_disabled = models.BooleanField(default=False)
 
+    def delete(self, *args, **kwargs):
+        self.gps_device.delete()
+        return super(self.__class__, self).delete(*args, **kwargs)
+
     def __str__(self):
         return '{0} {1}'.format(self.brand, self.model)
 
