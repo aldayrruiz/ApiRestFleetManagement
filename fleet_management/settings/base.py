@@ -60,9 +60,9 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 
-ROOT_URLCONF = 'reservadecoches.urls'
+ROOT_URLCONF = 'fleet_management.urls'
 
-WSGI_APPLICATION = 'reservadecoches.wsgi.application'
+WSGI_APPLICATION = 'fleet_management.wsgi.application'
 
 AUTH_USER_MODEL = 'users.User'
 
