@@ -39,13 +39,13 @@ class UserTestCase(APITestCase):
         response = self.client.get(paths['users'])
         assert response.status_code == HTTP_200_OK
 
-    def test_user_should_not_be_able_to_access_users(self):
+    def test_user_should_be_able_to_access_users(self):
         # Authenticate as user for next requests
         self.client.force_authenticate(user=self.user)
         # test destroy endpoint: /api/users/uuid/
-        path = paths['users'] + str(self.admin.id) + '/'
+        path = paths['users']
         response = self.client.get(path)
-        assert response.status_code == HTTP_403_FORBIDDEN
+        assert response.status_code == HTTP_200_OK
 
     # TESTING RETRIEVE
 
@@ -57,13 +57,13 @@ class UserTestCase(APITestCase):
         response = self.client.get(path)
         assert response.status_code == HTTP_200_OK
 
-    def test_user_should_not_be_able_to_access_user(self):
+    def test_user_should_be_able_to_access_user(self):
         # Authenticate as admin for next requests
         self.client.force_authenticate(user=self.user)
         # Test retrieve endpoint: /api/users/uuid/
         path = paths['users'] + str(self.admin.id) + '/'
         response = self.client.get(path)
-        assert response.status_code == HTTP_403_FORBIDDEN
+        assert response.status_code == HTTP_200_OK
 
     # TESTING DESTROY
 
