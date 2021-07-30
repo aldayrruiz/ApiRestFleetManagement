@@ -22,7 +22,7 @@ class Incident(models.Model):
     description = models.TextField()
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
-    photo = models.ImageField(default='none.png', upload_to='incidents')
+    photo = models.ImageField(default='incidents/none.png', upload_to='incidents')
 
     type = models.CharField(
         max_length=14,
