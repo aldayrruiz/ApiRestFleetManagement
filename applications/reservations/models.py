@@ -26,7 +26,7 @@ class Reservation(models.Model):
 
     class Meta:
         db_table = 'Reservation'
-        ordering = ['start']
+        ordering = ['-start']
 
     def __str__(self):
         return '{0} - {1}'.format(self.owner, self.title)

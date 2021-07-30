@@ -34,6 +34,7 @@ class Incident(models.Model):
 
     class Meta:
         db_table = 'Incident'
+        ordering = ['-date_stored']
 
     def __str__(self):
         return self.title
