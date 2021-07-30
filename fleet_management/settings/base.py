@@ -86,7 +86,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    str(BASE_DIR / "static"),
+    str(BASE_DIR / "media"),
 ]
 
 STATIC_ROOT = '/static/'
+# STATIC_ROOT = '/var/www/fleet_management/static/'
+
+MEDIA_ROOT = str(BASE_DIR / 'media')
+
+MEDIA_URL = '/media/'
