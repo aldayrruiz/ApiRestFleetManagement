@@ -5,6 +5,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_200_OK
+from utils.api.query import query_bool
 
 from applications.reservations.utils import is_reservation_already_started
 from applications.tickets.models import Ticket
@@ -28,7 +29,7 @@ class TicketViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
-        take_all = bool(self.request.query_params.get('takeAll'))
+        take_all = query_bool(self.request, 'takeAll')
         logger.info('List tickets request received. [takeAll: {}]'.format(take_all))
         requester = self.request.user
         if requester.role == Role.ADMIN and take_all is True:

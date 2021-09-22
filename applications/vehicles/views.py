@@ -6,13 +6,13 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
 from applications.allowed_vehicles.services import get_allowed_vehicles_queryset
+from applications.traccar.models import Device
+from applications.traccar.utils import post, put, delete
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer, PartialUpdateVehicleSerializer
 from shared.permissions import IsAdmin, IsNotDisabled
-from applications.traccar.utils import post, put, delete
-from applications.traccar.models import Device
-
+from utils.api.query import query_bool
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class VehicleViewSet(viewsets.ViewSet):
         :param request:
         :return: vehicles
         """
-        even_disabled = bool(self.request.query_params.get('evenDisabled'))
+        even_disabled = query_bool(self.request, 'evenDisabled')
         logger.info('List vehicles request received. [evenDisabled: {}]'.format(even_disabled))
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=even_disabled)
@@ -41,7 +41,7 @@ class VehicleViewSet(viewsets.ViewSet):
         :param pk: uuid of the vehicle
         :return: vehicle desired.
         """
-        even_disabled = bool(self.request.query_params.get('evenDisabled'))
+        even_disabled = query_bool(self.request, 'evenDisabled')
         logger.info('Retrieve vehicle request received.')
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=even_disabled)

@@ -12,6 +12,7 @@ from applications.users.serializers.special import UpdateUserSerializer, SingleU
     PartialUpdateUserSerializer
 from applications.users.services import get_user_queryset, get_user_or_404
 from shared.permissions import IsAdmin, IsNotDisabled
+from utils.api.query import query_bool
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,8 @@ class UserViewSet(viewsets.ViewSet):
         :param request:
         :return: users
         """
-        even_disabled = bool(self.request.query_params.get('even_disabled'))
-        logger.info('List users request received. [even_disabled: {}]'.format(even_disabled))
+        even_disabled = query_bool(self.request, 'evenDisabled')
+        logger.info('List users request received. [evenDisabled: {}]'.format(even_disabled))
         queryset = get_user_queryset(even_disabled=even_disabled)
         serializer = SimpleUserSerializer(queryset, many=True)
         return Response(serializer.data)
