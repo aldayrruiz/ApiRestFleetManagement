@@ -14,6 +14,8 @@ class Reservation(models.Model):
     end = models.DateTimeField()
     description = models.TextField()
     is_cancelled = models.BooleanField(default=False)
+    isRecurrent = models.BooleanField(default=False)
+    recurrentId = models.UUIDField(default=None, editable=True, null=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
 
