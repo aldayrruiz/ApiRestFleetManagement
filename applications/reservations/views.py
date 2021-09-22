@@ -1,6 +1,7 @@
 import logging
 
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -12,8 +13,8 @@ from applications.reservations.serializers.simple import SimpleReservationSerial
 from applications.reservations.utils import is_reservation_already_started, delete_reservation
 from applications.users.models import Role
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
-
-from utils.dates import get_date_from_str_utc, is_after_now
+from utils.dates import is_after_now
+from utils.api.query import query_bool, query_date, query_str
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +28,11 @@ class ReservationViewSet(viewsets.ViewSet):
         :param request:
         :return: Returns a list of reservations.
         """
-        take_all = bool(self.request.query_params.get('takeAll'))
-        vehicle_id = self.request.query_params.get('vehicleId')
-        _from = get_date_from_str_utc(self.request.query_params.get('from'))
-        _to = get_date_from_str_utc(self.request.query_params.get('to'))
+        take_all = query_bool(self.request, 'takeAll')
+        vehicle_id = query_str(self.request, 'vehicleId')
+        _from = query_date(self.request, 'from')
+        _to = query_date(self.request, 'to')
+
         logger.info('List reservations request received. [takeAll: {}, vehicleId: {}, from: {}, to: {}]'
                     .format(take_all, vehicle_id, _from, _to))
         requester = self.request.user
@@ -56,6 +58,12 @@ class ReservationViewSet(viewsets.ViewSet):
 
         serializer.save(owner=requester)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def create_repetitive(self, request):
+        force = query_bool(self.request, 'force')
+        logger.info('Query force: {}'.format(force))
+        return Response({'status': 'Ok it works.'})
 
     def retrieve(self, request, pk=None):
         logger.info('Retrieve reservation request received.')
@@ -107,7 +115,6 @@ def log_error_serializing(serializer):
 
 
 def get_reservations(requester, take_all=False, vehicle_id=None, _from=None, _to=None):
-
     if requester.role == Role.ADMIN and take_all:
         queryset = Reservation.objects.all()
     else:

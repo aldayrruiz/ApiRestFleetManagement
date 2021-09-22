@@ -11,6 +11,7 @@ from applications.incidents.serializers.simple import SimpleIncidentSerializer
 from applications.users.models import Role
 from applications.users.services import get_admin
 from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled
+from utils.api.query import query_bool
 from utils.email.incidents import send_created_incident_email
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class IncidentViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
-        take_all = bool(self.request.query_params.get('takeAll'))
+        take_all = query_bool(self.request, 'takeAll')
         logger.info('List incidents request received. [takeAll: {}]'.format(take_all))
         requester = self.request.user
         if requester.role == Role.ADMIN and take_all is True:
