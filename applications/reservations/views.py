@@ -5,16 +5,19 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 
 from applications.reservations.models import Reservation
 from applications.reservations.serializers.create import CreateReservationSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
+from applications.reservations.serializers.special import RecurrentSerializer
+from applications.reservations.services.recurrent import RecurrentReservationCreator
+from applications.reservations.services.recurrent_config import RecurrentConfiguration
 from applications.reservations.utils import is_reservation_already_started, delete_reservation
 from applications.users.models import Role
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
-from utils.dates import is_after_now
 from utils.api.query import query_bool, query_date, query_str
+from utils.dates import is_after_now
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +66,26 @@ class ReservationViewSet(viewsets.ViewSet):
     def create_repetitive(self, request):
         force = query_bool(self.request, 'force')
         logger.info('Query force: {}'.format(force))
-        return Response({'status': 'Ok it works.'})
+
+        serializer = RecurrentSerializer(data=self.request.data)
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        rec_config = RecurrentConfiguration.from_serializer(serializer, self.request.user)
+
+        creator = RecurrentReservationCreator(config=rec_config)
+        [possible_successful_reservations, possible_error_reservations] = creator.create()
+
+        if force:
+            return Response({'description': 'You have forced the reservations successfully.'})
+        # If not forced
+        error_reservations = []
+        response = {
+            'description': 'There are not vehicles available at the moment of the recurrent reservation.',
+            'reservations': error_reservations,
+        }
+        return Response(response, status=HTTP_409_CONFLICT)
 
     def retrieve(self, request, pk=None):
         logger.info('Retrieve reservation request received.')
