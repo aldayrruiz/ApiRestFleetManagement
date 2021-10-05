@@ -75,17 +75,25 @@ class ReservationViewSet(viewsets.ViewSet):
         rec_config = RecurrentConfiguration.from_serializer(serializer, self.request.user)
 
         creator = RecurrentReservationCreator(config=rec_config)
-        [possible_successful_reservations, possible_error_reservations] = creator.create()
+        [valid_reservations, invalid_reservations] = creator.try_create()
 
-        if force:
-            return Response({'description': 'You have forced the reservations successfully.'})
-        # If not forced
-        error_reservations = []
+        invalid_reservations_serializer = SimpleReservationSerializer(invalid_reservations, many=True)
+
+        if not force and len(invalid_reservations) > 0:
+            response = {
+                'description': 'There are reservations that cannot be saved.',
+                'errorReservations': invalid_reservations_serializer.data
+            }
+            return Response(response, status=HTTP_409_CONFLICT)
+
+        RecurrentReservationCreator.create(valid_reservations)
+        valid_reservations_serializer = SimpleReservationSerializer(valid_reservations, many=True)
         response = {
-            'description': 'There are not vehicles available at the moment of the recurrent reservation.',
-            'reservations': error_reservations,
+            'description': 'You have forced the reservations',
+            'successfulReservations': valid_reservations_serializer.data,
+            'errorReservations': invalid_reservations_serializer.data
         }
-        return Response(response, status=HTTP_409_CONFLICT)
+        return Response(response)
 
     def retrieve(self, request, pk=None):
         logger.info('Retrieve reservation request received.')
