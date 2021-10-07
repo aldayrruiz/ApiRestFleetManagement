@@ -3,10 +3,11 @@ import logging
 from rest_framework import viewsets, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_403_FORBIDDEN
 
-from applications.users.serializers.create import RegistrationSerializer
+from applications.users.serializers.create import RegistrationSerializer, FakeRegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
     PartialUpdateUserSerializer
@@ -123,12 +124,28 @@ class RegistrationViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
         user = serializer.save()
-        logger.info('User register successfully: {}'.format(user.fullname))
+        logger.info('User registered successfully: {}'.format(user.fullname))
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], name='Fake')
+    def create_fake(self, request):
+        logger.info('Register a fake user received.')
+        serializer = FakeRegistrationSerializer(data=self.request.data)
+
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        user = serializer.save()
+        logger.info('Fake user registered successfully: {}'.format(user.fullname))
         return Response(serializer.data)
 
     def get_permissions(self):
-        # Only admin can register users.
-        return [permission() for permission in [permissions.IsAuthenticated, IsAdmin]]
+        if self.name == 'Fake':
+            return [permission() for permission in []]
+        else:
+            # Only admin can register users.
+            return [permission() for permission in [permissions.IsAuthenticated, IsAdmin]]
 
 
 class Login(ObtainAuthToken):
@@ -145,7 +162,7 @@ class Login(ObtainAuthToken):
 
         token, created = Token.objects.get_or_create(user=user)
         if created:
-            logger.debug('Token was created because.')
+            logger.debug('Token was created.')
         if token.key:
             logger.info('Login was successfully.')
         else:
