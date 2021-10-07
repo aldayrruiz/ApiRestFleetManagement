@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class BaseUserService:
 
     def __init__(self):
-        self.queryset = get_user_model().objects.all()
+        self.queryset = get_user_model().objects.filter(is_fake=False)
 
 
 class UserSearcher(BaseUserService):
@@ -27,9 +27,9 @@ def get_admin():
 
 def get_user_queryset(even_disabled=False):
     if even_disabled:
-        return get_user_model().objects.all()
+        return get_user_model().objects.filter(is_fake=False)
     else:
-        return get_user_model().objects.filter(is_disabled=False)
+        return get_user_model().objects.filter(is_disabled=False, is_fake=False)
 
 
 def get_user_or_404(queryset, pk):

@@ -26,3 +26,17 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user.save()
         send_created_user_email(user, password)
         return user
+
+
+class FakeRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'fullname', 'password']
+
+    def save(self):
+        user = User(email=self.validated_data['email'],
+                    fullname=self.validated_data['fullname'])
+
+        user.set_password(self.validated_data['password'])
+        user.save()
+        return user
