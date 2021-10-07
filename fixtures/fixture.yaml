@@ -49,8 +49,8 @@
     end: 2021-09-30 11:15:00+00:00
     description: Necesito ir al cine
     is_cancelled: false
-    isRecurrent: false
-    recurrentId: null
+    is_recurrent: false
+    recurrent_id: null
     owner: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
     vehicle: bb641ba7-cfd7-46c5-a6f6-ddeaf6adb772
 - model: reservations.reservation
@@ -62,8 +62,8 @@
     end: 2021-10-28 16:45:00+00:00
     description: Just testing recurrent reservations Renault Astra
     is_cancelled: false
-    isRecurrent: false
-    recurrentId: null
+    is_recurrent: false
+    recurrent_id: null
     owner: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
     vehicle: 735aeaae-5f1f-41ce-b905-41bf4e31941e
 - model: reservations.reservation
@@ -75,8 +75,8 @@
     end: 2021-10-28 16:45:00+00:00
     description: Just testing recurrent reservations
     is_cancelled: false
-    isRecurrent: false
-    recurrentId: null
+    is_recurrent: false
+    recurrent_id: null
     owner: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
     vehicle: bb641ba7-cfd7-46c5-a6f6-ddeaf6adb772
 - model: reservations.reservation
@@ -88,8 +88,8 @@
     end: 2021-10-29 16:45:00+00:00
     description: Just testing recurrent reservation (successful)
     is_cancelled: false
-    isRecurrent: false
-    recurrentId: null
+    is_recurrent: false
+    recurrent_id: null
     owner: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
     vehicle: bb641ba7-cfd7-46c5-a6f6-ddeaf6adb772
 
