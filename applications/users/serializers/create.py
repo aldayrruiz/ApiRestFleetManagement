@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from applications.users.models import User
-from utils.email.users import send_created_user_email
 
 pass_length = 8
 
@@ -24,7 +23,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         user.set_password(password)
         user.save()
-        send_created_user_email(user, password)
+        # send_created_user_email(user, password)
         return user
 
 
@@ -37,6 +36,7 @@ class FakeRegistrationSerializer(serializers.ModelSerializer):
         user = User(email=self.validated_data['email'],
                     fullname=self.validated_data['fullname'])
 
+        user.is_fake = True
         user.set_password(self.validated_data['password'])
         user.save()
         return user
