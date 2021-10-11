@@ -11,7 +11,7 @@ from applications.users.serializers.create import RegistrationSerializer, FakeRe
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
     PartialUpdateUserSerializer
-from applications.users.services import get_user_queryset, get_user_or_404
+from applications.users.services import get_user_queryset, get_user_or_404, delete_if_fake_user_already_exists
 from shared.permissions import IsAdmin, IsNotDisabled
 from utils.api.query import query_bool
 
@@ -118,6 +118,8 @@ class RegistrationViewSet(viewsets.ViewSet):
     def create(self, request):
         logger.info('Register user request received.')
         serializer = RegistrationSerializer(data=self.request.data)
+
+        delete_if_fake_user_already_exists(serializer)
 
         if not serializer.is_valid():
             log_error_serializing(serializer)
