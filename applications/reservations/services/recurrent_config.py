@@ -1,3 +1,4 @@
+from datetime import timedelta
 from operator import itemgetter
 
 from applications.allowed_vehicles.services import get_vehicles_ordered_by_ids
@@ -8,7 +9,7 @@ class RecurrentConfiguration:
         self.title = title
         self.description = description
         self.start = start
-        self.end = end
+        self.end = end + timedelta(days=1)
         self.start_res = start_res.time()
         self.end_res = end_res.time()
         self.vehicles = vehicles
