@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -90,7 +91,7 @@ STATICFILES_DIRS = [
     str(BASE_DIR / "media"),
 ]
 
-STATIC_ROOT = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 # STATIC_ROOT = '/var/www/fleet_management/static/'
 
 MEDIA_ROOT = str(BASE_DIR / 'media')
