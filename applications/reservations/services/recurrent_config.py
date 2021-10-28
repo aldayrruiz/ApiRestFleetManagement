@@ -9,9 +9,12 @@ class RecurrentConfiguration:
         self.title = title
         self.description = description
         self.start = start
-        self.end = end + timedelta(days=1)
-        self.start_res = start_res.time()
-        self.end_res = end_res.time()
+        if start.day == end.day:
+            self.end = end
+        else:
+            self.end = end + timedelta(days=1)
+        self.start_res = start_res.timetz()
+        self.end_res = end_res.timetz()
         self.vehicles = vehicles
         self.weekdays = weekdays
         self.owner = owner
