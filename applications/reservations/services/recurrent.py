@@ -1,6 +1,6 @@
-import uuid
 import logging
-from datetime import date, datetime, timedelta
+import uuid
+from datetime import datetime, timedelta
 
 import numpy as np
 
@@ -36,7 +36,7 @@ class RecurrentReservationCreator:
         Return an array which contains all start reservations dates.
         """
         start_reservation_datetime = datetime.combine(self.config.start, self.config.start_res)
-        all_dates = np.arange(start_reservation_datetime, self.config.end, timedelta(days=1)).astype(date)
+        all_dates = np.arange(start_reservation_datetime, self.config.end, timedelta(days=1), dtype=datetime)
         start_reservations = self.__only_include_weekdays__(all_dates)
         return start_reservations
 
