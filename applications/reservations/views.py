@@ -155,6 +155,4 @@ def get_reservations(requester, take_all=False, vehicle_id=None, _from=None, _to
 
     if _from and _to:
         queryset = queryset.filter(start__gte=_from, start__lte=_to)
-    else:
-        queryset = queryset[:50]
     return queryset

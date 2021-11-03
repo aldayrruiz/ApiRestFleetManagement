@@ -1,4 +1,3 @@
-from datetime import timedelta
 from operator import itemgetter
 
 from applications.allowed_vehicles.services import get_vehicles_ordered_by_ids
@@ -9,10 +8,7 @@ class RecurrentConfiguration:
         self.title = title
         self.description = description
         self.start = start
-        if start.day == end.day:
-            self.end = end
-        else:
-            self.end = end + timedelta(days=1)
+        self.end = end
         self.start_res = start_res.timetz()
         self.end_res = end_res.timetz()
         self.vehicles = vehicles
