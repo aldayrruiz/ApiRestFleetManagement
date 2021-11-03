@@ -1,11 +1,12 @@
 import logging
 import uuid
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import numpy as np
 
 from applications.reservations.models import Reservation
 from applications.reservations.services.validator import ReservationValidator
+from utils.dates import from_naive_to_aware
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,9 @@ class RecurrentReservationCreator:
         Return an array which contains all start reservations dates.
         """
         start_reservation_datetime = datetime.combine(self.config.start, self.config.start_res)
-        all_dates = np.arange(start_reservation_datetime, self.config.end, timedelta(days=1), dtype=datetime)
+        end_reservation_datetime = datetime.combine(self.config.end, self.config.end_res)
+        all_dates = np.arange(start_reservation_datetime, end_reservation_datetime, timedelta(days=1)).astype(date)
+        all_dates = np.array([from_naive_to_aware(d) for d in all_dates])
         start_reservations = self.__only_include_weekdays__(all_dates)
         return start_reservations
 
