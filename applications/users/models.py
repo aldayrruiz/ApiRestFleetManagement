@@ -2,12 +2,14 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
 
+from applications.tenant.models import Tenant
 from applications.vehicles.models import Vehicle
 
 
@@ -21,7 +23,14 @@ class Role(models.TextChoices):
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, fullname, password=None):
+    def create_user(self, email, fullname, tenant, password=None):
+        try:
+            tenant = Tenant.objects.get(id=tenant)
+        except ValidationError:
+            raise ValueError('Tenant UUID not valid. Use "python manage.py showtenants" to see ids')
+        except Tenant.DoesNotExist:
+            raise ValueError('Tenant does not exists. Use "python manage.py showtenants" to see ids')
+
         if not email:
             raise ValueError('Users must have an email address.')
         if not fullname:
@@ -31,17 +40,21 @@ class MyUserManager(BaseUserManager):
             email=self.normalize_email(email),
             fullname=fullname,
         )
+        user.tenant = tenant
         user.role = Role.USER
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, fullname, password=None):
+    def create_superuser(self, email, fullname, tenant, password=None):
+
         user = self.create_user(
             email,
             password=password,
             fullname=fullname,
+            tenant=tenant,
         )
+
         user.is_admin = True
         user.is_staff = True
         user.is_superuser = True
@@ -55,6 +68,7 @@ class User(AbstractBaseUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     email = models.EmailField(verbose_name='email', max_length=255, unique=True)
     fullname = models.CharField(verbose_name='fullname', max_length=70)
+    tenant = models.ForeignKey(Tenant, related_name='users', on_delete=models.CASCADE)
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
     is_admin = models.BooleanField(default=False)
@@ -78,7 +92,7 @@ class User(AbstractBaseUser):
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['fullname']
+    REQUIRED_FIELDS = ['fullname', 'tenant']
 
     objects = MyUserManager()
 
