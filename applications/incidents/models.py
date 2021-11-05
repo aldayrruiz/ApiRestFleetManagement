@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from applications.reservations.models import Reservation
+from applications.tenant.models import Tenant
 
 
 class IncidentType(models.TextChoices):
@@ -22,6 +23,7 @@ class Incident(models.Model):
     description = models.TextField()
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
+    tenant = models.ForeignKey(Tenant, related_name='incidents', on_delete=models.CASCADE)
     photo = models.ImageField(default='incidents/none.png', upload_to='incidents')
 
     type = models.CharField(

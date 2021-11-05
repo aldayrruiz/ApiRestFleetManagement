@@ -1,95 +1,25 @@
-- model: traccar.device
-  pk: 3
+- model: tenant.tenant
+  pk: 95ba80f6-dc6f-480d-a639-ce684e91f142
   fields:
-    name: Renault Clio
-    imei: '123456789'
-- model: traccar.device
-  pk: 4
-  fields:
-    name: Renault Astra
-    imei: '987654321'
-- model: vehicles.vehicle
-  pk: 735aeaae-5f1f-41ce-b905-41bf4e31941e
-  fields:
-    model: Astra
-    brand: Renault
-    number_plate: '4567893'
-    gps_device: 4
-    date_stored: 2021-09-23
-    is_disabled: false
-- model: vehicles.vehicle
-  pk: bb641ba7-cfd7-46c5-a6f6-ddeaf6adb772
-  fields:
-    model: Clio
-    brand: Renault
-    number_plate: '1234567'
-    gps_device: 3
-    date_stored: 2021-09-23
-    is_disabled: false
+    name: Bilbao
+    date_stored: 2021-11-05
 - model: users.user
-  pk: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
+  pk: 5687dc0b-e22a-48a1-b6c5-9ea3b0939fe0
   fields:
-    password: pbkdf2_sha256$260000$g26r6rfvZAnp1fjkvVY1yC$l58sGGg6KDuM9YvsLCmfQKP0BMj7KgQbYYeyEy258aY=
+    password: pbkdf2_sha256$260000$lgYjCAVnidZ2PliAghu0lz$0smAXWUu5nUuLZhgpm7KIja6sGUSxXP9wKar/rXnLHA=
     email: aldayr.ruiz@opendeusto.es
     fullname: Aldayr Ruiz
-    date_joined: 2021-09-22 19:05:49.152573+00:00
-    last_login: 2021-09-22 19:05:49.166545+00:00
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+    date_joined: 2021-11-05 12:07:38.152393+00:00
+    last_login: 2021-11-05 12:07:38.161477+00:00
     is_admin: true
     is_active: true
     is_staff: true
     is_superuser: true
     is_disabled: false
     role: ADMIN
-- model: reservations.reservation
-  pk: 16d110d0-ebe8-4e13-aa4b-17a16277a7c7
+- model: authtoken.token
+  pk: ce0e0adb42db7be80ccf9deb706ded397282fee6
   fields:
-    title: Reserva para ir al cine
-    date_stored: 2021-09-23
-    start: 2021-09-30 10:15:00+00:00
-    end: 2021-09-30 11:15:00+00:00
-    description: Necesito ir al cine
-    is_cancelled: false
-    is_recurrent: false
-    recurrent_id: null
-    owner: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
-    vehicle: bb641ba7-cfd7-46c5-a6f6-ddeaf6adb772
-- model: reservations.reservation
-  pk: 8c99b798-9d1a-4160-8bb8-135c57a32f8a
-  fields:
-    title: Just testing recurrent reservations Renault Astra
-    date_stored: 2021-10-04
-    start: 2021-10-28 15:45:00+00:00
-    end: 2021-10-28 16:45:00+00:00
-    description: Just testing recurrent reservations Renault Astra
-    is_cancelled: false
-    is_recurrent: false
-    recurrent_id: null
-    owner: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
-    vehicle: 735aeaae-5f1f-41ce-b905-41bf4e31941e
-- model: reservations.reservation
-  pk: ee8a4553-661c-419b-af01-d4c988a4fb00
-  fields:
-    title: Just testing recurrent reservations
-    date_stored: 2021-10-04
-    start: 2021-10-28 15:45:00+00:00
-    end: 2021-10-28 16:45:00+00:00
-    description: Just testing recurrent reservations
-    is_cancelled: false
-    is_recurrent: false
-    recurrent_id: null
-    owner: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
-    vehicle: bb641ba7-cfd7-46c5-a6f6-ddeaf6adb772
-- model: reservations.reservation
-  pk: fd61d28a-8abf-416f-96a7-c23a72074959
-  fields:
-    title: Just testing recurrent reservation (successful)
-    date_stored: 2021-10-04
-    start: 2021-10-29 15:45:00+00:00
-    end: 2021-10-29 16:45:00+00:00
-    description: Just testing recurrent reservation (successful)
-    is_cancelled: false
-    is_recurrent: false
-    recurrent_id: null
-    owner: 6aa9b2b0-20fc-4cf2-a8e4-ae38f5adf28f
-    vehicle: bb641ba7-cfd7-46c5-a6f6-ddeaf6adb772
-
+    user: 5687dc0b-e22a-48a1-b6c5-9ea3b0939fe0
+    created: 2021-11-05 12:07:38.157402+00:00
