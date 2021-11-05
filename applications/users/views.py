@@ -7,11 +7,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_403_FORBIDDEN
 
+from applications.tenant.models import Tenant
 from applications.users.serializers.create import RegistrationSerializer, FakeRegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
     PartialUpdateUserSerializer
-from applications.users.services import get_user_queryset, get_user_or_404, delete_if_fake_user_already_exists
+from applications.users.services import get_user_queryset, get_user_or_404, create_fake_admin
 from shared.permissions import IsAdmin, IsNotDisabled
 from utils.api.query import query_bool
 
@@ -26,24 +27,21 @@ class UserViewSet(viewsets.ViewSet):
     def list(self, request):
         """
         It returns all users.
-        :param request:
-        :return: users
         """
+        requester = self.request.user
         even_disabled = query_bool(self.request, 'evenDisabled')
         logger.info('List users request received. [evenDisabled: {}]'.format(even_disabled))
-        queryset = get_user_queryset(even_disabled=even_disabled)
+        queryset = get_user_queryset(requester.tenant, even_disabled=even_disabled)
         serializer = SimpleUserSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         """
         It returns the user given an id.
-        :param request:
-        :param pk: user id
-        :return:
         """
+        requester = self.request.user
         logger.info('Retrieve user request received.')
-        queryset = get_user_queryset(even_disabled=True)
+        queryset = get_user_queryset(requester.tenant, even_disabled=True)
         user = get_user_or_404(queryset, pk=pk)
         serializer = SingleUserSerializer(user)
         return Response(serializer.data)
@@ -52,13 +50,10 @@ class UserViewSet(viewsets.ViewSet):
         """
         It disables an user.
         If requester tries to delete himself, server respond with 403 ERROR.
-        :param request:
-        :param pk: user id
-        :return:
         """
         logger.info('Destroy user request received.')
         requester = self.request.user
-        queryset = get_user_queryset(even_disabled=True)
+        queryset = get_user_queryset(requester.tenant, even_disabled=True)
         user = get_user_or_404(queryset, pk=pk)
         if requester == user:
             logger.warning("User couldn't delete himself.")
@@ -73,7 +68,7 @@ class UserViewSet(viewsets.ViewSet):
         """
         logger.info('Update user request received.')
         requester = self.request.user
-        queryset = get_user_queryset(even_disabled=True)
+        queryset = get_user_queryset(requester.tenant, even_disabled=True)
         user = get_user_or_404(queryset, pk=pk)
         serializer = UpdateUserSerializer(user, self.request.data)
         if serializer.is_valid():
@@ -86,13 +81,10 @@ class UserViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         """
         It is used just for disable and enable users. Just admins can do this.
-        :param request:
-        :param pk:
-        :return:
         """
         logger.info('Partial update user request received.')
         requester = self.request.user
-        queryset = get_user_queryset(even_disabled=True)
+        queryset = get_user_queryset(requester.tenant, even_disabled=True)
         user = get_user_or_404(queryset, pk)
         serializer = PartialUpdateUserSerializer(user, request.data, partial=True)
         if serializer.is_valid():
@@ -117,28 +109,31 @@ class RegistrationViewSet(viewsets.ViewSet):
 
     def create(self, request):
         logger.info('Register user request received.')
+        requester = self.request.user
         serializer = RegistrationSerializer(data=self.request.data)
-
-        delete_if_fake_user_already_exists(serializer)
 
         if not serializer.is_valid():
             log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-        user = serializer.save()
+        user = serializer.save(tenant=requester.tenant)
         logger.info('User registered successfully: {}'.format(user.fullname))
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'], name='Fake')
     def create_fake(self, request):
         logger.info('Register a fake user received.')
+        tenant, created = Tenant.objects.get_or_create(name='Fake')
+        # If you forgot to create Fake Tenant -> Create fake admin to not crash.
+        if created:
+            create_fake_admin(tenant.id)
         serializer = FakeRegistrationSerializer(data=self.request.data)
 
         if not serializer.is_valid():
             log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-        user = serializer.save()
+        user = serializer.save(tenant=tenant)
         logger.info('Fake user registered successfully: {}'.format(user.fullname))
         return Response(serializer.data)
 
@@ -159,7 +154,7 @@ class Login(ObtainAuthToken):
         user = serializer.validated_data['user']
 
         if user.is_disabled:
-            logger.info('User.isdisable = True -> Cannot login')
+            logger.info('User is disabled -> Cannot login')
             return Response({'errors': 'Usuario deshabilitado, contactar con el administrador'}, HTTP_403_FORBIDDEN)
 
         token, created = Token.objects.get_or_create(user=user)
@@ -174,7 +169,8 @@ class Login(ObtainAuthToken):
             'user_id': user.id,
             'email': user.email,
             'fullname': user.fullname,
-            'role': user.role
+            'role': user.role,
+            'tenant': user.tenant.id
         })
 
 
