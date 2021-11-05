@@ -22,9 +22,34 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
+### Manage tenants
+
+To see all tenants...
+
+````shell
+python manage.py showtenants
+````
+
+To create a tenant...
+
+````shell
+python manage.py createtenant <tenant_name>
+````
+
+After create a tenant, you should create a superuser for that tenant...
+
+````shell
+python manage.py createsuperuser
+````
+
+While superuser creation you will be asked for tenant's id. So, copy and paste the id from `createtenant` output or
+using `showtenants` scripts.
+
 ## Develop
 
 ### Dump initial data
+
+If you want to make a backup of current state of database use ...
 
 ```shell
 python manage.py dumpdata -e contenttypes -e auth --format yaml -o fixtures/fixture.yaml
