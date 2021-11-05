@@ -4,6 +4,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_403_FORBIDDEN
 
@@ -12,7 +13,7 @@ from applications.users.serializers.create import RegistrationSerializer, FakeRe
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
     PartialUpdateUserSerializer
-from applications.users.services import get_user_queryset, get_user_or_404, create_fake_admin
+from applications.users.services import get_user_queryset, create_fake_admin
 from shared.permissions import IsAdmin, IsNotDisabled
 from utils.api.query import query_bool
 
@@ -42,7 +43,7 @@ class UserViewSet(viewsets.ViewSet):
         requester = self.request.user
         logger.info('Retrieve user request received.')
         queryset = get_user_queryset(requester.tenant, even_disabled=True)
-        user = get_user_or_404(queryset, pk=pk)
+        user = get_object_or_404(queryset, pk=pk)
         serializer = SingleUserSerializer(user)
         return Response(serializer.data)
 
@@ -54,7 +55,7 @@ class UserViewSet(viewsets.ViewSet):
         logger.info('Destroy user request received.')
         requester = self.request.user
         queryset = get_user_queryset(requester.tenant, even_disabled=True)
-        user = get_user_or_404(queryset, pk=pk)
+        user = get_object_or_404(queryset, pk=pk)
         if requester == user:
             logger.warning("User couldn't delete himself.")
             return Response(status=HTTP_403_FORBIDDEN)
@@ -69,7 +70,8 @@ class UserViewSet(viewsets.ViewSet):
         logger.info('Update user request received.')
         requester = self.request.user
         queryset = get_user_queryset(requester.tenant, even_disabled=True)
-        user = get_user_or_404(queryset, pk=pk)
+
+        user = get_object_or_404(queryset, pk=pk)
         serializer = UpdateUserSerializer(user, self.request.data)
         if serializer.is_valid():
             serializer.save()
@@ -85,7 +87,7 @@ class UserViewSet(viewsets.ViewSet):
         logger.info('Partial update user request received.')
         requester = self.request.user
         queryset = get_user_queryset(requester.tenant, even_disabled=True)
-        user = get_user_or_404(queryset, pk)
+        user = get_object_or_404(queryset, pk)
         serializer = PartialUpdateUserSerializer(user, request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
