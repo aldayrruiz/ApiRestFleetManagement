@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from applications.reservations.models import Reservation
+from applications.tenant.models import Tenant
 
 
 class TicketStatus(models.TextChoices):
@@ -21,6 +22,7 @@ class Ticket(models.Model):
     reservation = models.ForeignKey(Reservation, related_name='tickets', on_delete=models.CASCADE)
     # Person who request other person to cancel his reservation.
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tickets', on_delete=models.CASCADE)
+    tenant = models.ForeignKey(Tenant, related_name='tickets', on_delete=models.CASCADE)
 
     status = models.CharField(
         max_length=8,

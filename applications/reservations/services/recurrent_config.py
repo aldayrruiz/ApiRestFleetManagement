@@ -1,6 +1,6 @@
 from operator import itemgetter
 
-from applications.allowed_vehicles.services import get_vehicles_ordered_by_ids
+from applications.allowed_vehicles.services.queryset import get_vehicles_ordered_by_ids
 
 
 class RecurrentConfiguration:

@@ -5,7 +5,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
-from applications.allowed_vehicles.services import get_allowed_vehicles_queryset
+from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
 from applications.traccar.models import Device
 from applications.traccar.utils import post, put, delete
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
@@ -56,12 +56,16 @@ class VehicleViewSet(viewsets.ViewSet):
         :param request:
         :return:
         """
+        requester = self.request.user
         logger.info('Create user request received.')
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
 
         if not serializer.is_valid():
             log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        if not serializer.initial_data.__contains__('gps_device'):
+            return Response({'gps_device': ['Este campo es requerido']}, status=HTTP_400_BAD_REQUEST)
 
         imei = serializer.initial_data['gps_device']
         name = '{} {}'.format(serializer.validated_data['brand'], serializer.validated_data['model'])
@@ -71,10 +75,10 @@ class VehicleViewSet(viewsets.ViewSet):
             logger.error('Traccar sent a device creation response (status {}).'.format(response.status_code))
             return Response({'errors': 'Error trying to create gps device'}, status=response.status_code)
 
-        json_device = response.json()
-        device = Device(id=json_device['id'], imei=json_device['uniqueId'], name=json_device['name'])
+        j_device = response.json()
+        device = Device(id=j_device['id'], imei=j_device['uniqueId'], name=j_device['name'], tenant=requester.tenant)
         device.save()
-        serializer.save(gps_device=device)
+        serializer.save(tenant=requester.tenant, gps_device=device)
         return Response(serializer.data)
 
     def update(self, request, pk=None):
@@ -87,6 +91,9 @@ class VehicleViewSet(viewsets.ViewSet):
         if not serializer.is_valid():
             log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        if not serializer.initial_data.__contains__('gps_device'):
+            return Response({'gps_device': ['Este campo es requerido']}, status=HTTP_400_BAD_REQUEST)
 
         device = vehicle.gps_device
         imei = serializer.initial_data['gps_device']

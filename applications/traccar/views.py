@@ -5,12 +5,12 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
-from applications.allowed_vehicles.services import get_allowed_vehicles_queryset
+from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
 from applications.reservations.models import Reservation
 from applications.reservations.utils import is_reservation_already_ended
 from applications.traccar.utils import get
-from utils.dates import from_date_to_str_date_traccar
 from utils.api.query import query_str
+from utils.dates import from_date_to_str_date_traccar
 
 logger = logging.getLogger(__name__)
 

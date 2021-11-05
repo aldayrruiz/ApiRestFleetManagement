@@ -3,6 +3,7 @@ import uuid
 from django.core.validators import MinLengthValidator
 from django.db import models
 
+from applications.tenant.models import Tenant
 from applications.traccar.models import Device
 
 # In Spain vehicle's number plates have 7 characters, except for motorbikes
@@ -21,7 +22,7 @@ class Vehicle(models.Model):
         unique=True
     )
     gps_device = models.OneToOneField(Device, null=True, on_delete=models.CASCADE)
-
+    tenant = models.ForeignKey(Tenant, related_name='vehicles', on_delete=models.CASCADE)
     date_stored = models.DateField(auto_now_add=True)
     is_disabled = models.BooleanField(default=False)
 
