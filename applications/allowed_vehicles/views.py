@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from applications.allowed_vehicles.services import AllowedVehicleUpdater
-from applications.users.services import UserSearcher
+from applications.users.services import get_user_queryset, get_user_or_404
 from applications.vehicles.services import VehicleSearcher
 from shared.permissions import IsAdmin
 
@@ -18,9 +18,10 @@ class AllowedVehicleViewSet(viewsets.ViewSet):
         """
         Request data: [id1, id2, ...]
         """
+        requester = self.request.user
         logger.info('Update user allowed vehicles request received.')
-        user_searcher = UserSearcher()
-        user = user_searcher.get(pk=pk)
+        queryset = get_user_queryset(requester.tenant, even_disabled=True)
+        user = get_user_or_404(queryset, pk)
 
         # Get new vehicles allowed to replace older ones
         vehicle_ids = self.request.data
