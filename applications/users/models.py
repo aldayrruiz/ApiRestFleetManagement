@@ -50,15 +50,14 @@ class MyUserManager(BaseUserManager):
 
         user = self.create_user(
             email,
-            password=password,
             fullname=fullname,
             tenant=tenant,
+            password=password,
         )
 
         user.is_admin = True
         user.is_staff = True
         user.is_superuser = True
-        user.is_fake = False
         user.role = Role.ADMIN
         user.save(using=self._db)
         return user
@@ -76,7 +75,6 @@ class User(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_disabled = models.BooleanField(default=False)
-    is_fake = models.BooleanField(default=False)
 
     allowed_vehicles = models.ManyToManyField(
         Vehicle,
