@@ -51,6 +51,7 @@ class ReservationViewSet(viewsets.ViewSet):
         """
         logger.info('Create reservation request received.')
         requester = self.request.user
+        tenant = requester.tenant
         serializer = CreateReservationSerializer(data=self.request.data)
 
         if not serializer.is_valid():
@@ -59,7 +60,7 @@ class ReservationViewSet(viewsets.ViewSet):
 
         self.check_reservation_creation(request, serializer.validated_data)
 
-        serializer.save(owner=requester)
+        serializer.save(owner=requester, tenant=tenant)
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'])

@@ -88,7 +88,7 @@ class UserViewSet(viewsets.ViewSet):
         logger.info('Partial update user request received.')
         requester = self.request.user
         queryset = get_user_queryset(requester.tenant, even_disabled=True)
-        user = get_object_or_404(queryset, pk)
+        user = get_object_or_404(queryset, pk=pk)
         serializer = PartialUpdateUserSerializer(user, request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
