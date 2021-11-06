@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from applications.allowed_vehicles.services.updater import update_allowed_vehicles
-from applications.users.services import get_user_queryset
+from applications.users.services.queryset import get_user_queryset
 from applications.vehicles.services.queryset import get_vehicles_queryset
 from shared.permissions import IsAdmin
 

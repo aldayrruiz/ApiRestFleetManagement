@@ -7,14 +7,14 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 
-from applications.reservations.models import Reservation
 from applications.reservations.serializers.create import CreateReservationSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
 from applications.reservations.serializers.special import RecurrentSerializer
-from applications.reservations.services.recurrent import RecurrentReservationCreator
-from applications.reservations.services.recurrent_config import RecurrentConfiguration
-from applications.reservations.utils import is_reservation_already_started, delete_reservation
-from applications.users.models import Role
+from applications.reservations.services.destroyer import delete_reservation
+from applications.reservations.services.queryset import get_reservation_queryset
+from applications.reservations.services.recurrent.recurrent import RecurrentReservationCreator
+from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
+from applications.reservations.services.timer import reservation_already_started
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
 from utils.api.query import query_bool, query_date, query_str
 from utils.dates import is_after_now
@@ -39,7 +39,7 @@ class ReservationViewSet(viewsets.ViewSet):
         logger.info('List reservations request received. [takeAll: {}, vehicleId: {}, from: {}, to: {}]'
                     .format(take_all, vehicle_id, _from, _to))
         requester = self.request.user
-        queryset = get_reservations(requester, take_all, vehicle_id, _from, _to)
+        queryset = get_reservation_queryset(requester, take_all, vehicle_id, _from, _to)
         serializer = SimpleReservationSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -98,10 +98,7 @@ class ReservationViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         logger.info('Retrieve reservation request received.')
         requester = self.request.user
-        if requester.role == Role.ADMIN:
-            queryset = Reservation.objects.all()
-        else:
-            queryset = requester.reservations.all()
+        queryset = get_reservation_queryset(requester, take_all=True)
         reservation = get_object_or_404(queryset, pk=pk)
         serializer = SimpleReservationSerializer(reservation)
         return Response(serializer.data)
@@ -109,13 +106,10 @@ class ReservationViewSet(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         logger.info('Destroy reservation request received.')
         requester = self.request.user
-        if requester == Role.ADMIN:
-            queryset = Reservation.objects.all()
-        else:
-            queryset = requester.reservations.all()
+        queryset = get_reservation_queryset(requester, take_all=True)
         reservation = get_object_or_404(queryset, pk=pk)
 
-        if is_reservation_already_started(reservation):
+        if reservation_already_started(reservation):
             return Response({'errors': 'La reserva ya ha comenzado.'}, status=HTTP_400_BAD_REQUEST)
 
         delete_reservation(reservation)
@@ -140,19 +134,6 @@ class ReservationViewSet(viewsets.ViewSet):
 
 
 def log_error_serializing(serializer):
+    serializer_cls = serializer.__class__.__name__
     logger.error("Reservation couldn't be serialized with {} because of {}."
-                 .format(serializer.__class__.__name__, serializer.errors))
-
-
-def get_reservations(requester, take_all=False, vehicle_id=None, _from=None, _to=None):
-    if requester.role == Role.ADMIN and take_all:
-        queryset = Reservation.objects.all()
-    else:
-        queryset = requester.reservations.all()
-
-    if vehicle_id:
-        queryset = Reservation.objects.filter(vehicle_id=vehicle_id)
-
-    if _from and _to:
-        queryset = queryset.filter(start__gte=_from, start__lte=_to)
-    return queryset
+                 .format(serializer_cls, serializer.errors))

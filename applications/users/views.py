@@ -13,7 +13,8 @@ from applications.users.serializers.create import RegistrationSerializer, FakeRe
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
     PartialUpdateUserSerializer
-from applications.users.services import get_user_queryset, create_fake_admin
+from applications.users.services.creator import create_fake_admin
+from applications.users.services.queryset import get_user_queryset
 from shared.permissions import IsAdmin, IsNotDisabled
 from utils.api.query import query_bool
 
