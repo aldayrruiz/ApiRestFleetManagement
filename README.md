@@ -52,7 +52,7 @@ using `showtenants` scripts.
 If you want to make a backup of current state of database use ...
 
 ```shell
-python manage.py dumpdata -e contenttypes -e auth --format yaml -o fixtures/fixture.yaml
+python manage.py dumpdata -e contenttypes -e auth --e authtoken -format yaml -o fixtures/fixture.yaml
 ```
 
 ### Load initial data (Optional)
