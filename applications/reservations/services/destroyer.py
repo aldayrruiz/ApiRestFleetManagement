@@ -1,20 +1,10 @@
 import logging
 
+from applications.reservations.services.timer import reservation_already_started
 from applications.tickets.models import TicketStatus
-from utils.dates import get_now_utc
 from utils.email.tickets import send_accepted_ticket_email, send_denied_ticket_email
 
 logger = logging.getLogger(__name__)
-
-
-def is_reservation_already_started(reservation):
-    now = get_now_utc()
-    return reservation.start < now
-
-
-def is_reservation_already_ended(reservation):
-    now = get_now_utc()
-    return reservation.end < now
 
 
 def delete_reservation(reservation, new_ticket_st=TicketStatus.DENIED):
@@ -27,7 +17,7 @@ def delete_reservation(reservation, new_ticket_st=TicketStatus.DENIED):
     :return: None or Raise a exception if new_ticket_st not in [ACCEPTED, DENIED]
     """
 
-    if is_reservation_already_started(reservation):
+    if reservation_already_started(reservation):
         logger.exception('Cannot delete a reservation which has already started: {}'.format(reservation.id))
 
     if new_ticket_st is TicketStatus.ACCEPTED:
@@ -42,4 +32,3 @@ def delete_reservation(reservation, new_ticket_st=TicketStatus.DENIED):
     for ticket in tickets:
         send_email(ticket)
     reservation.delete()
-

@@ -1,6 +1,7 @@
 import logging
 
-from applications.reservations.utils import is_reservation_already_started, delete_reservation
+from applications.reservations.services.destroyer import delete_reservation
+from applications.reservations.services.timer import reservation_already_started
 from applications.tickets.models import TicketStatus
 from utils.email.tickets import send_reservation_deleted_email, send_accepted_ticket_email, send_denied_ticket_email
 
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def solve_ticket(ticket, new_status):
     reservation = ticket.reservation
-    if is_reservation_already_started(reservation):
+    if reservation_already_started(reservation):
         logger.exception('Cannot delete a reservation which has already started: {}'.format(reservation.id))
 
     if new_status == TicketStatus.UNSOLVED:
