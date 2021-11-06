@@ -35,3 +35,4 @@ def send_email(receiver_email, message):
     with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, receiver_email, message)
+    # print('Email sent to {}'.format(receiver_email))

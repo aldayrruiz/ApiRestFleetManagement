@@ -1,8 +1,76 @@
 - model: tenant.tenant
+  pk: 6bbbcabe-948b-4a01-b7dc-484713cb35e0
+  fields:
+    name: Fake
+    date_stored: 2021-11-06
+- model: tenant.tenant
   pk: 95ba80f6-dc6f-480d-a639-ce684e91f142
   fields:
     name: Bilbao
     date_stored: 2021-11-05
+- model: traccar.device
+  pk: 12
+  fields:
+    name: Renault Clio
+    imei: IMEI123456789
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+- model: traccar.device
+  pk: 14
+  fields:
+    name: Tesla S
+    imei: IMEI123456781
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+- model: traccar.device
+  pk: 15
+  fields:
+    name: FakeFake FakeFakeModel
+    imei: FakeFakeFake
+    tenant: 6bbbcabe-948b-4a01-b7dc-484713cb35e0
+- model: vehicles.vehicle
+  pk: 2c016313-83b6-44b9-8299-f8c636e55207
+  fields:
+    model: FakeFakeModel
+    brand: FakeFake
+    number_plate: Fake123
+    gps_device: 15
+    tenant: 6bbbcabe-948b-4a01-b7dc-484713cb35e0
+    date_stored: 2021-11-06
+    is_disabled: false
+- model: vehicles.vehicle
+  pk: 2d5b7a64-810b-4fb5-818f-57d3a517702a
+  fields:
+    model: Clio
+    brand: Renault
+    number_plate: '1234567'
+    gps_device: 12
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+    date_stored: 2021-11-06
+    is_disabled: false
+- model: vehicles.vehicle
+  pk: 68b473af-4aef-4e63-aab3-b9a6c0d6c66e
+  fields:
+    model: S
+    brand: Tesla
+    number_plate: '5123467'
+    gps_device: 14
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+    date_stored: 2021-11-06
+    is_disabled: false
+- model: users.user
+  pk: 2771c831-2c98-4dc3-b8ae-0eae64981751
+  fields:
+    password: pbkdf2_sha256$260000$WFDp2p7VT8owEDLtkClUGB$8G5B6zgLxq2g0xPIztA35Mib/rUyrPD2vA0cTNOT+YM=
+    email: aldayr468@gmail.com
+    fullname: Aldayr Ruiz Longa
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+    date_joined: 2021-11-06 16:39:14.575773+00:00
+    last_login: 2021-11-06 16:59:01.891252+00:00
+    is_admin: false
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    is_disabled: false
+    role: USER
 - model: users.user
   pk: 5687dc0b-e22a-48a1-b6c5-9ea3b0939fe0
   fields:
@@ -18,8 +86,125 @@
     is_superuser: true
     is_disabled: false
     role: ADMIN
-- model: authtoken.token
-  pk: ce0e0adb42db7be80ccf9deb706ded397282fee6
+- model: users.user
+  pk: 7dc4c9f3-c3b0-4302-a3a2-3074e1a10393
   fields:
-    user: 5687dc0b-e22a-48a1-b6c5-9ea3b0939fe0
-    created: 2021-11-05 12:07:38.157402+00:00
+    password: pbkdf2_sha256$260000$j9t6WwKwEY0EKY3WW2w9TC$0TCdiK7F6G3d7UnmO+8gWRso4Xx4IEN6ecAjTkBziF0=
+    email: fakeuser@fake.com
+    fullname: fake
+    tenant: 6bbbcabe-948b-4a01-b7dc-484713cb35e0
+    date_joined: 2021-11-06 17:11:53.375409+00:00
+    last_login: 2021-11-06 17:11:53.375409+00:00
+    is_admin: false
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    is_disabled: false
+    role: USER
+- model: users.user
+  pk: aa3955fe-3a05-4602-8ebf-eb671814e4ac
+  fields:
+    password: pbkdf2_sha256$260000$yQzVkOSXslxEvqTTgctGyP$1/MC++0pfykZcgf+cb1WEJIXGaGgQqPw+xH1MGOHSGw=
+    email: fake@fake.com
+    fullname: FakeFake
+    tenant: 6bbbcabe-948b-4a01-b7dc-484713cb35e0
+    date_joined: 2021-11-06 17:11:20.565680+00:00
+    last_login: 2021-11-06 17:14:19.561302+00:00
+    is_admin: true
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    is_disabled: false
+    role: ADMIN
+- model: users.user
+  pk: c346f42c-8865-4c8d-b4ec-29f358db300a
+  fields:
+    password: pbkdf2_sha256$260000$uhN9YVdt0EwKHtpc3z0RDK$BE/ffIsddysrfw37Wq1HXcKXoCqby/eCteiCpMA1pCY=
+    email: javi@gmail.com
+    fullname: javi@gmail.com
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+    date_joined: 2021-11-06 16:46:06.146881+00:00
+    last_login: 2021-11-06 17:00:59.445048+00:00
+    is_admin: false
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    is_disabled: false
+    role: USER
+- model: allowed_vehicles.allowedvehicles
+  pk: 0139f6ac-aeab-4c07-8ccf-1491c7009fa6
+  fields:
+    user: 2771c831-2c98-4dc3-b8ae-0eae64981751
+    vehicle: 68b473af-4aef-4e63-aab3-b9a6c0d6c66e
+- model: allowed_vehicles.allowedvehicles
+  pk: 2e24737e-32e9-4868-939b-bfd2e3315d38
+  fields:
+    user: c346f42c-8865-4c8d-b4ec-29f358db300a
+    vehicle: 68b473af-4aef-4e63-aab3-b9a6c0d6c66e
+- model: allowed_vehicles.allowedvehicles
+  pk: 93625327-4ba0-4447-ad22-f5b89726b148
+  fields:
+    user: 7dc4c9f3-c3b0-4302-a3a2-3074e1a10393
+    vehicle: 2c016313-83b6-44b9-8299-f8c636e55207
+- model: allowed_vehicles.allowedvehicles
+  pk: d3588963-36a6-4a51-8da5-60e63d7bb15c
+  fields:
+    user: c346f42c-8865-4c8d-b4ec-29f358db300a
+    vehicle: 2d5b7a64-810b-4fb5-818f-57d3a517702a
+- model: allowed_vehicles.allowedvehicles
+  pk: e2cb9096-79e9-45c5-88fd-0c069481729a
+  fields:
+    user: 2771c831-2c98-4dc3-b8ae-0eae64981751
+    vehicle: 2d5b7a64-810b-4fb5-818f-57d3a517702a
+- model: reservations.reservation
+  pk: 15c8d776-0df5-466f-93c5-ff32aa8be0ae
+  fields:
+    title: adfadfadfadf
+    date_stored: 2021-11-06
+    start: 2021-11-26 17:30:00+00:00
+    end: 2021-11-26 18:30:00+00:00
+    description: adsfadsf
+    is_cancelled: false
+    is_recurrent: false
+    recurrent_id: null
+    owner: 2771c831-2c98-4dc3-b8ae-0eae64981751
+    vehicle: 2d5b7a64-810b-4fb5-818f-57d3a517702a
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+- model: reservations.reservation
+  pk: 457d2879-ef9c-4ada-9e80-97564f2587e3
+  fields:
+    title: asdfasdf
+    date_stored: 2021-11-06
+    start: 2021-11-27 17:30:00+00:00
+    end: 2021-11-27 18:30:00+00:00
+    description: adsfadf
+    is_cancelled: false
+    is_recurrent: false
+    recurrent_id: null
+    owner: 2771c831-2c98-4dc3-b8ae-0eae64981751
+    vehicle: 2d5b7a64-810b-4fb5-818f-57d3a517702a
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+- model: reservations.reservation
+  pk: 778cc776-6576-4070-b045-87f18edb70b7
+  fields:
+    title: fakfakfekkafk
+    date_stored: 2021-11-06
+    start: 2021-11-27 17:30:00+00:00
+    end: 2021-11-27 18:30:00+00:00
+    description: fakfakfekkafkfakfakfekkafk
+    is_cancelled: false
+    is_recurrent: false
+    recurrent_id: null
+    owner: 7dc4c9f3-c3b0-4302-a3a2-3074e1a10393
+    vehicle: 2c016313-83b6-44b9-8299-f8c636e55207
+    tenant: 6bbbcabe-948b-4a01-b7dc-484713cb35e0
+- model: tickets.ticket
+  pk: 3dd6919d-93e9-47b6-850d-53ebca0efe0b
+  fields:
+    title: asdasd
+    date_stored: 2021-11-06 17:20:52.219412+00:00
+    description: asdasdas
+    reservation: 457d2879-ef9c-4ada-9e80-97564f2587e3
+    owner: c346f42c-8865-4c8d-b4ec-29f358db300a
+    tenant: 95ba80f6-dc6f-480d-a639-ce684e91f142
+    status: UNSOLVED
