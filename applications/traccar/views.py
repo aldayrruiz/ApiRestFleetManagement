@@ -7,7 +7,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
 from applications.reservations.models import Reservation
-from applications.reservations.utils import is_reservation_already_ended
+from applications.reservations.services.timer import reservation_already_ended
 from applications.traccar.utils import get
 from utils.api.query import query_str
 from utils.dates import from_date_to_str_date_traccar
@@ -45,7 +45,7 @@ class ReportsRouteViewSet(viewsets.ViewSet):
 
         queryset = Reservation.objects.all()
         reservation = get_object_or_404(queryset, pk=reservation_id)
-        if not is_reservation_already_ended(reservation):
+        if not reservation_already_ended(reservation):
             return Response({'errors': 'Reservation has not ended already.'}, status=HTTP_400_BAD_REQUEST)
 
         device_id = reservation.vehicle.gps_device.id

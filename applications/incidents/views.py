@@ -5,11 +5,10 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
-from applications.incidents.models import Incident
 from applications.incidents.serializers.create import CreateIncidentSerializer
 from applications.incidents.serializers.simple import SimpleIncidentSerializer
-from applications.users.models import Role
-from applications.users.services import get_admin
+from applications.incidents.services.queryset import get_incident_queryset
+from applications.users.services.search import get_admin
 from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled
 from utils.api.query import query_bool
 from utils.email.incidents import send_created_incident_email
@@ -29,33 +28,28 @@ class IncidentViewSet(viewsets.ViewSet):
         take_all = query_bool(self.request, 'takeAll')
         logger.info('List incidents request received. [takeAll: {}]'.format(take_all))
         requester = self.request.user
-        if requester.role == Role.ADMIN and take_all is True:
-            queryset = Incident.objects.all()
-        else:
-            queryset = Incident.objects.filter(owner=requester)
+        queryset = get_incident_queryset(requester, take_all)
         serializer = SimpleIncidentSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request):
         logger.info('Create incident request received.')
-        user = self.request.user
+        requester = self.request.user
+        tenant = requester.tenant
         serializer = CreateIncidentSerializer(data=self.request.data)
 
         if not serializer.is_valid():
             log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-        incident = serializer.save(owner=user)
-        send_created_incident_email(get_admin(), incident)
+        incident = serializer.save(owner=requester, tenant=tenant)
+        send_created_incident_email(get_admin(tenant), incident)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         logger.info('Retrieve incident request received.')
-        user = self.request.user
-        if user.role == Role.ADMIN:
-            queryset = Incident.objects.all()
-        else:
-            queryset = Incident.objects.filter(owner=user)
+        requester = self.request.user
+        queryset = get_incident_queryset(requester, take_all=True)
         incident = get_object_or_404(queryset, pk=pk)
         serializer = SimpleIncidentSerializer(incident)
         return Response(serializer.data)
