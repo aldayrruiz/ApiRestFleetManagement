@@ -138,6 +138,11 @@ class RegistrationViewSet(viewsets.ViewSet):
 
         user = serializer.save(tenant=tenant)
         logger.info('Fake user registered successfully: {}'.format(user.fullname))
+
+        # Set all vehicles from tenant to new user.
+        vehicles = tenant.vehicles.all()
+        user.allowed_vehicles.set(vehicles)
+
         return Response(serializer.data)
 
     def get_permissions(self):
