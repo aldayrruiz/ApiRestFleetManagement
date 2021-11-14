@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 
 from decouple import config
 
+emails = config('EMAILS_STATUS')
 smtp_port = config('SMTP_PORT')
 smtp_server = config('SMTP_SERVER')
 sender_email = config('SENDER_EMAIL')
@@ -14,8 +15,17 @@ sender_password = config('SENDER_PASSWORD')
 logger = logging.getLogger(__name__)
 
 
+def are_emails_enabled():
+    return emails in ['Enabled', 'enabled', 'True', 'true']
+
+
+emails_enabled = are_emails_enabled()
+
 if not (smtp_port and smtp_server and sender_email and sender_password):
     logger.critical('Email configuration was not found (see .env file).')
+
+if not emails_enabled:
+    logger.critical('Emails are disabled (see .env file). Ignore it, if you are in developer mode.')
 
 
 def create_message(receiver_email, subject, body):
@@ -31,6 +41,9 @@ def create_message(receiver_email, subject, body):
 
 
 def send_email(receiver_email, message):
+    if not emails_enabled:
+        return
+
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
         server.login(sender_email, sender_password)
