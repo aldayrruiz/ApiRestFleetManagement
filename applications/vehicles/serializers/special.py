@@ -14,7 +14,7 @@ class DetailedVehicleSerializer(serializers.ModelSerializer):
         fields = ['id', 'model', 'brand', 'number_plate', 'gps_device', 'date_stored', 'reservations', 'is_disabled']
 
 
-class PartialUpdateVehicleSerializer(serializers.ModelSerializer):
+class DisableVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = ['is_disabled']

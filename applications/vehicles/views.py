@@ -10,7 +10,7 @@ from applications.traccar.models import Device
 from applications.traccar.utils import post, put, delete
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
-from applications.vehicles.serializers.special import DetailedVehicleSerializer, PartialUpdateVehicleSerializer
+from applications.vehicles.serializers.special import DetailedVehicleSerializer, DisableVehicleSerializer
 from shared.permissions import IsAdmin, IsNotDisabled
 from utils.api.query import query_bool
 
@@ -23,8 +23,6 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         If requester is user, returns the user allowed vehicles.
         Otherwise, if user is admin, returns all vehicles.
-        :param request:
-        :return: vehicles
         """
         even_disabled = query_bool(self.request, 'evenDisabled')
         logger.info('List vehicles request received. [evenDisabled: {}]'.format(even_disabled))
@@ -37,9 +35,6 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         If requester is user, he will have access to his allowed vehicles.
         If requester is admin, he will have access to all vehicles.
-        :param request:
-        :param pk: uuid of the vehicle
-        :return: vehicle desired.
         """
         even_disabled = query_bool(self.request, 'evenDisabled')
         logger.info('Retrieve vehicle request received.')
@@ -53,10 +48,9 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         It creates a vehicle given a data.
         Users have not access to this endpoint (permissions).
-        :param request:
-        :return:
         """
         requester = self.request.user
+        tenant = requester.tenant
         logger.info('Create user request received.')
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
 
@@ -68,7 +62,7 @@ class VehicleViewSet(viewsets.ViewSet):
             return Response({'gps_device': ['Este campo es requerido']}, status=HTTP_400_BAD_REQUEST)
 
         imei = serializer.initial_data['gps_device']
-        name = '{} {}'.format(serializer.validated_data['brand'], serializer.validated_data['model'])
+        name = get_vehicle_name_for_traccar(tenant, serializer)
         response = post('devices', data={'uniqueId': imei, 'name': name})
 
         if not response.ok:
@@ -76,7 +70,7 @@ class VehicleViewSet(viewsets.ViewSet):
             return Response({'errors': 'Error trying to create gps device'}, status=response.status_code)
 
         j_device = response.json()
-        device = Device(id=j_device['id'], imei=j_device['uniqueId'], name=j_device['name'], tenant=requester.tenant)
+        device = Device(id=j_device['id'], imei=j_device['uniqueId'], name=j_device['name'], tenant=tenant)
         device.save()
         serializer.save(tenant=requester.tenant, gps_device=device)
         return Response(serializer.data)
@@ -84,6 +78,7 @@ class VehicleViewSet(viewsets.ViewSet):
     def update(self, request, pk=None):
         logger.info('Update vehicle request received.')
         requester = self.request.user
+        tenant = requester.tenant
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = CreateOrUpdateVehicleSerializer(vehicle, self.request.data)
@@ -97,7 +92,7 @@ class VehicleViewSet(viewsets.ViewSet):
 
         device = vehicle.gps_device
         imei = serializer.initial_data['gps_device']
-        name = '{} {}'.format(serializer.validated_data['brand'], serializer.validated_data['model'])
+        name = get_vehicle_name_for_traccar(tenant, serializer)
         response = put('devices', data={'id': device.id, 'uniqueId': imei, 'name': name})
 
         if not response.ok:
@@ -112,15 +107,12 @@ class VehicleViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         """
         It is used just for disable and enable users. Just admins can do this.
-        :param request:
-        :param pk:
-        :return:
         """
         logger.info('Partial update vehicle request received.')
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
         vehicle = get_object_or_404(queryset, pk=pk)
-        serializer = PartialUpdateVehicleSerializer(vehicle, request.data, partial=True)
+        serializer = DisableVehicleSerializer(vehicle, request.data, partial=True)
 
         if not serializer.is_valid():
             logger.error('Could not partial update vehicle.')
@@ -134,9 +126,6 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         It deletes the vehicle.
         Users have not access to this endpoint (permissions).
-        :param request:
-        :param pk: uuid of the vehicle
-        :return:
         """
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
@@ -163,3 +152,8 @@ class VehicleViewSet(viewsets.ViewSet):
 def log_error_serializing(serializer):
     logger.error("Vehicle couldn't be serialized with {} because of {}"
                  .format(serializer.__class__.__name__, serializer.errors))
+
+
+def get_vehicle_name_for_traccar(tenant, serializer):
+    name = '{} {} {}'.format(tenant.name, serializer.validated_data['brand'], serializer.validated_data['model'])
+    return name
