@@ -18,6 +18,13 @@ logger = logging.getLogger(__name__)
 class PositionViewSet(viewsets.ViewSet):
 
     def list(self, request):
+        # TODO: Only return positions from requester tenant.
+        # How? Filter before response
+
+        # 1. Maybe, having multiple Traccar admins.
+        # Add some fields like email and plain password of traccar. Clean and dirty solution...
+
+        # 2. Just filter by properties of devices and vehicles.
         logger.info('List positions request received.')
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(user=requester, even_disabled=True)
