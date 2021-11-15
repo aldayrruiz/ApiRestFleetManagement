@@ -65,6 +65,7 @@ class ReservationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def create_repetitive(self, request):
+        tenant = self.request.user.tenant
         force = query_bool(self.request, 'force')
         logger.info('Query force: {}'.format(force))
 
@@ -87,7 +88,7 @@ class ReservationViewSet(viewsets.ViewSet):
             }
             return Response(response, status=HTTP_409_CONFLICT)
 
-        RecurrentReservationCreator.create(valid_reservations)
+        RecurrentReservationCreator.create(valid_reservations, tenant)
         valid_reservations_serializer = SimpleReservationSerializer(valid_reservations, many=True)
         response = {
             'description': 'You have forced the reservations',

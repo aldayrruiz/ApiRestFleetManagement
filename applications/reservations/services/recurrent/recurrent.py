@@ -108,10 +108,11 @@ class RecurrentReservationCreator:
         return self.__get_reservation__(start, end, vehicles.first())
 
     @staticmethod
-    def create(valid_reservations):
+    def create(valid_reservations, tenant):
         recurrent_uuid = uuid.uuid4()
 
         for reservation in valid_reservations:
             reservation.recurrent_id = recurrent_uuid
             reservation.is_recurrent = True
+            reservation.tenant = tenant
             reservation.save()
