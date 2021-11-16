@@ -1,7 +1,5 @@
 from utils.email.shared import send_email, create_message
 
-from decouple import config
-
 
 user_created_body = """
 Se te ha registrado en {}, ahora puedes hacer uso de su aplicación móvil.
@@ -10,10 +8,14 @@ Tus datos son los siguientes, recuerda que puedes cambiarlos una vez entres en l
 Nombre Completo: {}
 Email: {}
 Contraseña: {}
-URL de app: {}
-"""
 
-url = config('SERVER_URL')
+La app puede ser encontrada en...
+
+Play Store (teléfonos Android): https://play.google.com/store/apps/details?id=eu.bluece.fleetmanagement&gl=ES
+
+Apple Store (teléfonos iPhone): https://apps.apple.com/es/app/bluece-fleet-management/id1590842892
+
+"""
 
 
 def send_created_user_email(user, password):
@@ -32,7 +34,6 @@ def get_user_created_message(user, password):
         user.fullname,
         user.email,
         password,
-        url
     )
 
     return create_message(receiver_email=user.email, subject=subject, body=body)
