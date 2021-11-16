@@ -9,7 +9,8 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTT
 
 from applications.reservations.serializers.create import CreateReservationSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
-from applications.reservations.serializers.special import RecurrentSerializer
+from applications.reservations.serializers.special import RecurrentSerializer, CreateByDate
+from applications.reservations.services.bydate.creator import ReservationByDateCreator
 from applications.reservations.services.destroyer import delete_reservation
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.recurrent.recurrent import RecurrentReservationCreator
@@ -62,6 +63,24 @@ class ReservationViewSet(viewsets.ViewSet):
 
         serializer.save(owner=requester, tenant=tenant)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def create_by_date(self, request):
+        requester = self.request.user
+        logger.info('Create reservation by date')
+
+        serializer = CreateByDate(data=self.request.data)
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        creator = ReservationByDateCreator.from_serializer(serializer)
+        reservation = creator.create(requester)
+        if not reservation:
+            return Response({'errors': 'Ningun vehículo disponible.'})
+
+        response = SimpleReservationSerializer(reservation)
+        return Response(response.data)
 
     @action(detail=False, methods=['post'])
     def create_repetitive(self, request):

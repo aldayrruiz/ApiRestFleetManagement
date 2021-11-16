@@ -13,3 +13,10 @@ class RecurrentSerializer(serializers.Serializer):
     startReservations = serializers.DateTimeField(required=True)
     endReservations = serializers.DateTimeField(required=True)
     vehicles = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
+
+
+class CreateByDate(serializers.Serializer):
+    title = serializers.CharField(max_length=50)
+    description = serializers.CharField(style={'base_template': 'textarea.html'})
+    start = serializers.DateTimeField(required=True)
+    end = serializers.DateTimeField(required=True)
