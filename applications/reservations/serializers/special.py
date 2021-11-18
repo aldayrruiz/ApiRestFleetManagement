@@ -20,3 +20,4 @@ class CreateByDate(serializers.Serializer):
     description = serializers.CharField(style={'base_template': 'textarea.html'})
     start = serializers.DateTimeField(required=True)
     end = serializers.DateTimeField(required=True)
+    vehicles = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
