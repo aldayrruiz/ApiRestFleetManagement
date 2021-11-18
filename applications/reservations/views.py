@@ -74,8 +74,8 @@ class ReservationViewSet(viewsets.ViewSet):
             log_error_serializing(serializer)
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-        creator = ReservationByDateCreator.from_serializer(serializer)
-        reservation = creator.create(requester)
+        creator = ReservationByDateCreator.from_serializer(serializer, requester)
+        reservation = creator.create()
         if not reservation:
             return Response({'errors': 'Ningun vehículo disponible.'})
 
