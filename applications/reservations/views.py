@@ -126,12 +126,19 @@ class ReservationViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         logger.info('Destroy reservation request received.')
+        delete_post = query_bool(self.request, 'deletePost')
         requester = self.request.user
         queryset = get_reservation_queryset(requester, take_all=True)
         reservation = get_object_or_404(queryset, pk=pk)
 
         if reservation_already_started(reservation):
             return Response({'errors': 'La reserva ya ha comenzado.'}, status=HTTP_400_BAD_REQUEST)
+
+        if delete_post and reservation.is_recurrent:
+            queryset = queryset.filter(recurrent_id=reservation.recurrent_id, start__gte=reservation.start)
+            for res in queryset:
+                delete_reservation(res)
+            return Response(status=HTTP_204_NO_CONTENT)
 
         delete_reservation(reservation)
         return Response(status=HTTP_204_NO_CONTENT)
