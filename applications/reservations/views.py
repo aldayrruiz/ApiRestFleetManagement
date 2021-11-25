@@ -77,7 +77,7 @@ class ReservationViewSet(viewsets.ViewSet):
         creator = ReservationByDateCreator.from_serializer(serializer, requester)
         reservation = creator.create()
         if not reservation:
-            return Response({'errors': 'Ningun vehículo disponible.'})
+            return Response({'errors': 'Ningun vehículo disponible.'}, status=HTTP_409_CONFLICT)
 
         response = SimpleReservationSerializer(reservation)
         return Response(response.data)
