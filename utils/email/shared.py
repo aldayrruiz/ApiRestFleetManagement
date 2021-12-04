@@ -48,4 +48,27 @@ def send_email(receiver_email, message):
     with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, receiver_email, message)
-    # print('Email sent to {}'.format(receiver_email))
+
+
+class EmailSender:
+    def __init__(self, receiver: str, subject: str):
+        self.receiver = receiver
+        self.message = MIMEMultipart('alternative')
+        self.message["From"] = sender_email
+        self.message["To"] = self.receiver
+        self.message["Subject"] = subject
+
+    def attach_html(self, html):
+        self.message.attach(MIMEText(html, 'html'))
+
+    def attach_plain(self, plain):
+        self.message.attach(MIMEText(plain, 'plain'))
+
+    def send(self):
+        if not emails_enabled:
+            return
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, self.receiver, self.message.as_string())

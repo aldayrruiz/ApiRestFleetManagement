@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -11,6 +12,8 @@ from rest_framework.authtoken.models import Token
 
 from applications.tenant.models import Tenant
 from applications.vehicles.models import Vehicle
+
+PASSWORD_LENGTH = 8
 
 
 class Role(models.TextChoices):
@@ -105,6 +108,38 @@ class User(AbstractBaseUser):
 
     class Meta:
         db_table = 'User'
+
+
+CODE_LENGTH = 6
+
+
+class RecoverPasswordStatus(models.TextChoices):
+    PENDING = 'PENDING', _('Pending')
+    COMPLETED = 'COMPLETED', _('Completed')
+
+
+class RecoverPassword(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    date_stored = models.DateTimeField(auto_now_add=True)
+    code = models.CharField(
+        max_length=CODE_LENGTH,
+        validators=[MinLengthValidator(CODE_LENGTH)],
+        unique=False
+    )
+    status = models.CharField(
+        max_length=9,
+        choices=RecoverPasswordStatus.choices,
+        default=RecoverPasswordStatus.PENDING
+    )
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='recover_passwords', on_delete=models.CASCADE)
+    tenant = models.ForeignKey(Tenant, related_name='recover_passwords', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'Recover Password'
+        ordering = ['-date_stored']
+
+    def __str__(self):
+        return '{} - {}'.format(self.code, self.status)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
