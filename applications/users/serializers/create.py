@@ -1,13 +1,9 @@
-import random
-import string
-
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from applications.users.models import User
+from utils.codegen import generate_password
 from utils.email.users import send_created_user_email
-
-pass_length = 8
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -21,7 +17,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
                     fullname=self.validated_data['fullname'],
                     tenant=tenant)
 
-        password = ''.join(random.choice(string.ascii_letters) for i in range(pass_length))
+        password = generate_password()
 
         user.set_password(password)
         user.save()

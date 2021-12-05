@@ -1,7 +1,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
+from applications.users.models import User, RecoverPassword
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
+from utils.codegen import generate_recover_password_code
 
 
 class SingleUserSerializer(serializers.ModelSerializer):
@@ -33,3 +36,29 @@ class PartialUpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ['is_disabled']
+
+
+class CreateRecoverPasswordSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = RecoverPassword
+        fields = ['email']
+
+    def save(self):
+        queryset = User.objects.all()
+        code = generate_recover_password_code()
+        owner = get_object_or_404(queryset, email=self.validated_data['email'])
+        recover_password = RecoverPassword(owner=owner, code=code, tenant=owner.tenant)
+        recover_password.save()
+        return recover_password
+
+
+class RecoverPasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecoverPassword
+        fields = ['id', 'status']
+
+
+class ConfirmRecoverPasswordSerializer(serializers.Serializer):
+    code = serializers.CharField(required=True)

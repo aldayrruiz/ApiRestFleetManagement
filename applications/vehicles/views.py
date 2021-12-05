@@ -37,11 +37,12 @@ class VehicleViewSet(viewsets.ViewSet):
         If requester is admin, he will have access to all vehicles.
         """
         even_disabled = query_bool(self.request, 'evenDisabled')
+        reservations = query_bool(self.request, 'reservations')
         logger.info('Retrieve vehicle request received.')
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=even_disabled)
         vehicle = get_object_or_404(queryset, pk=pk)
-        serializer = DetailedVehicleSerializer(vehicle)
+        serializer = DetailedVehicleSerializer(vehicle) if reservations else SimpleVehicleSerializer(vehicle)
         return Response(serializer.data)
 
     def create(self, request):
