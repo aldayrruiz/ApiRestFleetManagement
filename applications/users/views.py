@@ -9,14 +9,18 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_403_FORBIDDEN
 
 from applications.tenant.models import Tenant
+from applications.users.models import RecoverPassword, RecoverPasswordStatus
 from applications.users.serializers.create import RegistrationSerializer, FakeRegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
-    PartialUpdateUserSerializer
+    PartialUpdateUserSerializer, CreateRecoverPasswordSerializer, ConfirmRecoverPasswordSerializer, \
+    RecoverPasswordSerializer
 from applications.users.services.creator import create_fake_admin
 from applications.users.services.queryset import get_user_queryset
 from shared.permissions import IsAdmin, IsNotDisabled
 from utils.api.query import query_bool
+from utils.codegen import generate_password
+from utils.email.users import send_create_recover_password, send_confirmed_recovered_password
 
 logger = logging.getLogger(__name__)
 
@@ -97,13 +101,52 @@ class UserViewSet(viewsets.ViewSet):
         log_error_serializing(serializer)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['post'])
+    def create_recover_password(self, request):
+        serializer = CreateRecoverPasswordSerializer(data=self.request.data)
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        recover_password = serializer.save()
+        send_create_recover_password(recover_password.owner, recover_password.code)
+        serialized = RecoverPasswordSerializer(recover_password)
+        return Response(serialized.data)
+
+    @action(detail=True, methods=['put'])
+    def confirm_recover_password(self, request, pk=None):
+        serializer = ConfirmRecoverPasswordSerializer(data=self.request.data)
+        queryset = RecoverPassword.objects.all()
+        recover_password = get_object_or_404(queryset, pk=pk)
+
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        code_not_match = recover_password.code.upper() != serializer.validated_data['code'].upper()
+        already_completed = recover_password.status == RecoverPasswordStatus.COMPLETED
+
+        if code_not_match or already_completed:
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        recover_password.status = RecoverPasswordStatus.COMPLETED
+        owner = recover_password.owner
+        new_password = generate_password()
+        owner.set_password(new_password)
+
+        owner.save()
+        recover_password.save()
+
+        send_confirmed_recovered_password(recover_password.owner, new_password)
+        return Response()
+
     # Create method is located in /register endpoint
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'update']:
             permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
-        # ['create', 'destroy', 'partial_update']:
-        else:
+        elif self.action in ['create', 'destroy', 'partial_update']:
             permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        else:
+            permission_classes = [permissions.AllowAny]
 
         return [permission() for permission in permission_classes]
 

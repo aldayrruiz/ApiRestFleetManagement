@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from applications.reservations.models import Reservation
+from applications.reservations.serializers.validator import validate
 
 
 def is_reservation_valid(new_reservation, reservation):
@@ -17,12 +18,7 @@ class CreateReservationSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'date_stored', 'start', 'end', 'description', 'owner', 'vehicle', 'is_cancelled']
 
     def validate(self, data):
-
-        # TODO: Reservation must be a minimum of 1h
-
-        # Check reservation's start date < end date
-        if data['start'] > data['end']:
-            raise serializers.ValidationError("La fecha de la comienzo debe ser anterior a la final")
+        validate(data)
 
         reservations = Reservation.objects.filter(vehicle__id=data['vehicle'].id, is_cancelled=False)
 

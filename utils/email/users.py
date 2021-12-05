@@ -1,5 +1,4 @@
-from utils.email.shared import send_email, create_message
-
+from utils.email.shared import send_email, create_message, EmailSender
 
 user_created_body = """
 Se te ha registrado en {}, ahora puedes hacer uso de su aplicación móvil.
@@ -38,3 +37,39 @@ def get_user_created_message(user, password):
 
     return create_message(receiver_email=user.email, subject=subject, body=body)
 
+
+create_recover_password_body = """\
+Hola {}:
+Has solicitado recuperar la contraseña de tu cuenta.
+
+Si no has realizado esta solicitud puedes ignorar este mensaje y tu contraseña seguirá siendo la misma.
+
+Si has realizado esta solicitud de recuperación de contraseña, introduce el siguiente código en la app.
+
+{}
+"""
+
+
+def send_create_recover_password(user, code):
+    subject = 'Fleet Management - Recuperar contraseña'
+    email_sender = EmailSender(user.email, subject)
+    body = create_recover_password_body.format(user.fullname, code)
+    email_sender.attach_plain(body)
+    email_sender.send()
+
+
+confirmed_recovered_password_body = """\
+Hola {}:
+Se ha confirmado correctamente la recuperación de su contraseña.
+Su contraseña nueva es: {}
+
+Recuerde que puede cambiar su contraseña una vez dentro de la app.
+"""
+
+
+def send_confirmed_recovered_password(user, new_password):
+    subject = 'Fleet Management - Recuperar contraseña'
+    email_sender = EmailSender(user.email, subject)
+    body = confirmed_recovered_password_body.format(user.fullname, new_password)
+    email_sender.attach_plain(body)
+    email_sender.send()

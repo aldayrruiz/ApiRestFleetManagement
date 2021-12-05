@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from applications.reservations.serializers.validator import validate
 from utils.dates import WeekDay
 
 
@@ -21,3 +22,7 @@ class CreateByDate(serializers.Serializer):
     start = serializers.DateTimeField(required=True)
     end = serializers.DateTimeField(required=True)
     vehicles = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
+
+    def validate(self, data):
+        validate(data)
+        return data

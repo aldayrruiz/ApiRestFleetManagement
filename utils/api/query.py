@@ -1,7 +1,7 @@
 from utils.dates import get_date_from_str_utc
 
 
-def query_bool(request, query):
+def query_bool(request, query) -> bool:
     """
     The query must be a boolean like True, 'True', 'true'
     :param request:
