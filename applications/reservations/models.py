@@ -7,6 +7,18 @@ from applications.tenant.models import Tenant
 from applications.vehicles.models import Vehicle
 
 
+class Recurrent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    weekdays = models.CharField(max_length=13)  # 0,1,2,3,4,5,6
+    since = models.DateTimeField()
+    until = models.DateTimeField()
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='recurrences', on_delete=models.CASCADE)
+    tenant = models.ForeignKey(Tenant, related_name='recurrences', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'Recurrent'
+
+
 class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=50)
@@ -16,7 +28,7 @@ class Reservation(models.Model):
     description = models.TextField()
     is_cancelled = models.BooleanField(default=False)
     is_recurrent = models.BooleanField(default=False)
-    recurrent_id = models.UUIDField(default=None, editable=True, null=True)
+    recurrent = models.ForeignKey(Recurrent, null=True, related_name='reservations', on_delete=models.CASCADE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
     tenant = models.ForeignKey(Tenant, related_name='reservations', on_delete=models.CASCADE)
