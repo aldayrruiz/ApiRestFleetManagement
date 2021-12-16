@@ -28,10 +28,16 @@ class Reservation(models.Model):
     description = models.TextField()
     is_cancelled = models.BooleanField(default=False)
     is_recurrent = models.BooleanField(default=False)
-    recurrent = models.ForeignKey(Recurrent, null=True, related_name='reservations', on_delete=models.CASCADE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
     tenant = models.ForeignKey(Tenant, related_name='reservations', on_delete=models.CASCADE)
+
+    recurrent = models.ForeignKey(Recurrent,
+                                  blank=True,
+                                  null=True,
+                                  default=None,
+                                  related_name='reservations',
+                                  on_delete=models.CASCADE)
 
     incidents = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
