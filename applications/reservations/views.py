@@ -7,7 +7,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 
-from applications.reservations.serializers.create import CreateReservationSerializer
+from applications.reservations.serializers.create import CreateReservationSerializer, CreateRecurrentSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
 from applications.reservations.serializers.special import RecurrentSerializer, CreateByDate
 from applications.reservations.services.bydate.creator import ReservationByDateCreator
@@ -86,7 +86,7 @@ class ReservationViewSet(viewsets.ViewSet):
     def create_repetitive(self, request):
         tenant = self.request.user.tenant
         force = query_bool(self.request, 'force')
-        logger.info('Query force: {}'.format(force))
+        logger.info(f'Query force: {force}')
 
         serializer = RecurrentSerializer(data=self.request.data)
         if not serializer.is_valid():
@@ -107,7 +107,7 @@ class ReservationViewSet(viewsets.ViewSet):
             }
             return Response(response, status=HTTP_409_CONFLICT)
 
-        RecurrentReservationCreator.create(valid_reservations, tenant)
+        RecurrentReservationCreator.create(valid_reservations=valid_reservations, tenant=tenant)
         valid_reservations_serializer = SimpleReservationSerializer(valid_reservations, many=True)
         response = {
             'description': 'You have forced the reservations',
@@ -115,6 +115,20 @@ class ReservationViewSet(viewsets.ViewSet):
             'errorReservations': invalid_reservations_serializer.data
         }
         return Response(response)
+
+    @action(detail=False, methods=['post'])
+    def create_recurrent(self, request):
+        logger.info('Create recurrent request received')
+        requester = self.request.user
+        tenant = requester.tenant
+        serializer = CreateRecurrentSerializer(data=self.request.data)
+
+        if not serializer.is_valid():
+            log_error_serializing(serializer)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        serializer.save(owner=requester, tenant=tenant)
+        return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         logger.info('Retrieve reservation request received.')

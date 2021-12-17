@@ -1,3 +1,6 @@
+from rest_framework.exceptions import ValidationError
+
+from utils.api.validators import is_valid_uuid
 from utils.dates import get_date_from_str_utc
 
 
@@ -17,3 +20,10 @@ def query_date(request, query):
 
 def query_str(request, query):
     return request.query_params.get(query)
+
+
+def query_uuid(request, query):
+    val = query_str(request, query)
+    is_valid = is_valid_uuid(val)
+    if not is_valid:
+        raise ValidationError('Query {} is not an UUID v4.'.format(query))

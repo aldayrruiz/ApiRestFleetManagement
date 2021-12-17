@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from applications.reservations.models import Reservation
+from applications.reservations.models import Reservation, Recurrent
 from applications.reservations.serializers.validator import validate
 
 
@@ -26,3 +26,11 @@ class CreateReservationSerializer(serializers.ModelSerializer):
             if not is_reservation_valid(data, reservation):
                 raise serializers.ValidationError("Una reserva ocurre al mismo tiempo")
         return data
+
+
+class CreateRecurrentSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+
+    class Meta:
+        model = Recurrent
+        fields = ['id', 'owner', 'weekdays', 'since', 'until']
