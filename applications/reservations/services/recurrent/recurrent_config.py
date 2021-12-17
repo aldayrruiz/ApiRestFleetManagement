@@ -1,18 +1,18 @@
 from operator import itemgetter
 
+from rest_framework.exceptions import PermissionDenied
+
 from applications.allowed_vehicles.services.queryset import get_vehicles_ordered_by_ids
 
 
 class RecurrentConfiguration:
-    def __init__(self, title, description, start, end, start_res, end_res, vehicles, weekdays, owner):
+    def __init__(self, title, description, start_time, end_time, vehicles, recurrent, owner):
         self.title = title
         self.description = description
-        self.start = start
-        self.end = end
-        self.start_res = start_res.timetz()
-        self.end_res = end_res.timetz()
+        self.start_time = start_time.timetz()
+        self.end_time = end_time.timetz()
         self.vehicles = vehicles
-        self.weekdays = weekdays
+        self.recurrent = recurrent
         self.owner = owner
 
     @staticmethod
@@ -21,20 +21,19 @@ class RecurrentConfiguration:
         (
             title,
             description,
-            start,
-            end,
-            start_res,
-            end_res,
-            weekdays,
+            startTime,
+            endTime,
+            recurrent,
             vehicles_ids
         ) = itemgetter('title',
                        'description',
-                       'startReservations',
-                       'endReservations',
-                       'startReservationTime',
-                       'endReservationTime',
-                       'weekdays',
+                       'startTime',
+                       'endTime',
+                       'recurrent',
                        'vehicles')(serializer.validated_data)
+
+        if not (owner == recurrent.owner):
+            raise PermissionDenied('You must be owner of recurrent data.')
 
         # Get vehicles ordered by user preference
         vehicles = get_vehicles_ordered_by_ids(vehicles_ids, owner)
@@ -42,11 +41,9 @@ class RecurrentConfiguration:
         return RecurrentConfiguration(
             title=title,
             description=description,
-            start=start,
-            end=end,
-            start_res=start_res,
-            end_res=end_res,
+            start_time=startTime,
+            end_time=endTime,
             vehicles=vehicles,
-            weekdays=weekdays,
+            recurrent=recurrent,
             owner=owner
         )

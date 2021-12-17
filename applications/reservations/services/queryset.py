@@ -10,7 +10,7 @@ def get_reservation_queryset(requester, take_all=False, vehicle_id=None, _from=N
     else:
         # For mobile (Users or Admins) - All reservations made by requester
         # Filter by tenant is not needed because of own requester
-        queryset = requester.reservations.all()
+        queryset = requester.reservations.filter()
 
     if vehicle_id:
         # If reservations of vehicle is specified
@@ -20,3 +20,8 @@ def get_reservation_queryset(requester, take_all=False, vehicle_id=None, _from=N
         # Not needed, but useful in future
         queryset = queryset.filter(start__gte=_from, start__lte=_to)
     return queryset
+
+
+def get_recurrent_queryset(requester):
+    queryset = requester.recurrences
+    return queryset.all()
