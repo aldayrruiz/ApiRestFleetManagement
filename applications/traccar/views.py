@@ -1,14 +1,16 @@
 import logging
 
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
-from applications.reservations.models import Reservation
-from applications.reservations.services.timer import reservation_already_ended
+from applications.reservations.services.queryset import get_reservation_queryset
+from applications.reservations.services.timer import raise_error_if_reservation_has_not_ended
 from applications.traccar.utils import get
+from shared.permissions import IsAdmin
 from utils.api.query import query_str
 from utils.dates import from_date_to_str_date_traccar
 
@@ -42,24 +44,54 @@ class PositionViewSet(viewsets.ViewSet):
         return Response(response.json())
 
 
-class ReportsRouteViewSet(viewsets.ViewSet):
+def send_get_to_traccar(reservation, route: str):
+    device_id = reservation.vehicle.gps_device.id
+    start_str = from_date_to_str_date_traccar(reservation.start)
+    end_str = from_date_to_str_date_traccar(reservation.end)
+    params = {'deviceId': device_id, 'from': start_str, 'to': end_str}
+    response = get(target=route, params=params)
+    return response
 
-    def list(self, request):
-        reservation_id = query_str(self.request, 'reservationId')
+
+class ReportViewSet(viewsets.ViewSet):
+
+    @action(detail=False, methods=['get'])
+    def reservation_positions(self, request):
+        """
+        Fetch a list of positions from a reservation
+        """
+        requester = self.request.user
+        reservation_id = query_str(self.request, 'reservationId', True)
         logger.info('List positions of reservation with id {}.'.format(reservation_id))
-        if reservation_id in [None, '', 'undefined']:
-            return Response({'errors': 'You did not pass reservationId param.'}, status=HTTP_400_BAD_REQUEST)
 
-        queryset = Reservation.objects.all()
+        queryset = get_reservation_queryset(requester, take_all=True)
         reservation = get_object_or_404(queryset, pk=reservation_id)
-        if not reservation_already_ended(reservation):
-            return Response({'errors': 'Reservation has not ended already.'}, status=HTTP_400_BAD_REQUEST)
+        raise_error_if_reservation_has_not_ended(reservation)
 
-        device_id = reservation.vehicle.gps_device.id
-        start_str = from_date_to_str_date_traccar(reservation.start)
-        end_str = from_date_to_str_date_traccar(reservation.end)
-        params = {'deviceId': device_id, 'from': start_str, 'to': end_str}
-        response = get(target='reports/route', params=params)
+        response = send_get_to_traccar(reservation, 'reports/route')
         if not response.ok:
-            return Response({'error': 'Could not receive positions form Traccar.'}, status=response.status_code)
+            raise APIException('Could not receive positions.', code=response.status_code)
         return Response(response.json())
+
+    @action(detail=False, methods=['get'])
+    def reservation_summary(self, request):
+        """
+        Fetch a ReportSummary from a reservation
+        """
+        requester = self.request.user
+        reservation_id = query_str(self.request, 'reservationId', True)
+        logger.info('Get reservation summary report')
+
+        queryset = get_reservation_queryset(requester, take_all=True)
+        reservation = get_object_or_404(queryset, pk=reservation_id)
+        raise_error_if_reservation_has_not_ended(reservation)
+
+        response = send_get_to_traccar(reservation, 'reports/summary')
+        if not response.ok:
+            raise APIException('Could not receive report summary.', code=response.status_code)
+        summary = response.json()[0]
+        return Response(summary)
+
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        return [permission() for permission in permission_classes]
