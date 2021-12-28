@@ -5,7 +5,7 @@ from applications.allowed_vehicles.views import AllowedVehicleViewSet
 from applications.incidents.views import IncidentViewSet
 from applications.reservations.views import ReservationViewSet
 from applications.tickets.views import TicketViewSet
-from applications.traccar.views import PositionViewSet, ReportsRouteViewSet
+from applications.traccar.views import PositionViewSet, ReportViewSet
 from applications.users.views import UserViewSet, Login, RegistrationViewSet
 from applications.vehicles.views import VehicleViewSet
 
@@ -19,7 +19,7 @@ router.register(r'reservations', ReservationViewSet, basename='reservation')
 router.register(r'tickets', TicketViewSet, basename='tickets')
 router.register(r'positions', PositionViewSet, basename='positions')
 router.register(r'register', RegistrationViewSet, basename='register')
-router.register(r'route', ReportsRouteViewSet, basename='reports_reservation')
+router.register(r'reports', ReportViewSet, basename='reports')
 
 urlpatterns = router.urls
 
