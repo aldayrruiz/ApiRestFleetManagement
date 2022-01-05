@@ -53,10 +53,10 @@ def send_get_to_traccar(reservation, route: str):
     return response
 
 
-class ReportViewSet(viewsets.ViewSet):
+class ReservationReportViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
-    def reservation_positions(self, request):
+    def positions(self, request):
         """
         Fetch a list of positions from a reservation
         """
@@ -74,7 +74,7 @@ class ReportViewSet(viewsets.ViewSet):
         return Response(response.json())
 
     @action(detail=False, methods=['get'])
-    def reservation_summary(self, request):
+    def summary(self, request):
         """
         Fetch a ReportSummary from a reservation
         """
