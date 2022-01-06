@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from applications.users.models import User
-from utils.codegen import generate_password
 from utils.email.users import send_created_user_email
+from utils.password.generator import generate_password
 
 
 class RegistrationSerializer(serializers.ModelSerializer):

@@ -21,8 +21,8 @@ from applications.users.services.creator import create_fake_admin
 from applications.users.services.queryset import get_user_queryset
 from shared.permissions import IsAdmin, IsNotDisabled
 from utils.api.query import query_bool
-from utils.codegen import generate_password
 from utils.email.users import send_create_recover_password, send_confirmed_recovered_password
+from utils.password.generator import generate_password
 
 logger = logging.getLogger(__name__)
 
