@@ -1,15 +1,18 @@
 import logging
 
 from rest_framework import permissions, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from applications.incidents.serializers.create import CreateIncidentSerializer
 from applications.incidents.serializers.simple import SimpleIncidentSerializer
+from applications.incidents.serializers.special import SolveIncidentSerializer
 from applications.incidents.services.queryset import get_incident_queryset
+from applications.incidents.services.solver import IncidentSolver
 from applications.users.services.search import get_admin
-from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled
+from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled, IsAdmin
 from utils.api.query import query_bool
 from utils.email.incidents import send_created_incident_email
 
@@ -54,13 +57,24 @@ class IncidentViewSet(viewsets.ViewSet):
         serializer = SimpleIncidentSerializer(incident)
         return Response(serializer.data)
 
-    # THIS RESTRICT TO REQUESTER CREATE AN INCIDENT OF RESERVATION WHICH IS NOT OWNER.
+    @action(detail=True, methods=['post'])
+    def solve(self, request, pk=None):
+        requester = self.request.user
+        queryset = get_incident_queryset(requester, take_all=True)
+        incident = get_object_or_404(queryset, pk=pk)
+        solver = IncidentSolver(incident)
+        solver.solve()
+        return Response(status=HTTP_200_OK)
+
+    # THIS RESTRICTS TO REQUESTER CREATE AN INCIDENT OF RESERVATION WHICH IS NOT OWNER.
     # IF REQUESTER IS ADMIN, HE CAN CREATE AN INCIDENT EVEN IF HE IS NOT OWNER.
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'create':
+        if self.action == 'solve':
+            permission_classes = [permissions.IsAuthenticated, IsNotDisabled, IsAdmin]
+        elif self.action == 'create':
             permission_classes = [permissions.IsAuthenticated, IsNotDisabled, IsOwnerReservationOrAdmin]
         else:
             # You must be authenticated and have access to the vehicle.
