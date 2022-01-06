@@ -6,9 +6,11 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_403_FORBIDDEN
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
 from applications.tenant.models import Tenant
+from applications.users.exceptions.cannot_delete_himself import CannotDeleteHimselfError
+from applications.users.exceptions.user_is_disabled import UserDisabledError
 from applications.users.models import RecoverPassword, RecoverPasswordStatus
 from applications.users.serializers.create import RegistrationSerializer, FakeRegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
@@ -36,7 +38,7 @@ class UserViewSet(viewsets.ViewSet):
         """
         requester = self.request.user
         even_disabled = query_bool(self.request, 'evenDisabled')
-        logger.info('List users request received. [evenDisabled: {}]'.format(even_disabled))
+        logger.info(f'List users request received. [evenDisabled: {even_disabled}]')
         queryset = get_user_queryset(requester.tenant, even_disabled=even_disabled)
         serializer = SimpleUserSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -54,7 +56,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         """
-        It disables an user.
+        It disables a user.
         If requester tries to delete himself, server respond with 403 ERROR.
         """
         logger.info('Destroy user request received.')
@@ -62,15 +64,14 @@ class UserViewSet(viewsets.ViewSet):
         queryset = get_user_queryset(requester.tenant, even_disabled=True)
         user = get_object_or_404(queryset, pk=pk)
         if requester == user:
-            logger.warning("User couldn't delete himself.")
-            return Response(status=HTTP_403_FORBIDDEN)
+            raise CannotDeleteHimselfError()
         user.delete()
         logger.info('User was disabled.')
         return Response(status=HTTP_204_NO_CONTENT)
 
     def update(self, request, pk=None):
         """
-        It update the data of a user.
+        It updates the data of a user.
         """
         logger.info('Update user request received.')
         requester = self.request.user
@@ -78,12 +79,11 @@ class UserViewSet(viewsets.ViewSet):
 
         user = get_object_or_404(queryset, pk=pk)
         serializer = UpdateUserSerializer(user, self.request.data)
-        if serializer.is_valid():
-            serializer.save()
-            logger.info('User was updated successfully.')
-            return Response(serializer.data)
-        log_error_serializing(serializer)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+        logger.info('User was updated')
+        return Response(serializer.data)
 
     def partial_update(self, request, pk=None):
         """
@@ -94,19 +94,16 @@ class UserViewSet(viewsets.ViewSet):
         queryset = get_user_queryset(requester.tenant, even_disabled=True)
         user = get_object_or_404(queryset, pk=pk)
         serializer = PartialUpdateUserSerializer(user, request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            logger.info('User was partial updated successfully.')
-            return Response(serializer.data)
-        log_error_serializing(serializer)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+        logger.info('User was partial updated successfully.')
+        return Response(serializer.data)
 
     @action(detail=False, methods=['post'])
     def create_recover_password(self, request):
         serializer = CreateRecoverPasswordSerializer(data=self.request.data)
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
         recover_password = serializer.save()
         send_create_recover_password(recover_password.owner, recover_password.code)
         serialized = RecoverPasswordSerializer(recover_password)
@@ -117,10 +114,7 @@ class UserViewSet(viewsets.ViewSet):
         serializer = ConfirmRecoverPasswordSerializer(data=self.request.data)
         queryset = RecoverPassword.objects.all()
         recover_password = get_object_or_404(queryset, pk=pk)
-
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         code_not_match = recover_password.code.upper() != serializer.validated_data['code'].upper()
         already_completed = recover_password.status == RecoverPasswordStatus.COMPLETED
@@ -157,10 +151,7 @@ class RegistrationViewSet(viewsets.ViewSet):
         logger.info('Register user request received.')
         requester = self.request.user
         serializer = RegistrationSerializer(data=self.request.data)
-
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         user = serializer.save(tenant=requester.tenant)
         logger.info('User registered successfully: {}'.format(user.fullname))
@@ -174,10 +165,7 @@ class RegistrationViewSet(viewsets.ViewSet):
         if created:
             create_fake_admin(tenant.id)
         serializer = FakeRegistrationSerializer(data=self.request.data)
-
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         user = serializer.save(tenant=tenant)
         logger.info('Fake user registered successfully: {}'.format(user.fullname))
@@ -206,7 +194,7 @@ class Login(ObtainAuthToken):
 
         if user.is_disabled:
             logger.info('User is disabled -> Cannot login')
-            return Response({'errors': 'Usuario deshabilitado, contactar con el administrador'}, HTTP_403_FORBIDDEN)
+            raise UserDisabledError()
 
         token, created = Token.objects.get_or_create(user=user)
         if created:
@@ -223,8 +211,3 @@ class Login(ObtainAuthToken):
             'role': user.role,
             'tenant': user.tenant.id
         })
-
-
-def log_error_serializing(serializer):
-    logger.error("User couldn't be serialized with {} because of {}."
-                 .format(serializer.__class__.__name__, serializer.errors))

@@ -48,16 +48,12 @@ class VehicleViewSet(viewsets.ViewSet):
     def create(self, request):
         """
         It creates a vehicle given a data.
-        Users have not access to this endpoint (permissions).
         """
         requester = self.request.user
         tenant = requester.tenant
         logger.info('Create user request received.')
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
-
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         if not serializer.initial_data.__contains__('gps_device'):
             return Response({'gps_device': ['Este campo es requerido']}, status=HTTP_400_BAD_REQUEST)
@@ -83,10 +79,7 @@ class VehicleViewSet(viewsets.ViewSet):
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = CreateOrUpdateVehicleSerializer(vehicle, self.request.data)
-
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         if not serializer.initial_data.__contains__('gps_device'):
             return Response({'gps_device': ['Este campo es requerido']}, status=HTTP_400_BAD_REQUEST)
@@ -114,10 +107,7 @@ class VehicleViewSet(viewsets.ViewSet):
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = DisableVehicleSerializer(vehicle, request.data, partial=True)
-
-        if not serializer.is_valid():
-            logger.error('Could not partial update vehicle.')
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         serializer.save()
         logger.info('Vehicle was partial updated successfully.')
@@ -148,11 +138,6 @@ class VehicleViewSet(viewsets.ViewSet):
         else:
             permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
         return [permission() for permission in permission_classes]
-
-
-def log_error_serializing(serializer):
-    logger.error("Vehicle couldn't be serialized with {} because of {}"
-                 .format(serializer.__class__.__name__, serializer.errors))
 
 
 def get_vehicle_name_for_traccar(tenant, serializer):

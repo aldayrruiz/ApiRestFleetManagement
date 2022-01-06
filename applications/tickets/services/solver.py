@@ -1,9 +1,14 @@
 import logging
 
+from rest_framework.exceptions import ValidationError
+
+from applications.reservations.exceptions.already_started import ReservationAlreadyStarted
 from applications.reservations.services.destroyer import delete_reservation
 from applications.reservations.services.timer import reservation_already_started
 from applications.tickets.models import TicketStatus
-from utils.email.tickets import send_reservation_deleted_email, send_accepted_ticket_email, send_denied_ticket_email
+from utils.email.tickets.accepted import send_accepted_ticket_email
+from utils.email.tickets.denied import send_denied_ticket_email
+from utils.email.tickets.reservation_deleted import send_reservation_deleted_email
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +16,7 @@ logger = logging.getLogger(__name__)
 def solve_ticket(ticket, new_status):
     reservation = ticket.reservation
     if reservation_already_started(reservation):
-        logger.exception('Cannot delete a reservation which has already started: {}'.format(reservation.id))
+        raise ReservationAlreadyStarted()
 
     if new_status == TicketStatus.UNSOLVED:
         logger.exception('Cannot solve a ticket with status UNSOLVED')
@@ -24,4 +29,4 @@ def solve_ticket(ticket, new_status):
         send_denied_ticket_email(ticket)
         ticket.delete()
     else:
-        logger.exception('Unsupported')
+        raise ValidationError('Unknown ticket status')
