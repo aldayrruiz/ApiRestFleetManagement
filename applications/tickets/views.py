@@ -3,7 +3,7 @@ import logging
 from rest_framework import permissions, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_200_OK
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_200_OK
 
 from applications.reservations.exceptions.already_started import ReservationAlreadyStarted
 from applications.reservations.services.timer import reservation_already_started
@@ -24,7 +24,7 @@ class TicketViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        If take_all is True and requester is admin, it will return all tickets.
+        When take_all is True and requester is admin, it will return all tickets.
         Otherwise, it will return only the requester tickets.
         :param request:
         :return:

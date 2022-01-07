@@ -18,7 +18,7 @@ from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.recurrent.recurrent import RecurrentReservationCreator
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
 from applications.reservations.services.timer import reservation_already_started
-from applications.vehicles.exceptions.no_vehicles_available import NoVehiclesAvailable
+from applications.vehicles.exceptions.no_vehicles_available import NoVehiclesAvailableError
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
 from utils.api.query import query_bool, query_date, query_str
 from utils.dates import is_after_now
@@ -75,7 +75,7 @@ class ReservationViewSet(viewsets.ViewSet):
         creator = ReservationByDateCreator.from_serializer(serializer, requester)
         reservation = creator.create()
         if not reservation:
-            raise NoVehiclesAvailable()
+            raise NoVehiclesAvailableError()
 
         response = SimpleReservationSerializer(reservation)
         return Response(response.data)
