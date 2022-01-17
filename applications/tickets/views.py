@@ -3,8 +3,9 @@ import logging
 from rest_framework import permissions, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_200_OK
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_200_OK
 
+from applications.reservations.exceptions.already_started import ReservationAlreadyStarted
 from applications.reservations.services.timer import reservation_already_started
 from applications.tickets.serializers.create import CreateTicketSerializer
 from applications.tickets.serializers.simple import SimpleTicketSerializer
@@ -14,7 +15,7 @@ from applications.tickets.services.validators import check_if_not_mine
 from applications.users.services.search import get_admin
 from shared.permissions import IsNotDisabled, IsAdmin
 from utils.api.query import query_bool
-from utils.email.tickets import send_created_ticket_email
+from utils.email.tickets.created import send_created_ticket_email
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ class TicketViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        If take_all is True and requester is admin, it will return all tickets.
+        When take_all is True and requester is admin, it will return all tickets.
         Otherwise, it will return only the requester tickets.
         :param request:
         :return:
@@ -40,21 +41,13 @@ class TicketViewSet(viewsets.ViewSet):
         requester = self.request.user
         tenant = requester.tenant
         serializer = CreateTicketSerializer(data=self.request.data)
-
-        # Verify if the data request is valid
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         reservation = serializer.validated_data['reservation']
-        # Pass checks
         check_if_not_mine(requester, reservation)
 
         if reservation_already_started(reservation):
-            logger.error('Error creating a ticket. Reservation already started at {}.'.format(reservation.start))
-            return Response(
-                {'errors': 'No puedes crear un ticket de una reserva que ya ha comenzado'},
-                status=HTTP_400_BAD_REQUEST)
+            raise ReservationAlreadyStarted()
 
         # Create Ticket and send email to admin
         ticket = serializer.save(owner=requester, tenant=tenant)
@@ -86,11 +79,7 @@ class TicketViewSet(viewsets.ViewSet):
         ticket = get_object_or_404(queryset, pk=pk)
         data = self.request.data
         new_status = data['new_status']
-        error = solve_ticket(ticket, new_status)
-        errors = {'errors': error}
-        if error:
-            logger.error('Solving tickets {}'.format(errors))
-            return Response(errors, status=HTTP_400_BAD_REQUEST)
+        solve_ticket(ticket, new_status)
         return Response(status=HTTP_200_OK)
 
     def get_permissions(self):
@@ -101,8 +90,3 @@ class TicketViewSet(viewsets.ViewSet):
         else:
             raise Exception('The HTTP action {} is not supported'.format(self.action))
         return [permission() for permission in permission_classes]
-
-
-def log_error_serializing(serializer):
-    logger.error("Ticket couldn't be serialized with {} because of {}."
-                 .format(serializer.__class__.__name__, serializer.errors))

@@ -2,11 +2,13 @@ import logging
 
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 
+from applications.reservations.exceptions.already_started import ReservationAlreadyStarted
+from applications.reservations.exceptions.cannot_reserve_to_past import CannotReserveToPastError
+from applications.reservations.exceptions.cannot_reserve_vehicle_disabled import CannotReserveVehicleDisabled
 from applications.reservations.serializers.create import CreateReservationSerializer, CreateRecurrentSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
 from applications.reservations.serializers.special import RecurrentSerializer, CreateByDate
@@ -16,6 +18,7 @@ from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.recurrent.recurrent import RecurrentReservationCreator
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
 from applications.reservations.services.timer import reservation_already_started
+from applications.vehicles.exceptions.no_vehicles_available import NoVehiclesAvailableError
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
 from utils.api.query import query_bool, query_date, query_str
 from utils.dates import is_after_now
@@ -27,8 +30,9 @@ class ReservationViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        If take_all is present as True, it will return all reservations.
-        Otherwise, if take_all is False or is not present, it will return only requester reservations.
+        When take_all == True, it will return all reservations.
+        Otherwise, it will return only requester reservations.
+        By default, it will return only requester reservations.
         :param request:
         :return: Returns a list of reservations.
         """
@@ -54,13 +58,9 @@ class ReservationViewSet(viewsets.ViewSet):
         requester = self.request.user
         tenant = requester.tenant
         serializer = CreateReservationSerializer(data=self.request.data)
-
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         self.check_reservation_creation(request, serializer.validated_data)
-
         serializer.save(owner=requester, tenant=tenant)
         return Response(serializer.data)
 
@@ -70,14 +70,12 @@ class ReservationViewSet(viewsets.ViewSet):
         logger.info('Create reservation by date')
 
         serializer = CreateByDate(data=self.request.data)
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         creator = ReservationByDateCreator.from_serializer(serializer, requester)
         reservation = creator.create()
         if not reservation:
-            return Response({'errors': 'Ningun vehículo disponible.'}, status=HTTP_409_CONFLICT)
+            raise NoVehiclesAvailableError()
 
         response = SimpleReservationSerializer(reservation)
         return Response(response.data)
@@ -89,9 +87,7 @@ class ReservationViewSet(viewsets.ViewSet):
         logger.info(f'Query force: {force}')
 
         serializer = RecurrentSerializer(data=self.request.data)
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         rec_config = RecurrentConfiguration.from_serializer(serializer, self.request.user)
 
@@ -99,8 +95,8 @@ class ReservationViewSet(viewsets.ViewSet):
         [valid_reservations, invalid_reservations] = creator.try_create()
 
         invalid_reservations_serializer = SimpleReservationSerializer(invalid_reservations, many=True)
-
-        if not force and len(invalid_reservations) > 0:
+        at_least_one_invalid_reservation = len(invalid_reservations) > 0
+        if not force and at_least_one_invalid_reservation:
             response = {
                 'description': 'There are reservations that cannot be saved.',
                 'errorReservations': invalid_reservations_serializer.data
@@ -122,11 +118,7 @@ class ReservationViewSet(viewsets.ViewSet):
         requester = self.request.user
         tenant = requester.tenant
         serializer = CreateRecurrentSerializer(data=self.request.data)
-
-        if not serializer.is_valid():
-            log_error_serializing(serializer)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-
+        serializer.is_valid(raise_exception=True)
         serializer.save(owner=requester, tenant=tenant)
         return Response(serializer.data)
 
@@ -140,18 +132,18 @@ class ReservationViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         logger.info('Destroy reservation request received.')
-        delete_post = query_bool(self.request, 'deletePost')
+        delete_future_reservations = query_bool(self.request, 'deletePost')
         requester = self.request.user
         queryset = get_reservation_queryset(requester, take_all=True)
         reservation = get_object_or_404(queryset, pk=pk)
 
         if reservation_already_started(reservation):
-            return Response({'errors': 'La reserva ya ha comenzado.'}, status=HTTP_400_BAD_REQUEST)
+            raise ReservationAlreadyStarted()
 
-        if delete_post and reservation.is_recurrent:
+        if delete_future_reservations and reservation.is_recurrent:
             queryset = queryset.filter(recurrent_id=reservation.recurrent_id, start__gte=reservation.start)
-            for res in queryset:
-                delete_reservation(res)
+            for future_reservation in queryset:
+                delete_reservation(future_reservation)
             return Response(status=HTTP_204_NO_CONTENT)
 
         delete_reservation(reservation)
@@ -167,15 +159,9 @@ class ReservationViewSet(viewsets.ViewSet):
 
     def check_reservation_creation(self, request, validated_data):
         if not is_after_now(validated_data['start']):
-            raise ValidationError('No se puede reservar para una fecha anterior a la actual')
+            raise CannotReserveToPastError()
 
         vehicle = validated_data['vehicle']
         if vehicle.is_disabled:
             logger.error('Cannot reserve a vehicle disabled: {} {}'.format(vehicle.brand, vehicle.model))
-            raise ValidationError('No se puede reservar un vehículo deshabilitado')
-
-
-def log_error_serializing(serializer):
-    serializer_cls = serializer.__class__.__name__
-    logger.error("Reservation couldn't be serialized with {} because of {}."
-                 .format(serializer_cls, serializer.errors))
+            raise CannotReserveVehicleDisabled()

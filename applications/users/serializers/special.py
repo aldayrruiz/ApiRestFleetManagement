@@ -4,7 +4,7 @@ from rest_framework.generics import get_object_or_404
 
 from applications.users.models import User, RecoverPassword
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
-from utils.codegen import generate_recover_password_code
+from utils.password.generator import generate_recover_password_code
 
 
 class SingleUserSerializer(serializers.ModelSerializer):

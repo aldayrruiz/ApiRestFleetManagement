@@ -11,4 +11,4 @@ class SimpleIncidentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Incident
-        fields = ['id', 'title', 'date_stored', 'description', 'owner', 'reservation', 'type', 'photo']
+        fields = ['id', 'title', 'date_stored', 'description', 'owner', 'reservation', 'type', 'photo', 'solved']
