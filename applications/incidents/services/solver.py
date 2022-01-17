@@ -1,4 +1,5 @@
 from applications.incidents.exceptions.incident_already_solved import IncidentAlreadySolvedError
+from utils.email.incidents.solved import send_incident_was_solved_email
 
 
 class IncidentSolver:
@@ -10,4 +11,4 @@ class IncidentSolver:
             raise IncidentAlreadySolvedError()
         self.incident.solved = True
         self.incident.save()
-        print('I would send email here :)')
+        send_incident_was_solved_email(self.incident)

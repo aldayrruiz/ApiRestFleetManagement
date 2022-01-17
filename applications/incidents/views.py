@@ -13,7 +13,7 @@ from applications.incidents.services.solver import IncidentSolver
 from applications.users.services.search import get_admin
 from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled, IsAdmin
 from utils.api.query import query_bool
-from utils.email.incidents import send_created_incident_email
+from utils.email.incidents.created import send_created_incident_email
 
 logger = logging.getLogger(__name__)
 
