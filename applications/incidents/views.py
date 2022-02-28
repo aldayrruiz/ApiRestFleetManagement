@@ -59,7 +59,7 @@ class IncidentViewSet(viewsets.ViewSet):
         queryset = get_incident_queryset(requester, take_all=True)
         incident = get_object_or_404(queryset, pk=pk)
         solver = IncidentSolver(incident)
-        solver.solve()
+        solver.solve(solver=requester)
         return Response(status=HTTP_200_OK)
 
     # THIS RESTRICTS TO REQUESTER CREATE AN INCIDENT OF RESERVATION WHICH IS NOT OWNER.

@@ -21,17 +21,28 @@ class Incident(models.Model):
     title = models.CharField(max_length=50)
     date_stored = models.DateTimeField(auto_now_add=True)
     description = models.TextField()
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
     tenant = models.ForeignKey(Tenant, related_name='incidents', on_delete=models.CASCADE)
     photo = models.ImageField(default='incidents/none.png', upload_to='incidents')
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='created_incidents',
+        null=True,
+        on_delete=models.SET_NULL
+    )
+    solver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='solved_incidents',
+        null=True,
+        on_delete=models.SET_NULL
+    )
 
     type = models.CharField(
         max_length=14,
         choices=IncidentType.choices,
         default=IncidentType.OTHERS
     )
-
     solved = models.BooleanField(default=False)
 
     class Meta:
