@@ -3,7 +3,7 @@ from rest_framework import serializers
 from utils.dates import is_after_now
 
 
-def validate(data):
+def validate_reservation_dates(data):
     if not is_after_now(data['start']):
         raise serializers.ValidationError('No se puede reservar para el pasado.')
 

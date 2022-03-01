@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from applications.reservations.models import Recurrent
-from applications.reservations.serializers.validator import validate
+from applications.reservations.serializers.validator import validate_reservation_dates
 
 
 class RecurrentSerializer(serializers.Serializer):
@@ -21,5 +21,5 @@ class CreateByDate(serializers.Serializer):
     vehicles = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
 
     def validate(self, data):
-        validate(data)
+        validate_reservation_dates(data)
         return data
