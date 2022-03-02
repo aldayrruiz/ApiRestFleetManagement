@@ -1,5 +1,6 @@
 from applications.reservations.models import Reservation
 from applications.users.models import Role
+from utils.dates import get_now_utc
 
 
 def get_reservation_queryset(requester, take_all=False, vehicle_id=None, _from=None, _to=None):
@@ -25,3 +26,13 @@ def get_reservation_queryset(requester, take_all=False, vehicle_id=None, _from=N
 def get_recurrent_queryset(requester):
     queryset = requester.recurrences
     return queryset.all()
+
+
+def get_future_reservations():
+    future_reservations = Reservation.objects.exclude(end__lt=get_now_utc())
+    return future_reservations
+
+
+def get_future_reservations_of(requester):
+    future_reservations = get_future_reservations()
+    return future_reservations.filter(owner_id=requester.id)

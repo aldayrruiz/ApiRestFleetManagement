@@ -1,10 +1,10 @@
-from applications.reservations.models import Reservation
-from utils.dates import get_now_utc, from_naive_to_aware
+from applications.reservations.services.queryset import get_future_reservations, get_future_reservations_of
+from utils.dates import from_naive_to_aware
 
 
 class ReservationValidator:
-    def __init__(self, vehicle):
-        self.queryset = Reservation.objects.filter(end__gt=get_now_utc(), vehicle=vehicle)
+    def __init__(self, vehicle, owner):
+        self.queryset = get_future_reservations().filter(vehicle=vehicle) | get_future_reservations_of(owner)
 
     def is_reservation_valid(self, reservation):
         for r in self.queryset.all():

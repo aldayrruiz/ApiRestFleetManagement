@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 import numpy as np
 
 from applications.reservations.models import Reservation
+from applications.reservations.services.queryset import get_future_reservations_of
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
 from applications.reservations.services.validator import ReservationValidator
 from utils.dates import from_naive_to_aware
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 class RecurrentReservationCreator:
     def __init__(self, config: RecurrentConfiguration):
         self.config = config
+        self.my_future_reservations = get_future_reservations_of(self.config.owner)
 
     def try_create(self):
         successful_reservations = []
@@ -84,12 +86,12 @@ class RecurrentReservationCreator:
         :param vehicles: Vehicles ordered by user preference
         :return:
         """
+
         for vehicle in vehicles:
             reservation = self.__get_reservation__(start=start, end=end, vehicle=vehicle)
-            is_valid = ReservationValidator(vehicle).is_reservation_valid(reservation)
+            is_valid = ReservationValidator(vehicle, self.config.owner).is_reservation_valid(reservation)
             if is_valid:
                 return [True, reservation]
-
         error_reservation = self.__get_fake_reservation__(start=start, end=end, vehicles=vehicles)
         return [False, error_reservation]
 

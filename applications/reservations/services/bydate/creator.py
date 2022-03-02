@@ -5,6 +5,7 @@ from applications.reservations.exceptions.already_posses_reservation_at_the_same
     YouAlreadyPossesOtherReservationAtSameTime
 from applications.reservations.models import Reservation
 from applications.reservations.serializers.create import is_reservation_valid
+from applications.reservations.services.queryset import get_future_reservations, get_future_reservations_of
 from applications.reservations.services.validator import ReservationValidator
 from utils.dates import from_naive_to_aware, get_now_utc
 
@@ -22,21 +23,16 @@ class ReservationByDateCreator:
         """
         Return reservation created. Otherwise, None is returned.
         """
-        future_reservations = Reservation.objects.exclude(end__lt=get_now_utc())
-        own_reservations = future_reservations.filter(owner_id=self.owner.id)
-
-        for reservation in own_reservations:
-            data = {'start': self.start, 'end': self.end}
-            if not is_reservation_valid(data, reservation):
-                raise YouAlreadyPossesOtherReservationAtSameTime()
 
         for vehicle in self.vehicles:
             possible_reservation = self.__get_reservation__(self.owner, vehicle)
-            validator = ReservationValidator(vehicle)
+            validator = ReservationValidator(vehicle, self.owner)
             is_valid = validator.is_reservation_valid(possible_reservation)
             if is_valid:
                 possible_reservation.save()
                 return possible_reservation
+            if possible_reservation.owner == self.owner:
+                raise YouAlreadyPossesOtherReservationAtSameTime()
         return None
 
     def __get_reservation__(self, requester, vehicle):
