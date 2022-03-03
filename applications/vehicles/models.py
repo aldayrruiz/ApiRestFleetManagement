@@ -2,12 +2,19 @@ import uuid
 
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from applications.tenant.models import Tenant
 from applications.traccar.models import Device
 
 # In Spain vehicle's number plates have 7 characters, except for motorbikes
 LENGTH_NUMBER_PLATE = 7
+
+
+class Fuel(models.TextChoices):
+    DIESEL = 'DIESEL', _('Diesel'),
+    GASOLINE = 'GASOLINE', _('Gasoline')
+    ELECTRIC = 'ELECTRIC', _('Electric')
 
 
 class Vehicle(models.Model):
@@ -25,6 +32,11 @@ class Vehicle(models.Model):
     tenant = models.ForeignKey(Tenant, related_name='vehicles', on_delete=models.CASCADE)
     date_stored = models.DateField(auto_now_add=True)
     is_disabled = models.BooleanField(default=False)
+    fuel = models.CharField(
+        max_length=10,
+        choices=Fuel.choices,
+        default=Fuel.DIESEL
+    )
 
     def delete(self, *args, **kwargs):
         self.gps_device.delete()
