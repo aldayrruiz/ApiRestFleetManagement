@@ -73,3 +73,8 @@ class IsNotDisabled(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return not request.user.is_disabled
+
+
+ONLY_ADMIN = [permissions.IsAuthenticated, IsAdmin]
+ONLY_AUTHENTICATED = [permissions.IsAuthenticated, IsNotDisabled]
+ALLOW_UNAUTHENTICATED = [permissions.AllowAny]

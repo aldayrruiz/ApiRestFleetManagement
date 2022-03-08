@@ -13,7 +13,7 @@ from applications.tickets.services.queryset import get_ticket_queryset
 from applications.tickets.services.solver import solve_ticket
 from applications.tickets.services.validators import check_if_not_mine
 from applications.users.services.search import get_admin
-from shared.permissions import IsNotDisabled, IsAdmin
+from shared.permissions import IsNotDisabled, IsAdmin, ONLY_AUTHENTICATED, ONLY_ADMIN
 from utils.api.query import query_bool
 from utils.email.tickets.created import send_created_ticket_email
 
@@ -84,9 +84,9 @@ class TicketViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'create', 'retrieve', 'destroy']:
-            permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
+            permission_classes = ONLY_AUTHENTICATED
         elif self.action in ['update']:
-            permission_classes = [permissions.IsAuthenticated, IsNotDisabled, IsAdmin]
+            permission_classes = ONLY_ADMIN
         else:
             raise Exception('The HTTP action {} is not supported'.format(self.action))
         return [permission() for permission in permission_classes]

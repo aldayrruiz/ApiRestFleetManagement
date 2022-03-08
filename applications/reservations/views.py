@@ -19,7 +19,7 @@ from applications.reservations.services.recurrent.recurrent import RecurrentRese
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
 from applications.reservations.services.timer import reservation_already_started
 from applications.vehicles.exceptions.no_vehicles_available import NoVehiclesAvailableError
-from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled
+from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled, ONLY_AUTHENTICATED
 from utils.api.query import query_bool, query_date, query_str
 from utils.dates import is_after_now
 
@@ -154,7 +154,7 @@ class ReservationViewSet(viewsets.ViewSet):
         if self.action == 'create':
             permission_classes = [permissions.IsAuthenticated, IsNotDisabled, IsVehicleAllowedOrAdmin]
         else:
-            permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
+            permission_classes = ONLY_AUTHENTICATED
         return [permission() for permission in permission_classes]
 
     def check_reservation_creation(self, request, validated_data):

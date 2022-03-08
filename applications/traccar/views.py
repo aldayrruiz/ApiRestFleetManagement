@@ -10,7 +10,7 @@ from applications.allowed_vehicles.services.queryset import get_allowed_vehicles
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.timer import raise_error_if_reservation_has_not_ended
 from applications.traccar.utils import get
-from shared.permissions import IsAdmin
+from shared.permissions import IsAdmin, IsNotDisabled, ONLY_AUTHENTICATED, ONLY_ADMIN
 from utils.api.query import query_str
 from utils.dates import from_date_to_str_date_traccar
 
@@ -42,6 +42,10 @@ class PositionViewSet(viewsets.ViewSet):
         if not response.ok:
             return Response({'errors': 'Could not receive positions.'}, status=response.status_code)
         return Response(response.json())
+
+    def get_permissions(self):
+        permission_classes = ONLY_AUTHENTICATED
+        return [permission() for permission in permission_classes]
 
 
 def send_get_to_traccar(reservation, route: str):
@@ -93,5 +97,5 @@ class ReservationReportViewSet(viewsets.ViewSet):
         return Response(summary)
 
     def get_permissions(self):
-        permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        permission_classes = ONLY_ADMIN
         return [permission() for permission in permission_classes]

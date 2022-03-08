@@ -19,7 +19,7 @@ from applications.users.serializers.special import UpdateUserSerializer, SingleU
     RecoverPasswordSerializer
 from applications.users.services.creator import create_fake_admin
 from applications.users.services.queryset import get_user_queryset
-from shared.permissions import IsAdmin, IsNotDisabled
+from shared.permissions import IsAdmin, IsNotDisabled, ONLY_AUTHENTICATED, ONLY_ADMIN, ALLOW_UNAUTHENTICATED
 from utils.api.query import query_bool
 from utils.email.users import send_create_recover_password, send_confirmed_recovered_password
 from utils.password.generator import generate_password
@@ -136,11 +136,11 @@ class UserViewSet(viewsets.ViewSet):
     # Create method is located in /register endpoint
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'update']:
-            permission_classes = [permissions.IsAuthenticated, IsNotDisabled]
+            permission_classes = ONLY_AUTHENTICATED
         elif self.action in ['create', 'destroy', 'partial_update']:
-            permission_classes = [permissions.IsAuthenticated, IsAdmin]
+            permission_classes = ONLY_ADMIN
         else:
-            permission_classes = [permissions.AllowAny]
+            permission_classes = ALLOW_UNAUTHENTICATED
 
         return [permission() for permission in permission_classes]
 
@@ -178,10 +178,11 @@ class RegistrationViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         if self.name == 'Fake':
-            return [permission() for permission in []]
+            permission_classes = ALLOW_UNAUTHENTICATED
         else:
             # Only admin can register users.
-            return [permission() for permission in [permissions.IsAuthenticated, IsAdmin]]
+            permission_classes = ONLY_ADMIN
+        return [permission() for permission in permission_classes]
 
 
 class Login(ObtainAuthToken):
