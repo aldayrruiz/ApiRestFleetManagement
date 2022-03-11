@@ -30,11 +30,7 @@ class ReservationViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        When take_all == True, it will return all reservations.
-        Otherwise, it will return only requester reservations.
-        By default, it will return only requester reservations.
-        :param request:
-        :return: Returns a list of reservations.
+        List own reservations. If takeAll is given, it lists all reservations from everyone.
         """
         take_all = query_bool(self.request, 'takeAll')
         vehicle_id = query_str(self.request, 'vehicleId')
@@ -48,11 +44,20 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer = SimpleReservationSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    def retrieve(self, request, pk=None):
+        """
+        Retrieve a reservation.
+        """
+        logger.info('Retrieve reservation request received.')
+        requester = self.request.user
+        queryset = get_reservation_queryset(requester, take_all=True)
+        reservation = get_object_or_404(queryset, pk=pk)
+        serializer = SimpleReservationSerializer(reservation)
+        return Response(serializer.data)
+
     def create(self, request):
         """
-        Creates a reservation.
-        :param request:
-        :return:
+        Create a reservation.
         """
         logger.info('Create reservation request received.')
         requester = self.request.user
@@ -66,6 +71,10 @@ class ReservationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def create_by_date(self, request):
+        """
+        Create a reservation by date. An ordered list of vehicles (by priority) is needed,
+        so a reservation can be created if a vehicle is not available.
+        """
         requester = self.request.user
         logger.info('Create reservation by date')
 
@@ -82,6 +91,11 @@ class ReservationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def create_repetitive(self, request):
+        """
+        Create many reservations at once. An ordered list of vehicles (by priority) is needed,
+        so a reservation can be created if a vehicle is not available.
+        Make sure you call /create_recurrent endpoint before calling this endpoint.
+        """
         tenant = self.request.user.tenant
         force = query_bool(self.request, 'force')
         logger.info(f'Query force: {force}')
@@ -114,6 +128,10 @@ class ReservationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def create_recurrent(self, request):
+        """
+        Create a recurrent instance.
+        So you can make reference to recurrent instance in /create_repetitive endpoint.
+        """
         logger.info('Create recurrent request received')
         requester = self.request.user
         tenant = requester.tenant
@@ -122,15 +140,12 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer.save(owner=requester, tenant=tenant)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None):
-        logger.info('Retrieve reservation request received.')
-        requester = self.request.user
-        queryset = get_reservation_queryset(requester, take_all=True)
-        reservation = get_object_or_404(queryset, pk=pk)
-        serializer = SimpleReservationSerializer(reservation)
-        return Response(serializer.data)
-
     def destroy(self, request, pk=None):
+        """
+        Cancel a reservation. Only reservations that have not started can be cancelled.
+        If reservation is a recurrent reservation and deletePost query is given. Reservation passed and its
+        future recurrent reservations will be cancelled. Reservations that already happened will not be deleted.
+        """
         logger.info('Destroy reservation request received.')
         delete_future_reservations = query_bool(self.request, 'deletePost')
         requester = self.request.user

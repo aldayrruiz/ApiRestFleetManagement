@@ -11,7 +11,7 @@ from applications.incidents.serializers.simple import SimpleIncidentSerializer
 from applications.incidents.services.queryset import get_incident_queryset
 from applications.incidents.services.solver import IncidentSolver
 from applications.users.services.search import get_admin
-from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled, IsAdmin, ONLY_ADMIN, ONLY_AUTHENTICATED
+from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled, ONLY_ADMIN, ONLY_AUTHENTICATED
 from utils.api.query import query_bool
 from utils.email.incidents.created import send_created_incident_email
 
@@ -22,10 +22,7 @@ class IncidentViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        If take_all is True and requester is admin, it will return all incidents.
-        Otherwise, it will return only the requester incidents.
-        :param request:
-        :return:
+        List own incidents. If takeAll is given, it lists all incidents from everyone.
         """
         take_all = query_bool(self.request, 'takeAll')
         logger.info('List incidents request received. [takeAll: {}]'.format(take_all))
@@ -35,6 +32,9 @@ class IncidentViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        """
+        Create an incident.
+        """
         logger.info('Create incident request received.')
         requester = self.request.user
         tenant = requester.tenant
@@ -46,6 +46,9 @@ class IncidentViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
+        """
+        Retrieve an incident.
+        """
         logger.info('Retrieve incident request received.')
         requester = self.request.user
         queryset = get_incident_queryset(requester, take_all=True)
@@ -55,6 +58,9 @@ class IncidentViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['post'])
     def solve(self, request, pk=None):
+        """
+        Mark incident as solved
+        """
         requester = self.request.user
         queryset = get_incident_queryset(requester, take_all=True)
         incident = get_object_or_404(queryset, pk=pk)

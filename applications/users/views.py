@@ -1,6 +1,6 @@
 import logging
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
@@ -19,7 +19,7 @@ from applications.users.serializers.special import UpdateUserSerializer, SingleU
     RecoverPasswordSerializer
 from applications.users.services.creator import create_fake_admin
 from applications.users.services.queryset import get_user_queryset
-from shared.permissions import IsAdmin, IsNotDisabled, ONLY_AUTHENTICATED, ONLY_ADMIN, ALLOW_UNAUTHENTICATED
+from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN, ALLOW_UNAUTHENTICATED
 from utils.api.query import query_bool
 from utils.email.users import send_create_recover_password, send_confirmed_recovered_password
 from utils.password.generator import generate_password
@@ -34,7 +34,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """
-        It returns all users.
+        List users.
         """
         requester = self.request.user
         even_disabled = query_bool(self.request, 'evenDisabled')
@@ -45,7 +45,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         """
-        It returns the user given an id.
+        Retrieve an user.
         """
         requester = self.request.user
         logger.info('Retrieve user request received.')
@@ -56,8 +56,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         """
-        It disables a user.
-        If requester tries to delete himself, server respond with 403 ERROR.
+        Delete an user.
         """
         logger.info('Destroy user request received.')
         requester = self.request.user
@@ -71,7 +70,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def update(self, request, pk=None):
         """
-        It updates the data of a user.
+        Update a user.
         """
         logger.info('Update user request received.')
         requester = self.request.user
@@ -87,7 +86,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         """
-        It is used just for disable and enable users. Just admins can do this.
+        Disable and enable users.
         """
         logger.info('Partial update user request received.')
         requester = self.request.user
@@ -102,6 +101,9 @@ class UserViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def create_recover_password(self, request):
+        """
+        Create a recover password instance, so user receive an email with a random code.
+        """
         serializer = CreateRecoverPasswordSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         recover_password = serializer.save()
@@ -111,6 +113,9 @@ class UserViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['put'])
     def confirm_recover_password(self, request, pk=None):
+        """
+        Confirm that user received the notification, sending the code received.
+        """
         serializer = ConfirmRecoverPasswordSerializer(data=self.request.data)
         queryset = RecoverPassword.objects.all()
         recover_password = get_object_or_404(queryset, pk=pk)
@@ -148,6 +153,9 @@ class UserViewSet(viewsets.ViewSet):
 class RegistrationViewSet(viewsets.ViewSet):
 
     def create(self, request):
+        """
+        Create a user.
+        """
         logger.info('Register user request received.')
         requester = self.request.user
         serializer = RegistrationSerializer(data=self.request.data)
@@ -159,6 +167,9 @@ class RegistrationViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], name='Fake')
     def create_fake(self, request):
+        """
+        Create a user, for fake tenant.
+        """
         logger.info('Register a fake user received.')
         tenant, created = Tenant.objects.get_or_create(name='Fake')
         # If you forgot to create Fake Tenant -> Create fake admin to not crash.

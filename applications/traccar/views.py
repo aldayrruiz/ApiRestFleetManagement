@@ -1,6 +1,6 @@
 import logging
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
@@ -10,23 +10,26 @@ from applications.allowed_vehicles.services.queryset import get_allowed_vehicles
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.timer import raise_error_if_reservation_has_not_ended
 from applications.traccar.utils import get
-from shared.permissions import IsAdmin, IsNotDisabled, ONLY_AUTHENTICATED, ONLY_ADMIN
+from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN
 from utils.api.query import query_str
 from utils.dates import from_date_to_str_date_traccar
 
 logger = logging.getLogger(__name__)
 
+# TODO: Only return positions from requester tenant.
+# How? Filter before response
+
+# 1. Maybe, having multiple Traccar admins.
+# Add some fields like email and plain password of traccar. Clean and dirty solution...
+# 2. Just filter by properties of devices and vehicles.
+
 
 class PositionViewSet(viewsets.ViewSet):
 
     def list(self, request):
-        # TODO: Only return positions from requester tenant.
-        # How? Filter before response
-
-        # 1. Maybe, having multiple Traccar admins.
-        # Add some fields like email and plain password of traccar. Clean and dirty solution...
-
-        # 2. Just filter by properties of devices and vehicles.
+        """
+        List last known positions of vehicles.
+        """
         logger.info('List positions request received.')
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(user=requester, even_disabled=True)
@@ -62,7 +65,7 @@ class ReservationReportViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'])
     def positions(self, request):
         """
-        Fetch a list of positions from a reservation
+        List of positions from a reservation.
         """
         requester = self.request.user
         reservation_id = query_str(self.request, 'reservationId', True)
@@ -80,7 +83,7 @@ class ReservationReportViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """
-        Fetch a ReportSummary from a reservation
+        Retrieve a report summary from a reservation.
         """
         requester = self.request.user
         reservation_id = query_str(self.request, 'reservationId', True)
