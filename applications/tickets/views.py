@@ -1,5 +1,6 @@
 import logging
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class TicketViewSet(viewsets.ViewSet):
 
+    @swagger_auto_schema(responses={200: SimpleTicketSerializer(many=True)})
     def list(self, request):
         """
         List own tickets. If takeAll is given, it lists all tickets from everyone.
@@ -33,6 +35,19 @@ class TicketViewSet(viewsets.ViewSet):
         serializer = SimpleTicketSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(responses={200: SimpleTicketSerializer()})
+    def retrieve(self, request, pk=None):
+        """
+        Retrieve a ticket.
+        """
+        logger.info('Retrieve ticket request received.')
+        requester = self.request.user
+        queryset = get_ticket_queryset(requester, take_all=True)
+        ticket = get_object_or_404(queryset, pk=pk)
+        serializer = SimpleTicketSerializer(ticket)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(request_body=CreateTicketSerializer, responses={201: CreateTicketSerializer()})
     def create(self, request):
         """
         Create a ticket.
@@ -55,28 +70,7 @@ class TicketViewSet(viewsets.ViewSet):
         send_created_ticket_email(admin, ticket)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None):
-        """
-        Retrieve a ticket.
-        """
-        logger.info('Retrieve ticket request received.')
-        requester = self.request.user
-        queryset = get_ticket_queryset(requester, take_all=True)
-        ticket = get_object_or_404(queryset, pk=pk)
-        serializer = SimpleTicketSerializer(ticket)
-        return Response(serializer.data)
-
-    def destroy(self, request, pk=None):
-        """
-        Delete a ticket.
-        """
-        logger.info('Destroy ticket request received.')
-        requester = self.request.user
-        queryset = get_ticket_queryset(requester, take_all=True)
-        ticket = get_object_or_404(queryset, pk=pk)
-        ticket.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
-
+    @swagger_auto_schema()
     def update(self, request, pk=None):
         """
         Solve a ticket.
@@ -89,6 +83,18 @@ class TicketViewSet(viewsets.ViewSet):
         new_status = data['new_status']
         solve_ticket(ticket, new_status)
         return Response(status=HTTP_200_OK)
+
+    @swagger_auto_schema()
+    def destroy(self, request, pk=None):
+        """
+        Delete a ticket.
+        """
+        logger.info('Destroy ticket request received.')
+        requester = self.request.user
+        queryset = get_ticket_queryset(requester, take_all=True)
+        ticket = get_object_or_404(queryset, pk=pk)
+        ticket.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
 
     def get_permissions(self):
         if self.action in ['list', 'create', 'retrieve', 'destroy']:

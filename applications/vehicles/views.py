@@ -1,5 +1,6 @@
 import logging
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class VehicleViewSet(viewsets.ViewSet):
 
+    @swagger_auto_schema(responses={200: SimpleVehicleSerializer(many=True)})
     def list(self, request):
         """
         List allowed vehicles.
@@ -30,6 +32,7 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer = SimpleVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(responses={200: DetailedVehicleSerializer()})
     def retrieve(self, request, pk=None):
         """
         Retrieve an allowed vehicle.
@@ -43,6 +46,7 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer = DetailedVehicleSerializer(vehicle) if reservations else SimpleVehicleSerializer(vehicle)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=CreateOrUpdateVehicleSerializer, responses={201: CreateOrUpdateVehicleSerializer()})
     def create(self, request):
         """
         Create a vehicle.
@@ -70,6 +74,7 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer.save(tenant=requester.tenant, gps_device=device)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=CreateOrUpdateVehicleSerializer, responses={200: CreateOrUpdateVehicleSerializer()})
     def update(self, request, pk=None):
         """
         Update vehicle.
@@ -99,6 +104,7 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer.save(gps_device=device)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=DisableVehicleSerializer, responses={200: DisableVehicleSerializer()})
     def partial_update(self, request, pk=None):
         """
         Disable and enable vehicles.
@@ -114,6 +120,7 @@ class VehicleViewSet(viewsets.ViewSet):
         logger.info('Vehicle was partial updated successfully.')
         return Response(serializer.data)
 
+    @swagger_auto_schema()
     def destroy(self, request, pk=None):
         """
         Delete a vehicle.

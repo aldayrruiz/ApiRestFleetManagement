@@ -1,5 +1,6 @@
 import logging
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -11,7 +12,7 @@ from applications.reservations.exceptions.cannot_reserve_to_past import CannotRe
 from applications.reservations.exceptions.cannot_reserve_vehicle_disabled import CannotReserveVehicleDisabled
 from applications.reservations.serializers.create import CreateReservationSerializer, CreateRecurrentSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
-from applications.reservations.serializers.special import RecurrentSerializer, CreateByDate
+from applications.reservations.serializers.special import CreateByRecurrentSerializer, CreateByDateSerializer
 from applications.reservations.services.bydate.creator import ReservationByDateCreator
 from applications.reservations.services.destroyer import delete_reservation
 from applications.reservations.services.queryset import get_reservation_queryset
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReservationViewSet(viewsets.ViewSet):
-
+    @swagger_auto_schema(responses={200: SimpleReservationSerializer(many=True)})
     def list(self, request):
         """
         List own reservations. If takeAll is given, it lists all reservations from everyone.
@@ -44,6 +45,7 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer = SimpleReservationSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(responses={200: SimpleReservationSerializer()})
     def retrieve(self, request, pk=None):
         """
         Retrieve a reservation.
@@ -55,6 +57,7 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer = SimpleReservationSerializer(reservation)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=CreateReservationSerializer, responses={201: CreateReservationSerializer()})
     def create(self, request):
         """
         Create a reservation.
@@ -69,16 +72,19 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer.save(tenant=tenant)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=CreateByDateSerializer, responses={201: SimpleReservationSerializer()})
     @action(detail=False, methods=['post'])
     def create_by_date(self, request):
         """
-        Create a reservation by date. An ordered list of vehicles (by priority) is needed,
+        Create a reservation by date.
+
+        An ordered list of vehicles (by priority) is needed,
         so a reservation can be created if a vehicle is not available.
         """
         requester = self.request.user
         logger.info('Create reservation by date')
 
-        serializer = CreateByDate(data=self.request.data)
+        serializer = CreateByDateSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
 
         creator = ReservationByDateCreator.from_serializer(serializer, requester)
@@ -89,10 +95,14 @@ class ReservationViewSet(viewsets.ViewSet):
         response = SimpleReservationSerializer(reservation)
         return Response(response.data)
 
+    # TODO: Add a response serializer for this
+    @swagger_auto_schema(request_body=CreateByRecurrentSerializer)
     @action(detail=False, methods=['post'])
     def create_repetitive(self, request):
         """
-        Create many reservations at once. An ordered list of vehicles (by priority) is needed,
+        Create many reservations at once.
+
+        An ordered list of vehicles (by priority) is needed,
         so a reservation can be created if a vehicle is not available.
         Make sure you call /create_recurrent endpoint before calling this endpoint.
         """
@@ -100,7 +110,7 @@ class ReservationViewSet(viewsets.ViewSet):
         force = query_bool(self.request, 'force')
         logger.info(f'Query force: {force}')
 
-        serializer = RecurrentSerializer(data=self.request.data)
+        serializer = CreateByRecurrentSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
 
         rec_config = RecurrentConfiguration.from_serializer(serializer, self.request.user)
@@ -126,10 +136,12 @@ class ReservationViewSet(viewsets.ViewSet):
         }
         return Response(response)
 
+    @swagger_auto_schema(request_body=CreateRecurrentSerializer, responses={201: CreateRecurrentSerializer()})
     @action(detail=False, methods=['post'])
     def create_recurrent(self, request):
         """
         Create a recurrent instance.
+
         So you can make reference to recurrent instance in /create_repetitive endpoint.
         """
         logger.info('Create recurrent request received')
@@ -140,6 +152,7 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer.save(owner=requester, tenant=tenant)
         return Response(serializer.data)
 
+    @swagger_auto_schema()
     def destroy(self, request, pk=None):
         """
         Cancel a reservation. Only reservations that have not started can be cancelled.

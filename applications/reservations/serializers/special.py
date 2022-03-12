@@ -4,7 +4,7 @@ from applications.reservations.models import Recurrent
 from applications.reservations.serializers.validator import validate_reservation_dates
 
 
-class RecurrentSerializer(serializers.Serializer):
+class CreateByRecurrentSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50)
     description = serializers.CharField(style={'base_template': 'textarea.html'})
     startTime = serializers.DateTimeField(required=True)
@@ -13,7 +13,7 @@ class RecurrentSerializer(serializers.Serializer):
     recurrent = serializers.PrimaryKeyRelatedField(queryset=Recurrent.objects.all())
 
 
-class CreateByDate(serializers.Serializer):
+class CreateByDateSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50)
     description = serializers.CharField(style={'base_template': 'textarea.html'})
     start = serializers.DateTimeField(required=True)

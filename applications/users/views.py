@@ -1,5 +1,6 @@
 import logging
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -32,6 +33,7 @@ class UserViewSet(viewsets.ViewSet):
     This entire endpoint class and its methods (endpoints) are only available if requester is admin.
     """
 
+    @swagger_auto_schema(responses={200: SimpleUserSerializer(many=True)})
     def list(self, request):
         """
         List users.
@@ -43,6 +45,7 @@ class UserViewSet(viewsets.ViewSet):
         serializer = SimpleUserSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(responses={200: SingleUserSerializer()})
     def retrieve(self, request, pk=None):
         """
         Retrieve an user.

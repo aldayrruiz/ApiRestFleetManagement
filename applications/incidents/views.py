@@ -1,5 +1,6 @@
 import logging
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 class IncidentViewSet(viewsets.ViewSet):
 
+    @swagger_auto_schema(responses={200: SimpleIncidentSerializer(many=True)})
     def list(self, request):
         """
         List own incidents. If takeAll is given, it lists all incidents from everyone.
@@ -31,6 +33,19 @@ class IncidentViewSet(viewsets.ViewSet):
         serializer = SimpleIncidentSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(responses={200: SimpleIncidentSerializer()})
+    def retrieve(self, request, pk=None):
+        """
+        Retrieve an incident.
+        """
+        logger.info('Retrieve incident request received.')
+        requester = self.request.user
+        queryset = get_incident_queryset(requester, take_all=True)
+        incident = get_object_or_404(queryset, pk=pk)
+        serializer = SimpleIncidentSerializer(incident)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(request_body=CreateIncidentSerializer, responses={201: CreateIncidentSerializer()})
     def create(self, request):
         """
         Create an incident.
@@ -43,17 +58,6 @@ class IncidentViewSet(viewsets.ViewSet):
 
         incident = serializer.save(owner=requester, tenant=tenant)
         send_created_incident_email(get_admin(tenant), incident)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        """
-        Retrieve an incident.
-        """
-        logger.info('Retrieve incident request received.')
-        requester = self.request.user
-        queryset = get_incident_queryset(requester, take_all=True)
-        incident = get_object_or_404(queryset, pk=pk)
-        serializer = SimpleIncidentSerializer(incident)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])

@@ -84,6 +84,8 @@ class ReservationReportViewSet(viewsets.ViewSet):
     def summary(self, request):
         """
         Retrieve a report summary from a reservation.
+
+
         """
         requester = self.request.user
         reservation_id = query_str(self.request, 'reservationId', True)

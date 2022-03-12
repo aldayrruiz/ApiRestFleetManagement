@@ -6,7 +6,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Application definition
 
-INSTALLED_APPS = [
+BASE_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]
+
+LOCAL_APPS = [
     'commands.apps.CommandsConfig',
     'applications.tenant.apps.TenantConfig',
     'applications.traccar.apps.TraccarConfig',
@@ -15,17 +24,17 @@ INSTALLED_APPS = [
     'applications.allowed_vehicles.apps.AllowedVehiclesConfig',
     'applications.reservations.apps.ReservationsConfig',
     'applications.incidents.apps.IncidentsConfig',
-    'applications.tickets.apps.TicketsConfig',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'applications.tickets.apps.TicketsConfig'
+]
+
+THIRD_APPS = [
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'drf_yasg'
 ]
+
+INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
