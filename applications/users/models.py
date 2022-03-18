@@ -5,10 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
-from rest_framework.authtoken.models import Token
 
 from applications.tenant.models import Tenant
 from applications.vehicles.models import Vehicle
@@ -140,12 +137,3 @@ class RecoverPassword(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.code, self.status)
-
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    """
-    Token is generated automatically when a user is created.
-    """
-    if created:
-        Token.objects.create(user=instance)

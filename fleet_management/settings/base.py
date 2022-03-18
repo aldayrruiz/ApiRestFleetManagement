@@ -19,6 +19,7 @@ LOCAL_APPS = [
     'commands.apps.CommandsConfig',
     'applications.tenant.apps.TenantConfig',
     'applications.traccar.apps.TraccarConfig',
+    'applications.insurance_companies.apps.InsuranceCompaniesConfig',
     'applications.vehicles.apps.VehiclesConfig',
     'applications.users.apps.UsersConfig',
     'applications.allowed_vehicles.apps.AllowedVehiclesConfig',
