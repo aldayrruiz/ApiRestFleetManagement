@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from applications.allowed_vehicles.views import AllowedVehicleViewSet
 from applications.incidents.views import IncidentViewSet
 from applications.insurance_companies.views import InsuranceCompanyViewSet
+from applications.reservation_templates.views import ReservationTemplateViewSet
 from applications.reservations.views import ReservationViewSet
 from applications.tickets.views import TicketViewSet
 from applications.traccar.views import PositionViewSet, ReservationReportViewSet
@@ -16,6 +17,7 @@ router.register(r'vehicles', VehicleViewSet, basename='vehicle')
 router.register(r'insurance-companies', InsuranceCompanyViewSet, basename='insurance_companies')
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'users/allowed-vehicles', AllowedVehicleViewSet, basename='allowed_vehicles')
+router.register(r'reservation-templates', ReservationTemplateViewSet, basename='reservation_templates')
 router.register(r'incidents', IncidentViewSet, basename='incidents')
 router.register(r'reservations', ReservationViewSet, basename='reservation')
 router.register(r'reservations/reports', ReservationReportViewSet, basename='reports')

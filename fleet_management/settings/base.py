@@ -23,6 +23,7 @@ LOCAL_APPS = [
     'applications.vehicles.apps.VehiclesConfig',
     'applications.users.apps.UsersConfig',
     'applications.allowed_vehicles.apps.AllowedVehiclesConfig',
+    'applications.reservation_templates.apps.ReservationTemplatesConfig',
     'applications.reservations.apps.ReservationsConfig',
     'applications.incidents.apps.IncidentsConfig',
     'applications.tickets.apps.TicketsConfig'
