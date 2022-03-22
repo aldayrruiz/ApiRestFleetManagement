@@ -1,11 +1,32 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
-from applications.vehicles.models import Vehicle
+from applications.insurance_companies.models import InsuranceCompany
+from applications.vehicles.models import Vehicle, Fuel
 
 
-class CreateOrUpdateVehicleSerializer(serializers.ModelSerializer):
-    gps_device = serializers.ReadOnlyField(source='gps_device.imei')
+class CreateOrUpdateVehicleSerializer(serializers.Serializer):
+    id = serializers.UUIDField(required=False, validators=[UniqueValidator(queryset=Vehicle.objects.all())])
+    model = serializers.CharField(max_length=50)
+    brand = serializers.CharField(max_length=20)
+    number_plate = serializers.CharField(max_length=7, min_length=7, validators=[UniqueValidator(queryset=Vehicle.objects.all())])
+    is_disabled = serializers.BooleanField(required=False)
+    fuel = serializers.ChoiceField(choices=Fuel.choices, required=False)
+    gps_device = serializers.CharField(max_length=20)
+    insurance_company = serializers.PrimaryKeyRelatedField(allow_null=True, queryset=InsuranceCompany.objects.all(), required=False)
+    policy_number = serializers.CharField(allow_blank=True, max_length=20, required=False)
 
-    class Meta:
-        model = Vehicle
-        fields = ['id', 'model', 'brand', 'number_plate', 'is_disabled', 'fuel', 'gps_device']
+    def create(self, validated_data):
+        return Vehicle.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.model = validated_data.get('model', instance.model)
+        instance.brand = validated_data.get('brand', instance.brand)
+        instance.number_plate = validated_data.get('number_plate', instance.number_plate)
+        instance.is_disabled = validated_data.get('is_disabled', instance.is_disabled)
+        instance.fuel = validated_data.get('fuel', instance.fuel)
+        instance.gps_device = validated_data.get('gps_device', instance.gps_device)
+        instance.insurance_company = validated_data.get('insurance_company', instance.insurance_company)
+        instance.policy_number = validated_data.get('policy_number', instance.policy_number)
+        instance.save()
+        return instance

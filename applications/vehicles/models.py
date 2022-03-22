@@ -54,6 +54,8 @@ class Vehicle(models.Model):
         on_delete=models.SET_DEFAULT
     )
 
+    policy_number = models.CharField(default='', blank=True, max_length=20)
+
     def delete(self, *args, **kwargs):
         self.gps_device.delete()
         return super(self.__class__, self).delete(*args, **kwargs)
