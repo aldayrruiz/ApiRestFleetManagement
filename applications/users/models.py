@@ -15,11 +15,14 @@ PASSWORD_LENGTH = 8
 
 class Role(models.TextChoices):
     """
-    Admin has access to mobile app and admin web site.
+    Super admin access to mobile app and admin website. But he can change his tenant when login.
+    Admin has access to mobile app and admin website.
     User has access only to mobile app.
+
     """
+    SUPER_ADMIN = 'SUPER_ADMIN', _('SuperAdmin')
     ADMIN = 'ADMIN', _('Admin'),
-    USER = 'USER', _('User')
+    USER = 'USER', _('User'),
 
 
 class MyUserManager(BaseUserManager):

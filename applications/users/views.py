@@ -202,8 +202,7 @@ class RegistrationViewSet(viewsets.ViewSet):
 class Login(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         logger.info('Login user request received.')
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
 

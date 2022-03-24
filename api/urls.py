@@ -6,6 +6,7 @@ from applications.incidents.views import IncidentViewSet
 from applications.insurance_companies.views import InsuranceCompanyViewSet
 from applications.reservation_templates.views import ReservationTemplateViewSet
 from applications.reservations.views import ReservationViewSet
+from applications.tenant.views import TenantViewSet
 from applications.tickets.views import TicketViewSet
 from applications.traccar.views import PositionViewSet, ReservationReportViewSet
 from applications.users.views import UserViewSet, Login, RegistrationViewSet
@@ -15,6 +16,7 @@ router = DefaultRouter()
 
 router.register(r'vehicles', VehicleViewSet, basename='vehicle')
 router.register(r'insurance-companies', InsuranceCompanyViewSet, basename='insurance_companies')
+router.register(r'tenants', TenantViewSet, basename='tenants')
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'users/allowed-vehicles', AllowedVehicleViewSet, basename='allowed_vehicles')
 router.register(r'reservation-templates', ReservationTemplateViewSet, basename='reservation_templates')
