@@ -28,11 +28,6 @@ TRACCAR_USER = 'admin'
 TRACCAR_PASSWORD = 'admin'
 
 SERVER_URL = 'https://fleetmanagement.com'
-
-# Fake admin
-FAKE_ADMIN_FULLNAME = 'Fake Admin'
-FAKE_ADMIN_EMAIL = 'adminFake@fake.com'
-FAKE_ADMIN_PASSWORD = 'fakePassword'
 ```
 
 Now, I'm going to explain the env variables, and what values can be set.

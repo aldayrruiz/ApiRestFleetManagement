@@ -9,16 +9,14 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
-from applications.tenant.models import Tenant
 from applications.users.exceptions.cannot_delete_himself import CannotDeleteHimselfError
 from applications.users.exceptions.user_is_disabled import UserDisabledError
 from applications.users.models import RecoverPassword, RecoverPasswordStatus
-from applications.users.serializers.create import RegistrationSerializer, FakeRegistrationSerializer
+from applications.users.serializers.create import RegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
     PartialUpdateUserSerializer, CreateRecoverPasswordSerializer, ConfirmRecoverPasswordSerializer, \
     RecoverPasswordSerializer
-from applications.users.services.creator import create_fake_admin
 from applications.users.services.queryset import get_user_queryset
 from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN, ALLOW_UNAUTHENTICATED
 from utils.api.query import query_bool
@@ -71,6 +69,7 @@ class UserViewSet(viewsets.ViewSet):
         logger.info('User was disabled.')
         return Response(status=HTTP_204_NO_CONTENT)
 
+    @swagger_auto_schema(request_body=UpdateUserSerializer, responses={200: UpdateUserSerializer()})
     def update(self, request, pk=None):
         """
         Update a user.
@@ -87,6 +86,7 @@ class UserViewSet(viewsets.ViewSet):
         logger.info('User was updated')
         return Response(serializer.data)
 
+    @swagger_auto_schema(responses={200: PartialUpdateUserSerializer()})
     def partial_update(self, request, pk=None):
         """
         Disable and enable users.
@@ -102,6 +102,7 @@ class UserViewSet(viewsets.ViewSet):
         logger.info('User was partial updated successfully.')
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=CreateRecoverPasswordSerializer, responses={201: RecoverPasswordSerializer()})
     @action(detail=False, methods=['post'])
     def create_recover_password(self, request):
         """
@@ -114,10 +115,12 @@ class UserViewSet(viewsets.ViewSet):
         serialized = RecoverPasswordSerializer(recover_password)
         return Response(serialized.data)
 
+    @swagger_auto_schema(request_body=ConfirmRecoverPasswordSerializer)
     @action(detail=True, methods=['put'])
     def confirm_recover_password(self, request, pk=None):
         """
-        Confirm that user received the notification, sending the code received.
+        Confirm that user received the notification, sending the code received. The id param must be the id response
+        from create_recover_password request.
         """
         serializer = ConfirmRecoverPasswordSerializer(data=self.request.data)
         queryset = RecoverPassword.objects.all()
@@ -168,34 +171,8 @@ class RegistrationViewSet(viewsets.ViewSet):
         logger.info('User registered successfully: {}'.format(user.fullname))
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'], name='Fake')
-    def create_fake(self, request):
-        """
-        Create a user, for fake tenant.
-        """
-        logger.info('Register a fake user received.')
-        tenant, created = Tenant.objects.get_or_create(name='Fake')
-        # If you forgot to create Fake Tenant -> Create fake admin to not crash.
-        if created:
-            create_fake_admin(tenant.id)
-        serializer = FakeRegistrationSerializer(data=self.request.data)
-        serializer.is_valid(raise_exception=True)
-
-        user = serializer.save(tenant=tenant)
-        logger.info('Fake user registered successfully: {}'.format(user.fullname))
-
-        # Set all vehicles from tenant to new user.
-        vehicles = tenant.vehicles.all()
-        user.allowed_vehicles.set(vehicles)
-
-        return Response(serializer.data)
-
     def get_permissions(self):
-        if self.name == 'Fake':
-            permission_classes = ALLOW_UNAUTHENTICATED
-        else:
-            # Only admin can register users.
-            permission_classes = ONLY_ADMIN
+        permission_classes = ONLY_ADMIN
         return [permission() for permission in permission_classes]
 
 
