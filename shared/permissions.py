@@ -66,7 +66,7 @@ class IsVehicleAllowedOrAdmin(permissions.BasePermission):
 
     def has_permission(self, request, view):
         requester = request.user
-        if requester.role == Role.ADMIN:
+        if requester.role in [Role.ADMIN, Role.SUPER_ADMIN]:
             return True
 
         vehicles = requester.allowed_vehicles.all()
