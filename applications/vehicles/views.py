@@ -1,6 +1,7 @@
 import logging
 
-from rest_framework import viewsets, permissions
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
@@ -11,7 +12,7 @@ from applications.traccar.utils import post, put, delete
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer, DisableVehicleSerializer
-from shared.permissions import IsAdmin, IsNotDisabled, ONLY_ADMIN, ONLY_AUTHENTICATED
+from shared.permissions import ONLY_ADMIN_OR_SUPER_ADMIN, ONLY_AUTHENTICATED
 from utils.api.query import query_bool
 
 logger = logging.getLogger(__name__)
@@ -19,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 class VehicleViewSet(viewsets.ViewSet):
 
+    @swagger_auto_schema(responses={200: SimpleVehicleSerializer(many=True)})
     def list(self, request):
         """
-        If requester is user, returns the user allowed vehicles.
-        Otherwise, if user is admin, returns all vehicles.
+        List allowed vehicles.
         """
         even_disabled = query_bool(self.request, 'evenDisabled')
         logger.info('List vehicles request received. [evenDisabled: {}]'.format(even_disabled))
@@ -31,10 +32,10 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer = SimpleVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(responses={200: DetailedVehicleSerializer()})
     def retrieve(self, request, pk=None):
         """
-        If requester is user, he will have access to his allowed vehicles.
-        If requester is admin, he will have access to all vehicles.
+        Retrieve an allowed vehicle.
         """
         even_disabled = query_bool(self.request, 'evenDisabled')
         reservations = query_bool(self.request, 'reservations')
@@ -45,9 +46,10 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer = DetailedVehicleSerializer(vehicle) if reservations else SimpleVehicleSerializer(vehicle)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=CreateOrUpdateVehicleSerializer, responses={201: CreateOrUpdateVehicleSerializer()})
     def create(self, request):
         """
-        It creates a vehicle given a data.
+        Create a vehicle.
         """
         requester = self.request.user
         tenant = requester.tenant
@@ -72,7 +74,11 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer.save(tenant=requester.tenant, gps_device=device)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=CreateOrUpdateVehicleSerializer, responses={200: CreateOrUpdateVehicleSerializer()})
     def update(self, request, pk=None):
+        """
+        Update vehicle.
+        """
         logger.info('Update vehicle request received.')
         requester = self.request.user
         tenant = requester.tenant
@@ -98,9 +104,10 @@ class VehicleViewSet(viewsets.ViewSet):
         serializer.save(gps_device=device)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=DisableVehicleSerializer, responses={200: DisableVehicleSerializer()})
     def partial_update(self, request, pk=None):
         """
-        It is used just for disable and enable users. Just admins can do this.
+        Disable and enable vehicles.
         """
         logger.info('Partial update vehicle request received.')
         requester = self.request.user
@@ -113,10 +120,10 @@ class VehicleViewSet(viewsets.ViewSet):
         logger.info('Vehicle was partial updated successfully.')
         return Response(serializer.data)
 
+    @swagger_auto_schema()
     def destroy(self, request, pk=None):
         """
-        It deletes the vehicle.
-        Users have not access to this endpoint (permissions).
+        Delete a vehicle.
         """
         requester = self.request.user
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
@@ -132,7 +139,7 @@ class VehicleViewSet(viewsets.ViewSet):
         Instantiates and returns the list of permissions that this view requires.
         """
         if self.action in ['create', 'destroy', 'partial_update']:
-            permission_classes = ONLY_ADMIN
+            permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         # This include 'list' and 'retrieve'.
         # HTTP methods like update and partial update are not supported yet.
         else:
