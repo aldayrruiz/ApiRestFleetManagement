@@ -6,26 +6,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Application definition
 
-INSTALLED_APPS = [
-    'commands.apps.CommandsConfig',
-    'applications.tenant.apps.TenantConfig',
-    'applications.traccar.apps.TraccarConfig',
-    'applications.vehicles.apps.VehiclesConfig',
-    'applications.users.apps.UsersConfig',
-    'applications.allowed_vehicles.apps.AllowedVehiclesConfig',
-    'applications.reservations.apps.ReservationsConfig',
-    'applications.incidents.apps.IncidentsConfig',
-    'applications.tickets.apps.TicketsConfig',
+BASE_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
+
+LOCAL_APPS = [
+    'commands.apps.CommandsConfig',
+    'applications.tenant.apps.TenantConfig',
+    'applications.traccar.apps.TraccarConfig',
+    'applications.insurance_companies.apps.InsuranceCompaniesConfig',
+    'applications.vehicles.apps.VehiclesConfig',
+    'applications.users.apps.UsersConfig',
+    'applications.allowed_vehicles.apps.AllowedVehiclesConfig',
+    'applications.reservation_templates.apps.ReservationTemplatesConfig',
+    'applications.reservations.apps.ReservationsConfig',
+    'applications.incidents.apps.IncidentsConfig',
+    'applications.tickets.apps.TicketsConfig'
+]
+
+THIRD_APPS = [
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'drf_yasg'
 ]
+
+INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -99,3 +110,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 MEDIA_ROOT = str(BASE_DIR / 'media')
 
 MEDIA_URL = '/media/'
+
+
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+      'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+      }
+   }
+}

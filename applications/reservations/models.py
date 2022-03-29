@@ -25,7 +25,7 @@ class Reservation(models.Model):
     date_stored = models.DateField(auto_now_add=True)
     start = models.DateTimeField()
     end = models.DateTimeField()
-    description = models.TextField()
+    description = models.TextField(default='', blank=True)
     is_cancelled = models.BooleanField(default=False)
     is_recurrent = models.BooleanField(default=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)

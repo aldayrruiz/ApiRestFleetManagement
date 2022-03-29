@@ -13,13 +13,14 @@ class IncidentType(models.TextChoices):
     TIRE_PUNCTURE = 'TIRE_PUNCTURE', _('Pinchazo')
     BANG = 'BANG', _('Golpe')
     USAGE_PROBLEMS = 'USAGE_PROBLEMS', _('Problemas de uso')
+    LIGHTS = 'LIGHTS', _('Luces')
     OTHERS = 'OTHERS', _('Otros')
 
 
 class Incident(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     date_stored = models.DateTimeField(auto_now_add=True)
-    description = models.TextField(default='')
+    description = models.TextField(default='', blank=True)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
     tenant = models.ForeignKey(Tenant, related_name='incidents', on_delete=models.CASCADE)
     photo = models.ImageField(default='incidents/none.png', upload_to='incidents')

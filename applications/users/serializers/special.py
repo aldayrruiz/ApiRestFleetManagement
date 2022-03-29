@@ -12,7 +12,7 @@ class SingleUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'fullname', 'date_joined', 'allowed_vehicles', 'is_disabled']
+        fields = ['id', 'email', 'fullname', 'date_joined', 'is_disabled', 'role', 'allowed_vehicles']
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):
