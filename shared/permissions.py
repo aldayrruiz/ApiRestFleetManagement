@@ -52,7 +52,7 @@ class IsSuperAdmin(permissions.BasePermission):
 
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.role == Role.ADMIN
+        return request.user.role in [Role.ADMIN, Role.SUPER_ADMIN]
 
 
 class IsVehicleAllowedOrAdmin(permissions.BasePermission):
@@ -81,6 +81,6 @@ class IsNotDisabled(permissions.BasePermission):
 
 
 ONLY_SUPER_ADMIN = [permissions.IsAuthenticated, IsSuperAdmin]
-ONLY_ADMIN = [permissions.IsAuthenticated, IsAdmin]
+ONLY_ADMIN_OR_SUPER_ADMIN = [permissions.IsAuthenticated, IsAdmin]
 ONLY_AUTHENTICATED = [permissions.IsAuthenticated, IsNotDisabled]
 ALLOW_UNAUTHENTICATED = [permissions.AllowAny]

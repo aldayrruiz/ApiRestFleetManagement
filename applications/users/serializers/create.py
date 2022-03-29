@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
+from applications.auth.services.password_changer import PasswordChanger
 from applications.users.models import User
-from utils.email.users import send_created_user_email
-from utils.password.generator import generate_password
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -16,10 +15,5 @@ class RegistrationSerializer(serializers.ModelSerializer):
                     fullname=self.validated_data['fullname'],
                     tenant=tenant)
 
-        password = generate_password()
-
-        user.set_password(password)
-        user.save()
-        send_created_user_email(user, password)
-        return user
-
+        password_changer = PasswordChanger(user)
+        password_changer.send_email()

@@ -7,7 +7,7 @@ from rest_framework.status import HTTP_200_OK
 
 from applications.allowed_vehicles.services.updater import AllowedVehiclesUpdater
 from applications.users.services.queryset import get_user_queryset
-from shared.permissions import ONLY_ADMIN
+from shared.permissions import ONLY_ADMIN_OR_SUPER_ADMIN
 
 logger = logging.getLogger(__name__)
 
@@ -33,4 +33,4 @@ class AllowedVehicleViewSet(viewsets.ViewSet):
         """
         Only admin can modify vehicle privileges of users.
         """
-        return [permission() for permission in ONLY_ADMIN]
+        return [permission() for permission in ONLY_ADMIN_OR_SUPER_ADMIN]

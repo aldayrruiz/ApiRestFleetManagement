@@ -18,7 +18,7 @@ from applications.users.serializers.special import UpdateUserSerializer, SingleU
     PartialUpdateUserSerializer, CreateRecoverPasswordSerializer, ConfirmRecoverPasswordSerializer, \
     RecoverPasswordSerializer
 from applications.users.services.queryset import get_user_queryset
-from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN, ALLOW_UNAUTHENTICATED
+from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN_OR_SUPER_ADMIN, ALLOW_UNAUTHENTICATED
 from utils.api.query import query_bool
 from utils.email.users import send_create_recover_password, send_confirmed_recovered_password
 from utils.password.generator import generate_password
@@ -27,9 +27,6 @@ logger = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ViewSet):
-    """
-    This entire endpoint class and its methods (endpoints) are only available if requester is admin.
-    """
 
     @swagger_auto_schema(responses={200: SimpleUserSerializer(many=True)})
     def list(self, request):
@@ -149,7 +146,7 @@ class UserViewSet(viewsets.ViewSet):
         if self.action in ['list', 'retrieve', 'update']:
             permission_classes = ONLY_AUTHENTICATED
         elif self.action in ['create', 'destroy', 'partial_update']:
-            permission_classes = ONLY_ADMIN
+            permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         else:
             permission_classes = ALLOW_UNAUTHENTICATED
 
@@ -172,7 +169,7 @@ class RegistrationViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def get_permissions(self):
-        permission_classes = ONLY_ADMIN
+        permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         return [permission() for permission in permission_classes]
 
 

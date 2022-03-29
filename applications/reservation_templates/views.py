@@ -6,7 +6,7 @@ from rest_framework.status import HTTP_204_NO_CONTENT
 
 from applications.reservation_templates.serializers.create import ReservationTemplateSerializer
 from applications.reservation_templates.services.queryset import get_reservation_templates_queryset
-from shared.permissions import ONLY_ADMIN, ONLY_AUTHENTICATED
+from shared.permissions import ONLY_ADMIN_OR_SUPER_ADMIN, ONLY_AUTHENTICATED
 
 
 class ReservationTemplateViewSet(viewsets.ViewSet):
@@ -69,10 +69,10 @@ class ReservationTemplateViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy']:
-            permission_classes = ONLY_ADMIN
+            permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         elif self.action in ['list', 'retrieve']:
             permission_classes = ONLY_AUTHENTICATED
         # If new endpoints are added, by default add them to ONLY ADMIN
         else:
-            permission_classes = ONLY_ADMIN
+            permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         return [permission() for permission in permission_classes]

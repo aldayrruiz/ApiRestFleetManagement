@@ -10,7 +10,7 @@ from applications.allowed_vehicles.services.queryset import get_allowed_vehicles
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.timer import raise_error_if_reservation_has_not_ended
 from applications.traccar.utils import get
-from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN
+from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN_OR_SUPER_ADMIN
 from utils.api.query import query_str
 from utils.dates import from_date_to_str_date_traccar
 
@@ -102,5 +102,5 @@ class ReservationReportViewSet(viewsets.ViewSet):
         return Response(summary)
 
     def get_permissions(self):
-        permission_classes = ONLY_ADMIN
+        permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         return [permission() for permission in permission_classes]

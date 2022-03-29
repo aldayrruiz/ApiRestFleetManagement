@@ -12,7 +12,7 @@ from applications.traccar.utils import post, put, delete
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer, DisableVehicleSerializer
-from shared.permissions import ONLY_ADMIN, ONLY_AUTHENTICATED
+from shared.permissions import ONLY_ADMIN_OR_SUPER_ADMIN, ONLY_AUTHENTICATED
 from utils.api.query import query_bool
 
 logger = logging.getLogger(__name__)
@@ -139,7 +139,7 @@ class VehicleViewSet(viewsets.ViewSet):
         Instantiates and returns the list of permissions that this view requires.
         """
         if self.action in ['create', 'destroy', 'partial_update']:
-            permission_classes = ONLY_ADMIN
+            permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         # This include 'list' and 'retrieve'.
         # HTTP methods like update and partial update are not supported yet.
         else:
