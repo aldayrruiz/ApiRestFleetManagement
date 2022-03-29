@@ -42,7 +42,7 @@ urlpatterns = [
 # If Production
 if not settings.DEBUG:
     urlpatterns += [
-        path(r'', TemplateView.as_view(template_name='home.html'), name='home')
+        re_path(r'', TemplateView.as_view(template_name='home.html'), name='home')
     ]
 
 # If Development
