@@ -5,7 +5,6 @@ incident_was_created_body = """
 Se ha reportado una incidencia.
 
 Incidencia:
-    Título: {}
     Tipo: {}    
     Fecha: {}
     Descripción: 
@@ -43,7 +42,7 @@ def get_incident_was_created_message(receiver_email, incident):
     incident_type = IncidentType(incident.type).label
     subject = 'Incidencia: {0} {1} - {2}'.format(vehicle.brand, vehicle.model, incident_type)
     body = incident_was_created_body.format(
-        incident.title, incident_type, incident.date_stored, incident.description,
+        incident_type, incident.date_stored, incident.description,
         owner.fullname, owner.email,
         vehicle.brand, vehicle.model, vehicle.number_plate,
         reservation.title, reservation.start, reservation.end, reservation.description
