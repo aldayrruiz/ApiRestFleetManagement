@@ -89,7 +89,7 @@ class RecurrentReservationCreator:
 
         for vehicle in vehicles:
             reservation = self.__get_reservation__(start=start, end=end, vehicle=vehicle)
-            is_valid = ReservationValidator(vehicle, self.config.owner).is_reservation_valid(reservation)
+            [is_valid, r_conflict] = ReservationValidator(vehicle, self.config.owner).is_reservation_valid(reservation)
             if is_valid:
                 return [True, reservation]
         error_reservation = self.__get_fake_reservation__(start=start, end=end, vehicles=vehicles)
