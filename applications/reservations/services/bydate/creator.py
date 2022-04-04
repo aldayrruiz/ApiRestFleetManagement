@@ -25,11 +25,11 @@ class ReservationByDateCreator:
         for vehicle in self.vehicles:
             possible_reservation = self.__get_reservation__(self.owner, vehicle)
             validator = ReservationValidator(vehicle, self.owner)
-            is_valid = validator.is_reservation_valid(possible_reservation)
+            [is_valid, r_conflict] = validator.is_reservation_valid(possible_reservation)
             if is_valid:
                 possible_reservation.save()
                 return possible_reservation
-            if possible_reservation.owner == self.owner:
+            if r_conflict.owner == self.owner:
                 raise YouAlreadyPossesOtherReservationAtSameTime()
         return None
 

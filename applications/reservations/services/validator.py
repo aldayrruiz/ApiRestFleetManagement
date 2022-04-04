@@ -12,5 +12,5 @@ class ReservationValidator:
             end = from_naive_to_aware(reservation.end)
             valid = start >= r.end or end <= r.start
             if not valid:
-                return False
-        return True
+                return [False, r]
+        return [True, None]
