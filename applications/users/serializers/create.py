@@ -17,3 +17,4 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         password_changer = PasswordChanger(user)
         password_changer.send_email()
+        return user
