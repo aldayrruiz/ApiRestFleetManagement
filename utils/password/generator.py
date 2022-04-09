@@ -1,8 +1,8 @@
 import random
 import string
 
-from applications.users.models import CODE_LENGTH
-from applications.users.models import PASSWORD_LENGTH
+PASSWORD_LENGTH = 8
+CODE_LENGTH = 6
 
 
 def generate_password():

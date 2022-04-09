@@ -2,19 +2,10 @@ import uuid
 
 from django.conf import settings
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
+from applications.incidents.models import IncidentType
 from applications.reservations.models import Reservation
 from applications.tenant.models import Tenant
-
-
-class IncidentType(models.TextChoices):
-    # Name = 'Value', _('Label')
-    TIRE_PUNCTURE = 'TIRE_PUNCTURE', _('Pinchazo')
-    BANG = 'BANG', _('Golpe')
-    USAGE_PROBLEMS = 'USAGE_PROBLEMS', _('Problemas de uso')
-    LIGHTS = 'LIGHTS', _('Luces')
-    OTHERS = 'OTHERS', _('Otros')
 
 
 class Incident(models.Model):

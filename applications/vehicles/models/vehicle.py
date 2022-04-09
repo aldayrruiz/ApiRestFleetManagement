@@ -2,20 +2,14 @@ import uuid
 
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 from applications.insurance_companies.models import InsuranceCompany
 from applications.tenant.models import Tenant
 from applications.traccar.models import Device
+from applications.vehicles.models.fuel import Fuel
 
 # In Spain vehicle's number plates have 7 characters, except for motorbikes
 LENGTH_NUMBER_PLATE = 7
-
-
-class Fuel(models.TextChoices):
-    DIESEL = 'DIESEL', _('Diesel'),
-    GASOLINE = 'GASOLINE', _('Gasoline')
-    ELECTRIC = 'ELECTRIC', _('Electric')
 
 
 class Vehicle(models.Model):
