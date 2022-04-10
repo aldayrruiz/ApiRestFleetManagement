@@ -17,7 +17,7 @@ BASE_APPS = [
 
 LOCAL_APPS = [
     'commands.apps.CommandsConfig',
-    'applications.tenant.apps.TenantConfig',
+    'applications.tenants.apps.TenantConfig',
     'applications.traccar.apps.TraccarConfig',
     'applications.insurance_companies.apps.InsuranceCompaniesConfig',
     'applications.vehicles.apps.VehiclesConfig',
