@@ -5,7 +5,7 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from applications.tenant.models import Tenant
+from applications.tenants.models import Tenant
 
 CODE_LENGTH = 6
 

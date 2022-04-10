@@ -1,4 +1,4 @@
-from applications.tenant.models import Tenant
+from applications.tenants.models import Tenant
 
 
 def get_tenants_queryset():

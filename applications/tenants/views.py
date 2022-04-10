@@ -4,8 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from applications.tenant.serializers.simple import TenantSerializer
-from applications.tenant.services.queryset import get_tenants_queryset
+from applications.tenants.serializers.simple import TenantSerializer
+from applications.tenants.services.queryset import get_tenants_queryset
 from shared.permissions import ONLY_SUPER_ADMIN
 
 

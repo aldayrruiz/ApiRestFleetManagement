@@ -11,7 +11,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
 from applications.users.exceptions.cannot_delete_himself import CannotDeleteHimselfError
 from applications.users.exceptions.user_is_disabled import UserDisabledError
-from applications.users.models import RecoverPassword, RecoverPasswordStatus
+from applications.users.models import RecoverPassword, RecoverPasswordStatus, User
 from applications.users.serializers.create import RegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
@@ -33,10 +33,10 @@ class UserViewSet(viewsets.ViewSet):
         """
         List users.
         """
-        requester = self.request.user
+        requester: User = self.request.user
         even_disabled = query_bool(self.request, 'evenDisabled')
         logger.info(f'List users request received. [evenDisabled: {even_disabled}]')
-        queryset = get_user_queryset(requester.tenant, even_disabled=even_disabled)
+        queryset = get_user_queryset(requester, even_disabled=even_disabled)
         serializer = SimpleUserSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -45,9 +45,10 @@ class UserViewSet(viewsets.ViewSet):
         """
         Retrieve an user.
         """
-        requester = self.request.user
-        logger.info('Retrieve user request received.')
-        queryset = get_user_queryset(requester.tenant, even_disabled=True)
+        requester: User = self.request.user
+        even_disabled = query_bool(self.request, 'evenDisabled')
+        logger.info(f'Retrieve user request received. [evenDisabled: {even_disabled}]')
+        queryset = get_user_queryset(requester, even_disabled=even_disabled)
         user = get_object_or_404(queryset, pk=pk)
         serializer = SingleUserSerializer(user)
         return Response(serializer.data)
@@ -57,8 +58,8 @@ class UserViewSet(viewsets.ViewSet):
         Delete an user.
         """
         logger.info('Destroy user request received.')
-        requester = self.request.user
-        queryset = get_user_queryset(requester.tenant, even_disabled=True)
+        requester: User = self.request.user
+        queryset = get_user_queryset(requester, even_disabled=True)
         user = get_object_or_404(queryset, pk=pk)
         if requester == user:
             raise CannotDeleteHimselfError()
@@ -72,8 +73,8 @@ class UserViewSet(viewsets.ViewSet):
         Update a user.
         """
         logger.info('Update user request received.')
-        requester = self.request.user
-        queryset = get_user_queryset(requester.tenant, even_disabled=True)
+        requester: User = self.request.user
+        queryset = get_user_queryset(requester, even_disabled=True)
 
         user = get_object_or_404(queryset, pk=pk)
         serializer = UpdateUserSerializer(user, self.request.data)
@@ -89,8 +90,8 @@ class UserViewSet(viewsets.ViewSet):
         Disable and enable users.
         """
         logger.info('Partial update user request received.')
-        requester = self.request.user
-        queryset = get_user_queryset(requester.tenant, even_disabled=True)
+        requester: User = self.request.user
+        queryset = get_user_queryset(requester, even_disabled=True)
         user = get_object_or_404(queryset, pk=pk)
         serializer = PartialUpdateUserSerializer(user, request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -160,7 +161,7 @@ class RegistrationViewSet(viewsets.ViewSet):
         Create a user.
         """
         logger.info('Register user request received.')
-        requester = self.request.user
+        requester: User = self.request.user
         serializer = RegistrationSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
 

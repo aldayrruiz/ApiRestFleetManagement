@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import IntegrityError
 
-from applications.tenant.models import Tenant
+from applications.tenants.models import Tenant
 
 
 class Command(BaseCommand):

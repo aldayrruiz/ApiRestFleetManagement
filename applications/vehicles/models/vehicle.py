@@ -4,7 +4,7 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 
 from applications.insurance_companies.models import InsuranceCompany
-from applications.tenant.models import Tenant
+from applications.tenants.models import Tenant
 from applications.traccar.models import Device
 from applications.vehicles.models.fuel import Fuel
 

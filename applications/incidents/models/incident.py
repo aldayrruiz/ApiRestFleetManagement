@@ -5,7 +5,7 @@ from django.db import models
 
 from applications.incidents.models import IncidentType
 from applications.reservations.models import Reservation
-from applications.tenant.models import Tenant
+from applications.tenants.models import Tenant
 
 
 class Incident(models.Model):

@@ -7,7 +7,7 @@ from applications.incidents.views import IncidentViewSet
 from applications.insurance_companies.views import InsuranceCompanyViewSet
 from applications.reservation_templates.views import ReservationTemplateViewSet
 from applications.reservations.views import ReservationViewSet
-from applications.tenant.views import TenantViewSet
+from applications.tenants.views import TenantViewSet
 from applications.tickets.views import TicketViewSet
 from applications.traccar.views import PositionViewSet, ReservationReportViewSet
 from applications.users.views import UserViewSet, Login, RegistrationViewSet
