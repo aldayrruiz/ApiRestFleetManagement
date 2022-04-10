@@ -20,7 +20,7 @@ class AllowedVehicleViewSet(viewsets.ViewSet):
         """
         requester = self.request.user
         logger.info('Update user allowed vehicles request received.')
-        user_queryset = get_user_queryset(requester.tenant, even_disabled=True)
+        user_queryset = get_user_queryset(requester, even_disabled=True)
         user = get_object_or_404(user_queryset, pk=pk)
 
         # Get new vehicles allowed replacing older ones (vehicles_queryset == vehicles in same tenant as admin)

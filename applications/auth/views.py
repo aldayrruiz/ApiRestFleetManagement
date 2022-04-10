@@ -17,7 +17,7 @@ class AuthViewSet(viewsets.ViewSet):
     def resend_registration_email(self, request, pk=None):
         logger.info('Retrieve user request received.')
         requester = self.request.user
-        queryset = get_user_queryset(requester.tenant, even_disabled=True)
+        queryset = get_user_queryset(requester, even_disabled=True)
         user = get_object_or_404(queryset, pk=pk)
         password_changer = PasswordChanger(user)
         password_changer.send_email()
