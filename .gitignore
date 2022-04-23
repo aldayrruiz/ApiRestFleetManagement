@@ -81,7 +81,7 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-.env
+src/.env
 
 # virtualenv
 .venv
@@ -103,20 +103,15 @@ ENV/
 
 .DS_Store
 *.sqlite3
-/media/*
+/src/media/*
 *.pyc
 *.db
 *.pid
 
-# Ignore Django Migrations in Development if you are working on team
-
-# Only for Development only
-**/migrations/**
-!**/migrations
-!**/migrations/__init__.py
-
 # Ignore .idea
 .idea/
 
-/static/*
+/src/static/*
 /fixtures/*
+
+production.py
