@@ -11,7 +11,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      DJANGO_SECRET_KEY: test-key-not-good
+      SECRET_KEY: test-key-not-good
     strategy:
       max-parallel: 4
       matrix:
@@ -30,6 +30,6 @@ jobs:
     - name: Run Tests
       env:
           DEBUG: "0"
-          DJANGO_SECRET_KEY: ${{ env.DJANGO_SECRET_KEY }}
+          SECRET_KEY: ${{ env.SECRET_KEY }}
       run: |
         python src/manage.py test
