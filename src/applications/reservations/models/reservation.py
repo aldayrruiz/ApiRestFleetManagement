@@ -3,9 +3,9 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from applications.reservations.models import Recurrent
-from applications.tenants.models import Tenant
-from applications.vehicles.models import Vehicle
+from applications.reservations.models.recurrent import Recurrent
+from applications.tenants.models.tenant import Tenant
+from applications.vehicles.models.vehicle import Vehicle
 
 
 class Reservation(models.Model):

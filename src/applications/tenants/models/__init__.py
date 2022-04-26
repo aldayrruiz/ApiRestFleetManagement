@@ -1,1 +1,1 @@
-from .tenant import Tenant
+from applications.tenants.models.tenant import Tenant

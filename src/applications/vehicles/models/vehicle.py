@@ -3,9 +3,9 @@ import uuid
 from django.core.validators import MinLengthValidator
 from django.db import models
 
-from applications.insurance_companies.models import InsuranceCompany
-from applications.tenants.models import Tenant
-from applications.traccar.models import Device
+from applications.insurance_companies.models.insurance_company import InsuranceCompany
+from applications.tenants.models.tenant import Tenant
+from applications.traccar.models.device import Device
 from applications.vehicles.models.fuel import Fuel
 
 # In Spain vehicle's number plates have 7 characters, except for motorbikes

@@ -3,9 +3,9 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from applications.reservations.models import Reservation
-from applications.tenants.models import Tenant
-from applications.tickets.models import TicketStatus
+from applications.reservations.models.reservation import Reservation
+from applications.tenants.models.tenant import Tenant
+from applications.tickets.models.status import TicketStatus
 
 
 class Ticket(models.Model):
