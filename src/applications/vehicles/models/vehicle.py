@@ -50,6 +50,8 @@ class Vehicle(models.Model):
 
     policy_number = models.CharField(default='', blank=True, max_length=20)
 
+    icon = models.PositiveSmallIntegerField(default=1)
+
     def delete(self, *args, **kwargs):
         self.gps_device.delete()
         return super(self.__class__, self).delete(*args, **kwargs)
