@@ -1,1 +1,1 @@
-from .reservation_template import ReservationTemplate
+from applications.reservation_templates.models.reservation_template import ReservationTemplate

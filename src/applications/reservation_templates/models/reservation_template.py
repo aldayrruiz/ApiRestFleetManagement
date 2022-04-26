@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 
-from applications.tenants.models import Tenant
+from applications.tenants.models.tenant import Tenant
 
 
 class ReservationTemplate(models.Model):

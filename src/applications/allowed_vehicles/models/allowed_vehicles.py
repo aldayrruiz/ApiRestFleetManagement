@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import UniqueConstraint
 
-from applications.vehicles.models import Vehicle
+from applications.vehicles.models.vehicle import Vehicle
 
 
 class AllowedVehicles(models.Model):

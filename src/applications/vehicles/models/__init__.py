@@ -1,2 +1,2 @@
-from .fuel import Fuel
-from .vehicle import Vehicle
+from applications.vehicles.models.fuel import Fuel
+from applications.vehicles.models.vehicle import Vehicle

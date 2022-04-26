@@ -4,9 +4,9 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from applications.tenants.models import Tenant
-from applications.users.models import Role
-from applications.vehicles.models import Vehicle
+from applications.tenants.models.tenant import Tenant
+from applications.users.models.role import Role
+from applications.vehicles.models.vehicle import Vehicle
 
 
 class MyUserManager(BaseUserManager):

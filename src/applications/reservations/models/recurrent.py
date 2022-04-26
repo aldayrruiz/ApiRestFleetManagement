@@ -3,7 +3,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from applications.tenants.models import Tenant
+from applications.tenants.models.tenant import Tenant
 
 
 class Recurrent(models.Model):

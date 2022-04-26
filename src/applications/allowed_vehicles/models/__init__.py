@@ -1,1 +1,1 @@
-from .allowed_vehicles import AllowedVehicles
+from applications.allowed_vehicles.models.allowed_vehicles import AllowedVehicles

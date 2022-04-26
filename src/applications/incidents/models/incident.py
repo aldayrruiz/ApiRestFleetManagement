@@ -3,9 +3,9 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from applications.incidents.models import IncidentType
-from applications.reservations.models import Reservation
-from applications.tenants.models import Tenant
+from applications.incidents.models.type import IncidentType
+from applications.reservations.models.reservation import Reservation
+from applications.tenants.models.tenant import Tenant
 
 
 class Incident(models.Model):
