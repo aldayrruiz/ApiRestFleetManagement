@@ -53,7 +53,7 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         requester = self.request.user
         tenant = requester.tenant
-        logger.info('Create user request received.')
+        logger.info('Create vehicle request received.')
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
 

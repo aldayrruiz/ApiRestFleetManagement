@@ -10,9 +10,9 @@ Contraseña: {}
 
 La app puede ser encontrada en...
 
-Play Store (teléfonos Android): https://play.google.com/store/apps/details?id=eu.bluece.fleetmanagement&gl=ES
+Play Store (teléfonos Android): https://play.google.com/store/apps/details?id=eu.bluece.drivers
 
-Apple Store (teléfonos iPhone): https://apps.apple.com/es/app/bluece-fleet-management/id1590842892
+Apple Store (teléfonos iPhone): https://apps.apple.com/app/blue-drivers/id1621125347
 
 """
 
