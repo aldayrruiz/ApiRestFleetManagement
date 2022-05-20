@@ -4,7 +4,6 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-
 # Vehicles
 vehicles = np.array(['1234 Clio', '4312 Zoe', '2314 Zoe', '5413 Traffic', '5312 Scenic'])
 
@@ -18,16 +17,16 @@ free = np.array([2.5, 3.5, 3.3, 3.2, 1.7])
 fig = make_subplots()
 
 take_scatter = go.Scatter(x=vehicles,
-                               y=take,
-                               name='Recoger',
-                               mode='lines+markers',
-                               marker=dict(symbol='circle', size=10, color='blue'))
+                          y=take,
+                          name='Recoger',
+                          mode='lines+markers',
+                          marker=dict(symbol='circle', size=10, color='blue'))
 
 free_scatter = go.Scatter(x=vehicles,
-                                   y=free,
-                                   name='Liberar',
-                                   mode='lines+markers',
-                                   marker=dict(symbol='circle', size=10, color='orange'))
+                          y=free,
+                          name='Liberar',
+                          mode='lines+markers',
+                          marker=dict(symbol='circle', size=10, color='orange'))
 
 traces = [take_scatter, free_scatter]
 
