@@ -1,4 +1,5 @@
 import logging
+import math
 
 import numpy as np
 
@@ -9,7 +10,6 @@ from applications.tenants.models import Tenant
 from applications.traccar.pdf.chart_generator import ChartGenerator
 from applications.traccar.utils import report_units_converter
 from applications.traccar.views import send_get_to_traccar
-
 
 logger = logging.getLogger(__name__)
 
@@ -47,34 +47,38 @@ class UseOfVehicleChartGenerator(ChartGenerator):
         return distances, max_speeds, average_speeds
 
     def get_monthly_report(self, vehicle):
-        distances, max_speeds, average_speeds = [], [], []
-        for reservation in vehicle.reservations:
-            device_id = reservation.vehicle.gps_device.id
+        distances, max_speeds, average_speeds = [0], [0], [0]
+        for reservation in vehicle.reservations.all():
+            device_id = reservation.vehicle.gps_device_id
 
-            # Empieza antes del mes y termina dentro del mes.
             if reservation.start < self.first_day:
-                response = send_get_to_traccar(device_id, self.first_day, reservation.end, 'reports/route')
+                response = send_get_to_traccar(device_id, self.first_day, reservation.end, 'reports/summary')
             # Empieza detro del mes y termina en el mes siguiente.
             elif reservation.end > self.last_day:
-                response = send_get_to_traccar(device_id, reservation.start, self.last_day, 'reports/route')
+                response = send_get_to_traccar(device_id, reservation.start, self.last_day, 'reports/summary')
             # Empieza y termina dentro del mes.
             else:
-                response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/route')
+                response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/summary')
 
             if not response.ok:
                 logger.error(f'Could generate report for {vehicle.brand} {vehicle.model} at {reservation.start}')
                 continue
-            report = response.json()
+
+            reports = response.json()
+
+            if not reports:
+                logger.error(f'Report received but empty [] for {vehicle.brand} {vehicle.model} at {reservation.start}')
+                continue
 
             # Convert units
-            report = report_units_converter(report)
+            report = report_units_converter(reports[0])
             distances.append(report['distance'])
             max_speeds.append(report['maxSpeed'])
             average_speeds.append(report['averageSpeed'])
 
-        total_distance = np.sum(np.array(distances))
-        total_max_speed = np.max(np.array(max_speeds))
-        total_average_speed = np.mean(np.array(average_speeds))
+        total_distance = math.floor(np.sum(np.array(distances)))
+        total_max_speed = math.floor(np.max(np.array(max_speeds)))
+        total_average_speed = math.floor(np.mean(np.array(average_speeds)))
         return total_distance, total_max_speed, total_average_speed
 
     def get_distance_bar(self):
@@ -110,7 +114,5 @@ class UseOfVehicleChartGenerator(ChartGenerator):
             marker=dict(symbol='square', size=10, color='grey')
         )
 
-# if not os.path.exists('images'):
-#     os.mkdir('images')
-#
-# fig.write_image('images/fig3.png')
+
+UseOfVehicleChartGenerator(Tenant.objects.get(name__exact='Valladolid'), 4, 2022).generate_image('fig3.png')

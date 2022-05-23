@@ -52,7 +52,9 @@ class PositionViewSet(viewsets.ViewSet):
 
 
 def send_get_to_traccar(device_id, _from, _to, route: str):
-    params = {'deviceId': device_id, 'from': _from, 'to': _to}
+    start_str = from_date_to_str_date_traccar(_from)
+    end_str = from_date_to_str_date_traccar(_to)
+    params = {'deviceId': device_id, 'from': start_str, 'to': end_str}
     response = get(target=route, params=params)
     return response
 
@@ -73,9 +75,7 @@ class ReservationReportViewSet(viewsets.ViewSet):
         raise_error_if_reservation_has_not_ended(reservation)
 
         device_id = reservation.vehicle.gps_device.id
-        start_str = from_date_to_str_date_traccar(reservation.start)
-        end_str = from_date_to_str_date_traccar(reservation.end)
-        response = send_get_to_traccar(device_id, start_str, end_str, 'reports/route')
+        response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/route')
         if not response.ok:
             raise APIException('Could not receive positions.', code=response.status_code)
         return Response(response.json())
@@ -94,9 +94,7 @@ class ReservationReportViewSet(viewsets.ViewSet):
         raise_error_if_reservation_has_not_ended(reservation)
 
         device_id = reservation.vehicle.gps_device.id
-        start_str = from_date_to_str_date_traccar(reservation.start)
-        end_str = from_date_to_str_date_traccar(reservation.end)
-        response = send_get_to_traccar(device_id, start_str, end_str, 'reports/summary')
+        response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/summary')
         if not response.ok:
             raise APIException('Could not receive report summary.', code=response.status_code)
         summary = response.json()[0]

@@ -46,5 +46,5 @@ def report_units_converter(report):
         'averageSpeed': report['averageSpeed'] * 1.85,
         'distance': report['distance'] / 1000,
         'spentFuel': report['spentFuel'],
-        'engine_hours': report['engine_hours']  # milliseconds
+        'engine_hours': report['engineHours']  # milliseconds
     }
