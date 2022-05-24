@@ -58,7 +58,7 @@ def is_after_now(date):
 def get_first_and_last_day_of(year, month):
     (_, last_day) = calendar.monthrange(year, month)
     first_datetime = datetime.datetime(year, month, 1, 0, 0, 0, 0)
-    last_datetime = datetime.datetime(year, month, last_day, 23, 59, 59, 59)
+    last_datetime = first_datetime + relativedelta(months=1)
     return first_datetime, last_datetime
 
 
