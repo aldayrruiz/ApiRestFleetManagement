@@ -11,7 +11,7 @@ from applications.incidents.serializers.create import CreateIncidentSerializer
 from applications.incidents.serializers.simple import SimpleIncidentSerializer
 from applications.incidents.services.queryset import get_incident_queryset
 from applications.incidents.services.solver import IncidentSolver
-from applications.users.services.search import get_admin
+from applications.users.services.search import get_admins
 from shared.permissions import IsOwnerReservationOrAdmin, IsNotDisabled, ONLY_ADMIN_OR_SUPER_ADMIN, ONLY_AUTHENTICATED
 from utils.api.query import query_bool
 from utils.email.incidents.created import send_created_incident_email
@@ -57,7 +57,9 @@ class IncidentViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
 
         incident = serializer.save(owner=requester, tenant=tenant)
-        send_created_incident_email(get_admin(tenant), incident)
+        admins = get_admins(tenant)
+        for admin in admins:
+            send_created_incident_email(admin, incident)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
