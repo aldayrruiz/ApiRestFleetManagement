@@ -13,7 +13,7 @@ from applications.tickets.serializers.simple import SimpleTicketSerializer
 from applications.tickets.services.queryset import get_ticket_queryset
 from applications.tickets.services.solver import solve_ticket
 from applications.tickets.services.validators import check_if_not_mine
-from applications.users.services.search import get_admin
+from applications.users.services.search import get_admins
 from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN_OR_SUPER_ADMIN
 from utils.api.query import query_bool
 from utils.email.tickets.created import send_created_ticket_email
@@ -66,8 +66,9 @@ class TicketViewSet(viewsets.ViewSet):
 
         # Create Ticket and send email to admin
         ticket = serializer.save(owner=requester, tenant=tenant)
-        admin = get_admin(tenant)
-        send_created_ticket_email(admin, ticket)
+        admins = get_admins(tenant)
+        for admin in admins:
+            send_created_ticket_email(admin, ticket)
         return Response(serializer.data)
 
     @swagger_auto_schema()

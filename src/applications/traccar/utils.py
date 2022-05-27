@@ -36,3 +36,15 @@ def _get_url(target, pk=None):
         return '{}{}'.format(base_url, target)
     else:
         return '{}{}/{}'.format(base_url, target, pk)
+
+
+def report_units_converter(report):
+    return {
+        'deviceId': report['deviceId'],
+        'deviceName': report['deviceName'],
+        'maxSpeed': report['maxSpeed'] * 1.85,
+        'averageSpeed': report['averageSpeed'] * 1.85,
+        'distance': report['distance'] / 1000,
+        'spentFuel': report['spentFuel'],
+        'engine_hours': report['engineHours']  # milliseconds
+    }
