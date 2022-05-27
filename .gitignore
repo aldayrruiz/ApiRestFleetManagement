@@ -115,3 +115,5 @@ ENV/
 /fixtures/*
 
 production.py
+
+/src/applications/traccar/pdf/images/*.png

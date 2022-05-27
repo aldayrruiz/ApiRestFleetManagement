@@ -1,8 +1,10 @@
+import calendar
 import datetime
 
 import pytz
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from dateutil.relativedelta import relativedelta
 
 ISO_PATTERN = '%Y-%m-%dT%H:%M:%S.%fZ'
 TRACCAR_PATTERN = '%Y-%m-%dT%H:%M:%SZ'
@@ -51,3 +53,16 @@ def get_now_utc():
 def is_after_now(date):
     now = get_now_utc()
     return now < date
+
+
+def get_first_and_last_day_of(year, month):
+    (_, last_day) = calendar.monthrange(year, month)
+    first_datetime = datetime.datetime(year, month, 1, 0, 0, 0, 0)
+    last_datetime = first_datetime + relativedelta(months=1)
+    return first_datetime, last_datetime
+
+
+def get_hours_duration(start, end):
+    duration = relativedelta(end, start)
+    hours = duration.days * 24 + duration.minutes / 60 + duration.hours
+    return hours
