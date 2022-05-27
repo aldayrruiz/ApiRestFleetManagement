@@ -34,7 +34,6 @@ THIRD_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
-    'django_extensions'
 ]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
