@@ -12,7 +12,7 @@ class IsOwnerReservationOrAdmin(permissions.BasePermission):
 
     def has_permission(self, request, view):
         requester = request.user
-        if requester.role == Role.ADMIN:
+        if requester.role in [Role.ADMIN, Role.SUPER_ADMIN]:
             return True
         reservations = requester.reservations.all()
         return reservations.filter(id=request.data['reservation']).exists()
