@@ -5,7 +5,7 @@ from utils.dates import get_now_utc
 
 def get_reservation_queryset(requester, take_all=False, vehicle_id=None, _from=None, _to=None):
     tenant = requester.tenant
-    if requester.role == Role.ADMIN and take_all:
+    if requester.role in [Role.ADMIN, Role.SUPER_ADMIN] and take_all:
         # For admin web - All reservations
         queryset = Reservation.objects.filter(tenant=tenant)
     else:
