@@ -4,7 +4,7 @@ from applications.tenants.models import Tenant
 
 
 class AbstractUseOfVehicleReport(AbstractReport):
-    hours = models.DecimalField()
+    hours = models.DecimalField(max_digits=10, decimal_places=5)
 
     class Meta:
         abstract = True
