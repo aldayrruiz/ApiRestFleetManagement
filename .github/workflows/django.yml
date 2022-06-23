@@ -25,7 +25,7 @@ jobs:
       TRACCAR_PASSWORD: admin
 
       SERVER_URL: 'https://fleetmanagement.com'
-      REPORTS_PATH: '/reports'
+      REPORTS_PATH: '/home/ubuntu/reports'
       
     strategy:
       max-parallel: 4
