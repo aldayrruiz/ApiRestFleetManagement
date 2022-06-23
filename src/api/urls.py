@@ -1,10 +1,11 @@
-from django.urls import re_path
+from django.urls import re_path, path
 from rest_framework.routers import DefaultRouter
 
 from applications.allowed_vehicles.views import AllowedVehicleViewSet
 from applications.auth.views import AuthViewSet
 from applications.incidents.views import IncidentViewSet
 from applications.insurance_companies.views import InsuranceCompanyViewSet
+from applications.reports.views import ReportViewSet
 from applications.reservation_templates.views import ReservationTemplateViewSet
 from applications.reservations.views import ReservationViewSet
 from applications.tenants.views import TenantViewSet
@@ -28,9 +29,10 @@ router.register(r'reservations/reports', ReservationReportViewSet, basename='rep
 router.register(r'tickets', TicketViewSet, basename='tickets')
 router.register(r'positions', PositionViewSet, basename='positions')
 router.register(r'register', RegistrationViewSet, basename='register')
+router.register(r'reports', ReportViewSet, basename='reports')
 
 urlpatterns = router.urls
 
 urlpatterns += [
-    re_path(r'^login/?$', Login.as_view(), name='login')
+    re_path(r'^login/?$', Login.as_view(), name='login'),
 ]
