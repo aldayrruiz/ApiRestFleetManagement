@@ -25,6 +25,7 @@ jobs:
       TRACCAR_PASSWORD: admin
 
       SERVER_URL: 'https://fleetmanagement.com'
+      REPORTS_PATH: '/reports'
       
     strategy:
       max-parallel: 4
