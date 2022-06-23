@@ -1,27 +1,25 @@
 import logging
 import math
+import time
 
+import cv2
 import numpy as np
-
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from applications.reports.generate.charts.chart_generator import ChartGenerator
 from applications.tenants.models import Tenant
-from applications.traccar.pdf.chart_generator import ChartGenerator
 from applications.traccar.utils import report_units_converter
 from applications.traccar.views import send_get_to_traccar
 
 logger = logging.getLogger(__name__)
 
 
-class UseOfVehicleChartGenerator(ChartGenerator):
+class DistanceMaxAverageSpeedChart(ChartGenerator):
 
     def __init__(self, tenant: Tenant, month: int, year: int):
         super().__init__(tenant, month, year)
         self.distances, self.max_speeds, self.average_speeds = self.get_reports()
-        # distance = np.array([1965, 2345, 1900, 2568, 3467]) # Distance (km)
-        # max_speed = np.array([115, 112, 125, 145, 126]) # Max Speed (km/h)
-        # average_speed = np.array([50, 45, 60, 75, 70]) # Average Speed (km/h)
 
     def generate_image(self, filename):
         bar = self.get_distance_bar()
@@ -32,10 +30,14 @@ class UseOfVehicleChartGenerator(ChartGenerator):
         fig = make_subplots(specs=[[{'secondary_y': True}]])
         fig.add_traces(traces, secondary_ys=secondary_ys)
         fig.update_layout(title_text='Distancia y velocidad de vehículos')
-        fig.update_yaxes(title_text='Distancia', secondary_y=False)
-        fig.update_yaxes(title_text='Velocidad', secondary_y=True)
-        fig.show()
-        fig.write_image(f'images/{filename}')
+        fig.update_yaxes(showgrid=False)
+        fig.update_yaxes(title_text='Distancia (km)', secondary_y=False)
+        fig.update_yaxes(title_text='Velocidad (km/h)', secondary_y=True)
+        fig.write_image(f'{filename}')
+        img = cv2.imread(f'{filename}')
+        cropped = img[80:-20, :]
+        cv2.imwrite(f'{filename}', cropped)
+        logger.info('DistanceMaxAverageSpeedChart image generated')
 
     def get_reports(self):
         distances, max_speeds, average_speeds = [], [], []
@@ -70,11 +72,37 @@ class UseOfVehicleChartGenerator(ChartGenerator):
                 logger.error(f'Report received but empty [] for {vehicle.brand} {vehicle.model} at {reservation.start}')
                 continue
 
+            time.sleep(0.5)
+            if reservation.start < self.first_day:
+                response = send_get_to_traccar(device_id, self.first_day, reservation.end, 'reports/route')
+            # Empieza detro del mes y termina en el mes siguiente.
+            elif reservation.end > self.last_day:
+                response = send_get_to_traccar(device_id, reservation.start, self.last_day, 'reports/route')
+            # Empieza y termina dentro del mes.
+            else:
+                response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/route')
+
+            if not response.ok:
+                logger.error(f'Could generate report for {vehicle.brand} {vehicle.model} at {reservation.start}')
+                continue
+
+            route = response.json()
+
+            if not reports:
+                logger.error(f'Report received but empty [] for {vehicle.brand} {vehicle.model} at {reservation.start}')
+                continue
+
+            speeds = np.array(list(map(lambda position: position['speed'], route)))
+            speeds = speeds[speeds != 0]
+
+            if speeds.any():
+                average_speed = np.mean(speeds)
+                average_speeds.append(average_speed)
+
             # Convert units
             report = report_units_converter(reports[0])
             distances.append(report['distance'])
             max_speeds.append(report['maxSpeed'])
-            average_speeds.append(report['averageSpeed'])
 
         total_distance = math.floor(np.sum(np.array(distances)))
         total_max_speed = math.floor(np.max(np.array(max_speeds)))
@@ -114,5 +142,7 @@ class UseOfVehicleChartGenerator(ChartGenerator):
             marker=dict(symbol='square', size=10, color='grey')
         )
 
-
-UseOfVehicleChartGenerator(Tenant.objects.get(name__exact='Valladolid'), 4, 2022).generate_image('fig3.png')
+    def get_stats(self):
+        return np.array(self.distances, np.float), \
+               np.array(self.max_speeds, np.float), \
+               np.array(self.average_speeds, np.float)

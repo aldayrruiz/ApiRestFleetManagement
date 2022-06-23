@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -26,7 +27,8 @@ LOCAL_APPS = [
     'applications.reservation_templates.apps.ReservationTemplatesConfig',
     'applications.reservations.apps.ReservationsConfig',
     'applications.incidents.apps.IncidentsConfig',
-    'applications.tickets.apps.TicketsConfig'
+    'applications.tickets.apps.TicketsConfig',
+    'applications.reports.apps.ReportsConfig'
 ]
 
 THIRD_APPS = [
@@ -121,3 +123,5 @@ SWAGGER_SETTINGS = {
       }
    }
 }
+
+REPORTS_PATH = config('REPORTS_PATH')
