@@ -1,18 +1,22 @@
+import logging
+
+import cv2
 import numpy as np
 import plotly.graph_objects as go
 
-
+from applications.reports.generate.charts.chart_generator import ChartGenerator
 from applications.tenants.models import Tenant
-from applications.traccar.pdf.chart_generator import ChartGenerator
 from utils.dates import get_hours_duration
 
+logger = logging.getLogger(__name__)
 
-class VehicleHoursTakenChartGenerator(ChartGenerator):
+
+class TheoreticalUseOfVehicleChart(ChartGenerator):
 
     def __init__(self, tenant: Tenant, month: int, year: int):
         super().__init__(tenant, month, year)
-        self.reserved_hours = self.get_reserved_hours()
-        self.free_hours = self.get_free_hours()
+        self.reserved_hours = np.array(self.get_reserved_hours())
+        self.free_hours = np.array(self.get_free_hours())
         self.reserved_hours_percentages = self.serialize_to_percentages(self.reserved_hours)
         self.free_hours_percentages = self.serialize_to_percentages(self.free_hours)
 
@@ -20,11 +24,14 @@ class VehicleHoursTakenChartGenerator(ChartGenerator):
         reserved_bar = self.get_reserved_hours_bar()
         free_bar = self.get_free_hours_bar()
         fig = go.Figure(data=[reserved_bar, free_bar])
-        fig.update_xaxes(title_text='Vehículos')
-        fig.update_yaxes(title_text='Horas')
-        fig.update_layout(barmode='stack', title=f'Ocupación Vehículos {self.month_title}')
-        fig.show()
-        fig.write_image(f'images/{filename}')
+        fig.update_yaxes(showgrid=False)
+        fig.update_yaxes(title_text='Tiempo (horas)')
+        fig.update_layout(barmode='stack')
+        fig.write_image(f'{filename}', width=700, height=800)
+        img = cv2.imread(f'{filename}')
+        cropped = img[80:-20, :]
+        cv2.imwrite(f'{filename}', cropped)
+        logger.info('TheoreticalUseOfVehicleChart image generated')
 
     def get_reserved_hours(self):
         hours = []
@@ -62,7 +69,7 @@ class VehicleHoursTakenChartGenerator(ChartGenerator):
 
     def get_reserved_hours_bar(self):
         return go.Bar(
-            name='Horas reservado',
+            name='Tiempo reservado',
             x=self.vehicles_labels,
             y=self.reserved_hours,
             marker=dict(color='#a6bde3'),
@@ -72,7 +79,7 @@ class VehicleHoursTakenChartGenerator(ChartGenerator):
 
     def get_free_hours_bar(self):
         return go.Bar(
-            name='Horas disponibles',
+            name='Tiempo disponible',
             x=self.vehicles_labels,
             y=self.free_hours,
             marker=dict(color='white'),
@@ -80,6 +87,5 @@ class VehicleHoursTakenChartGenerator(ChartGenerator):
             text=self.free_hours_percentages
         )
 
-
-graph_image_generator = VehicleHoursTakenChartGenerator(Tenant.objects.last(), 5, 2022)
-graph_image_generator.generate_image('fig1.png')
+    def get_stats(self):
+        return np.array(self.reserved_hours, np.float), np.array(self.free_hours, np.float)

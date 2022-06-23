@@ -1,15 +1,20 @@
+import logging
 import time
 
+import cv2
 import numpy as np
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
+from applications.reports.generate.charts.chart_generator import ChartGenerator
 from applications.tenants.models import Tenant
-from applications.traccar.pdf.chart_generator import ChartGenerator
 from applications.traccar.views import send_get_to_traccar
 
+logger = logging.getLogger(__name__)
 
-class VehicleOutOfReservedHours(ChartGenerator):
+
+class UseWithoutReservationChart(ChartGenerator):
     def __init__(self, tenant: Tenant, month: int, year: int):
         super().__init__(tenant, month, year)
         self.hours = self.get_hours()
@@ -17,17 +22,24 @@ class VehicleOutOfReservedHours(ChartGenerator):
         self.df = pd.DataFrame(df_dict)
 
     def generate_image(self, filename):
-        fig = self.get_histogram()
-        fig.update_xaxes(title_text='Vehículos')
-        fig.update_yaxes(title_text='Horas')
-        fig.show()
-        fig.write_image(f'images/{filename}')
+        histogram = self.get_histogram()
+        fig = make_subplots()
+        fig.add_trace(histogram)
+        fig.update_layout()
+        fig.update_yaxes(title_text='Tiempo (horas)', range=[0, 60])
+        fig.write_image(f'{filename}')
+        img = cv2.imread(f'{filename}')
+        cropped = img[80:-20, :]
+        cv2.imwrite(f'{filename}', cropped)
+        logger.info('UseWithoutReservationChart image generated')
 
     def get_hours(self):
         hours = []
         for vehicle in self.vehicles:
-            print(vehicle.model)
             reservations = vehicle.reservations.filter(end__gt=self.first_day, start__lt=self.last_day).reverse()
+            if not reservations:
+                hours.append(0)
+                continue
             first_reservation = reservations.first()
             last_reservation = reservations.last()
             first_day = self.first_day
@@ -50,15 +62,13 @@ class VehicleOutOfReservedHours(ChartGenerator):
                 elif index == len(reservations) - 1:
                     date = {'from': reservation.end, 'to': last_day}
                 else:
-                    date = {'from': reservations[index-1].end, 'to': reservation.start}
+                    date = {'from': reservations[index - 1].end, 'to': reservation.start}
                 dates.append(date)
 
             total_duration = 0
             for date in dates:
-                time.sleep(0.2)
+                time.sleep(0.1)
                 response = send_get_to_traccar(vehicle.gps_device.id, date['from'], date['to'], 'reports/trips')
-                if not response.ok:
-                    print('Something has failed')
                 trips = response.json()
                 durations = list(map(lambda trip: trip['duration'], trips))
                 total_duration = total_duration + np.sum(np.array(durations))
@@ -67,14 +77,11 @@ class VehicleOutOfReservedHours(ChartGenerator):
         return hours
 
     def get_histogram(self):
-        return px.histogram(
-            self.df,
-            title=f'Uso de Vehículos {self.month_title}',
-            x='vehicles',
-            y='hours',
-            range_y=[0, 60],
-            labels=dict(category='Leyenda')
+        return go.Bar(
+            x=self.df['vehicles'],
+            y=self.df['hours'],
+            marker=dict(color='#a6bde3'),
         )
 
-
-VehicleOutOfReservedHours(Tenant.objects.get(name__exact='Valladolid'), 3, 2022).generate_image('fig2.png')
+    def get_stats(self):
+        return np.array(self.df['hours'], np.float)

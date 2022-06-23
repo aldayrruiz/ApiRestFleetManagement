@@ -4,7 +4,7 @@ import locale
 import numpy as np
 
 from applications.tenants.models import Tenant
-from applications.users.services.search import get_admin
+from applications.users.services.search import get_admins
 from applications.vehicles.services.queryset import get_vehicles_queryset
 from utils.dates import get_first_and_last_day_of, from_naive_to_aware
 
@@ -14,7 +14,7 @@ class ChartGenerator:
         self.month = month
         self.year = year
         self.tenant = tenant
-        self.admin = get_admin(self.tenant)
+        self.admin = get_admins(self.tenant).first()
         self.WORK_HOURS_PER_MONTH = 8 * 22
         self.vehicles = get_vehicles_queryset(self.admin)
         self.vehicles_labels = self.get_vehicles_labels()
