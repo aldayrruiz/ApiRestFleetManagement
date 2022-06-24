@@ -46,7 +46,8 @@ class PunctualityChart(ChartGenerator):
 
         for vehicle in self.vehicles:
             reservations = vehicle.reservations.filter(end__gt=self.first_day, start__lt=self.last_day)
-            punctualities = self.get_punctuality_from_reservations(reservations)
+            reservations_ordered_by_start = reservations.reverse()
+            punctualities = self.get_punctuality_from_reservations(reservations_ordered_by_start)
             takes_out.append(punctualities[0])
             takes_in.append(punctualities[1])
             frees_out.append(punctualities[2])
@@ -58,9 +59,11 @@ class PunctualityChart(ChartGenerator):
         takes_out, takes_in = 0, 0
         frees_out, frees_in = 0, 0
         not_taken = 0
-        for reservation in reservations:
-            [t_hours_out, t_hours_in, t_not_taken] = self.get_takes_punctuality_from_a_reservation(reservation)
-            [f_hours_out, f_hours_in] = self.get_frees_punctuality_from_a_reservation(reservation)
+        for i, reservation in enumerate(reservations):
+            previous_reservation, next_reservation = self.get_closer_reservations(reservations, i)
+            [t_hours_out, t_hours_in, t_not_taken] = self.get_takes_punctuality(previous_reservation, reservation,
+                                                                                next_reservation)
+            [f_hours_out, f_hours_in] = self.get_frees_punctuality(previous_reservation, reservation, next_reservation)
             takes_out += t_hours_out
             takes_in += t_hours_in
             frees_out += f_hours_out
@@ -68,19 +71,28 @@ class PunctualityChart(ChartGenerator):
             not_taken += t_not_taken
         return [takes_out, takes_in, frees_out, frees_in, not_taken]
 
-    def get_takes_punctuality_from_a_reservation(self, reservation):
+    def get_closer_reservations(self, reservations, index):
+        try:
+            previous_reservation = reservations[index - 1]
+        except ValueError or IndexError:
+            previous_reservation = None
+        try:
+            next_reservation = reservations[index + 1]
+        except IndexError:
+            next_reservation = None
+        return previous_reservation, next_reservation
+
+    def get_takes_punctuality(self, previous_reservation, reservation, next_reservation):
         device_id = reservation.vehicle.gps_device.id
         start = reservation.start
-        end = reservation.end
 
-        initial_limit = reservation.start - relativedelta(days=7)
-        last_limit = reservation.end + relativedelta(days=7)
+        # Calcular la puntualidad fuera de la reserva (antes o posteriormente), solo tener en cuenta un error de 1 hora.
+        # Por ejemplo, no se estima que un empleado recoja el vehículo dos horas antes de lo previsto.
+        initial_limit, last_limit = self.get_reservation_bounds(previous_reservation, reservation, next_reservation)
         reservation_duration = self.get_hours_difference(reservation.end, reservation.start)
 
         # Si durante la reserva no ha habido movimiento, contar toda la reserva como impuntualidad al recoger.
-        summary = send_get_to_traccar(device_id, start, end, 'reports/summary').json()
-        if summary[0]['distance'] == 0:
-            logger.error('El vehículo no se ha movido, ergo NO HA OCURRIDO')
+        if not self.vehicle_moved_during_reservation(reservation):
             return [0, 0, reservation_duration]
 
         time.sleep(0.1)
@@ -90,7 +102,7 @@ class PunctualityChart(ChartGenerator):
         time.sleep(0.1)
         trips = send_get_to_traccar(device_id, initial_limit, last_limit, 'reports/trips').json()
         stopped_at_start = self.stopped_at_reservation_start(reservation, stops)
-        trip_at_start = self.get_trip_at(reservation.start, trips)
+        trip_at_start = self.get_trip_at(start, trips)
 
         # Si no se ha encontrado ni que este inmóvil ni en movimiento durante el inicio de la reserva.
         # Considerar que estaba inmóvil desde más allá del límite de inicio.
@@ -109,35 +121,35 @@ class PunctualityChart(ChartGenerator):
         # Si NO ocurre un stop durante el inicio de la reserva, solo contar la puntualidad fuera de la reserva.
         else:
             trip_start = parser.parse(trip_at_start['startTime'])
-            diff = reservation.start - trip_start
+            diff = start - trip_start
             hours_out = diff.total_seconds() / 3600
             return [hours_out, 0, 0]
 
-    def get_frees_punctuality_from_a_reservation(self, reservation):
+    def get_frees_punctuality(self, previous_reservation, reservation, next_reservation):
+        device_id = reservation.vehicle.gps_device.id
         start = reservation.start
         end = reservation.end
-        device_id = reservation.vehicle.gps_device.id
 
-        # Obtener los viajes desde el inicio de la reserva hasta una hora después.
-        one_hour_after_reservation = reservation.end + relativedelta(hours=1)
+        # Calcular la puntualidad fuera de la reserva (antes o posteriormente), solo tener en cuenta un error de 1 hora.
+        # Por ejemplo, no se estima que un empleado devuelva el vehículo dos horas después de lo previsto.
+        initial_limit, last_limit = self.get_reservation_bounds(previous_reservation, reservation, next_reservation)
 
-        # Obtener los stops desde una hora antes, hasta terminar la reserva.
-        summary = send_get_to_traccar(device_id, start, end, 'reports/summary').json()
-        if summary[0]['distance'] == 0:
-            logger.error('El vehículo no se ha movido, ergo NO HA OCURRIDO')
+        # Si no ha ocurrido movimiento durante la reserva no considerar nada.
+        if not self.vehicle_moved_during_reservation(reservation):
             return [0, 0]
 
         time.sleep(0.1)
-        trips = send_get_to_traccar(device_id, reservation.start, one_hour_after_reservation, 'reports/trips').json()
+
+        trips = send_get_to_traccar(device_id, initial_limit, last_limit, 'reports/trips').json()
         if not trips:
             logger.error('No ha ocurrido ningún TRIP durante toda la reserva. No se ha tomado el vehículo')
             return [0, 0]
 
         time.sleep(0.1)
-        trip_at_end = self.get_trip_at(reservation.end, trips)
+        trip_at_end = self.get_trip_at(end, trips)
         # Si NO ocurre un viaje durante el final de la reserva, solo contar la puntualidad dentro de la reserva.
         if not trip_at_end:
-            trips = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/trips').json()
+            trips = send_get_to_traccar(device_id, start, end, 'reports/trips').json()
             if not trips:
                 logger.error('No ha ocurrido ningún TRIP durante la reserva. No se ha tomado el vehículo')
                 return [0, 0]
@@ -146,8 +158,31 @@ class PunctualityChart(ChartGenerator):
         # Si está ocurriendo un viaje al final de la reserva, solo contar la puntualidad fuera de la reserva.
         else:
             trip_end = parser.parse(trip_at_end['endTime'])
-            hours_out = get_hours_duration(reservation.end, trip_end)
+            hours_out = get_hours_duration(end, trip_end)
             return [hours_out, 0]
+
+    def get_reservation_bounds(self, previous, current, next_res):
+        start_bound = current.start - relativedelta(hours=1)
+        end_bound = current.end + relativedelta(hours=1)
+
+        if previous:
+            if start_bound < previous.end:
+                start_bound = previous.end
+        if next_res:
+            if end_bound > next_res.start:
+                end_bound = next_res.start
+        return start_bound, end_bound
+
+    def vehicle_moved_during_reservation(self, reservation):
+        device_id = reservation.vehicle.gps_device.id
+        start = reservation.start
+        end = reservation.end
+
+        summary = send_get_to_traccar(device_id, start, end, 'reports/summary').json()
+        if summary[0]['distance'] == 0:
+            logger.error('El vehículo no se ha movido, ergo NO HA OCURRIDO')
+            return False
+        return True
 
     def stopped_at_reservation_start(self, reservation, stops):
         for stop in stops:
