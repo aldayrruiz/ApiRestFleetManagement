@@ -44,7 +44,7 @@ class TheoreticalUseOfVehicleChart(ChartGenerator):
         # Y además, las que comienzan dentro del mes, pero terminan en el mes siguiente.
         # Luego, Excluimos las horas que no están dentro del mes.
 
-        reservations = vehicle.reservations.filter(end__gt=self.first_day, start__lt=self.last_day)
+        reservations = vehicle.reservations.filter(end__gt=self.first_day, start__lt=self.last_day).reverse()
         hours = 0
         for reservation in reservations:
             # Empieza antes del mes y termina dentro del mes.

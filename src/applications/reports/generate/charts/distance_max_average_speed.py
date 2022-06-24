@@ -50,7 +50,8 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
 
     def get_monthly_report(self, vehicle):
         distances, max_speeds, average_speeds = [0], [0], [0]
-        for reservation in vehicle.reservations.all():
+        reservations = vehicle.reservations.filter(end__gt=self.first_day, start__lt=self.last_day)
+        for reservation in reservations.reverse():
             device_id = reservation.vehicle.gps_device_id
 
             if reservation.start < self.first_day:
