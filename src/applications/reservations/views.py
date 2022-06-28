@@ -7,6 +7,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 
+from applications.reservations.exceptions.already_ended import ReservationAlreadyEnded
 from applications.reservations.exceptions.already_started import ReservationAlreadyStarted
 from applications.reservations.exceptions.cannot_reserve_to_past import CannotReserveToPastError
 from applications.reservations.exceptions.cannot_reserve_vehicle_disabled import CannotReserveVehicleDisabled
@@ -18,7 +19,7 @@ from applications.reservations.services.destroyer import delete_reservation
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.recurrent.recurrent import RecurrentReservationCreator
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
-from applications.reservations.services.timer import reservation_already_started
+from applications.reservations.services.timer import reservation_already_ended
 from applications.vehicles.exceptions.no_vehicles_available import NoVehiclesAvailableError
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled, ONLY_AUTHENTICATED
 from utils.api.query import query_bool, query_date, query_str
@@ -165,8 +166,8 @@ class ReservationViewSet(viewsets.ViewSet):
         queryset = get_reservation_queryset(requester, take_all=True)
         reservation = get_object_or_404(queryset, pk=pk)
 
-        if reservation_already_started(reservation):
-            raise ReservationAlreadyStarted()
+        if reservation_already_ended(reservation):
+            raise ReservationAlreadyEnded()
 
         if delete_future_reservations and reservation.is_recurrent:
             queryset = queryset.filter(recurrent_id=reservation.recurrent_id, start__gte=reservation.start)

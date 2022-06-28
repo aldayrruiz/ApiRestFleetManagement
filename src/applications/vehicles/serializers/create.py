@@ -9,11 +9,14 @@ class CreateOrUpdateVehicleSerializer(serializers.Serializer):
     id = serializers.UUIDField(required=False, validators=[UniqueValidator(queryset=Vehicle.objects.all())])
     model = serializers.CharField(max_length=50)
     brand = serializers.CharField(max_length=20)
-    number_plate = serializers.CharField(max_length=7, min_length=7, validators=[UniqueValidator(queryset=Vehicle.objects.all())])
+    number_plate = serializers.CharField(max_length=8,
+                                         min_length=7,
+                                         validators=[UniqueValidator(queryset=Vehicle.objects.all())])
     is_disabled = serializers.BooleanField(required=False)
     fuel = serializers.ChoiceField(choices=Fuel.choices, required=False)
     gps_device = serializers.CharField(max_length=20)
-    insurance_company = serializers.PrimaryKeyRelatedField(allow_null=True, queryset=InsuranceCompany.objects.all(), required=False)
+    insurance_company = serializers.PrimaryKeyRelatedField(allow_null=True, queryset=InsuranceCompany.objects.all(),
+                                                           required=False)
     policy_number = serializers.CharField(allow_blank=True, max_length=20, required=False)
     icon = serializers.IntegerField(required=False)
 

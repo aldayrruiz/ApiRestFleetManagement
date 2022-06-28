@@ -9,7 +9,8 @@ from applications.traccar.models.device import Device
 from applications.vehicles.models.fuel import Fuel
 
 # In Spain vehicle's number plates have 7 characters, except for motorbikes
-LENGTH_NUMBER_PLATE = 7
+MIN_LENGTH_NUMBER_PLATE = 7
+MAX_LENGTH_NUMBER_PLATE = 8
 
 
 class Vehicle(models.Model):
@@ -20,8 +21,8 @@ class Vehicle(models.Model):
     brand = models.CharField(max_length=20)
 
     number_plate = models.CharField(
-        max_length=LENGTH_NUMBER_PLATE,
-        validators=[MinLengthValidator(LENGTH_NUMBER_PLATE)],
+        max_length=MAX_LENGTH_NUMBER_PLATE,
+        validators=[MinLengthValidator(MIN_LENGTH_NUMBER_PLATE)],
         unique=True
     )
 

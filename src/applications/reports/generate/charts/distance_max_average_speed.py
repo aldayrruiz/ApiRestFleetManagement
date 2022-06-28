@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 from applications.reports.generate.charts.chart_generator import ChartGenerator
 from applications.tenants.models import Tenant
 from applications.traccar.utils import report_units_converter
-from applications.traccar.views import send_get_to_traccar
+from applications.traccar.services.api import TraccarAPI
 
 logger = logging.getLogger(__name__)
 
@@ -55,13 +55,13 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
             device_id = reservation.vehicle.gps_device_id
 
             if reservation.start < self.first_day:
-                response = send_get_to_traccar(device_id, self.first_day, reservation.end, 'reports/summary')
+                response = TraccarAPI.get(device_id, self.first_day, reservation.end, 'reports/summary')
             # Empieza detro del mes y termina en el mes siguiente.
             elif reservation.end > self.last_day:
-                response = send_get_to_traccar(device_id, reservation.start, self.last_day, 'reports/summary')
+                response = TraccarAPI.get(device_id, reservation.start, self.last_day, 'reports/summary')
             # Empieza y termina dentro del mes.
             else:
-                response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/summary')
+                response = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/summary')
 
             if not response.ok:
                 logger.error(f'Could generate report for {vehicle.brand} {vehicle.model} at {reservation.start}')
@@ -75,13 +75,13 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
 
             time.sleep(0.5)
             if reservation.start < self.first_day:
-                response = send_get_to_traccar(device_id, self.first_day, reservation.end, 'reports/route')
+                response = TraccarAPI.get(device_id, self.first_day, reservation.end, 'reports/route')
             # Empieza detro del mes y termina en el mes siguiente.
             elif reservation.end > self.last_day:
-                response = send_get_to_traccar(device_id, reservation.start, self.last_day, 'reports/route')
+                response = TraccarAPI.get(device_id, reservation.start, self.last_day, 'reports/route')
             # Empieza y termina dentro del mes.
             else:
-                response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/route')
+                response = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/route')
 
             if not response.ok:
                 logger.error(f'Could generate report for {vehicle.brand} {vehicle.model} at {reservation.start}')
