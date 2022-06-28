@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 
 from applications.reports.generate.charts.chart_generator import ChartGenerator
 from applications.tenants.models import Tenant
-from applications.traccar.views import send_get_to_traccar
+from applications.traccar.services.api import TraccarAPI
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class UseWithoutReservationChart(ChartGenerator):
             total_duration = 0
             for date in dates:
                 time.sleep(0.1)
-                response = send_get_to_traccar(vehicle.gps_device.id, date['from'], date['to'], 'reports/trips')
+                response = TraccarAPI.get(vehicle.gps_device.id, date['from'], date['to'], 'reports/trips')
                 trips = response.json()
                 durations = list(map(lambda trip: trip['duration'], trips))
                 total_duration = total_duration + np.sum(np.array(durations))

@@ -9,10 +9,11 @@ from rest_framework.response import Response
 from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.timer import raise_error_if_reservation_has_not_ended
+from applications.traccar.services.api import TraccarAPI
+from applications.traccar.services.summary import SummaryReport
 from applications.traccar.utils import get
 from shared.permissions import ONLY_AUTHENTICATED, ONLY_ADMIN_OR_SUPER_ADMIN
 from utils.api.query import query_str
-from utils.dates import from_date_to_str_date_traccar
 
 logger = logging.getLogger(__name__)
 
@@ -51,14 +52,6 @@ class PositionViewSet(viewsets.ViewSet):
         return [permission() for permission in permission_classes]
 
 
-def send_get_to_traccar(device_id, _from, _to, route: str):
-    start_str = from_date_to_str_date_traccar(_from)
-    end_str = from_date_to_str_date_traccar(_to)
-    params = {'deviceId': device_id, 'from': start_str, 'to': end_str}
-    response = get(target=route, params=params)
-    return response
-
-
 class ReservationReportViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
@@ -75,7 +68,7 @@ class ReservationReportViewSet(viewsets.ViewSet):
         raise_error_if_reservation_has_not_ended(reservation)
 
         device_id = reservation.vehicle.gps_device.id
-        response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/route')
+        response = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/route')
         if not response.ok:
             raise APIException('Could not receive positions.', code=response.status_code)
         return Response(response.json())
@@ -93,11 +86,13 @@ class ReservationReportViewSet(viewsets.ViewSet):
         reservation = get_object_or_404(queryset, pk=reservation_id)
         raise_error_if_reservation_has_not_ended(reservation)
 
-        device_id = reservation.vehicle.gps_device.id
-        response = send_get_to_traccar(device_id, reservation.start, reservation.end, 'reports/summary')
-        if not response.ok:
-            raise APIException('Could not receive report summary.', code=response.status_code)
-        summary = response.json()[0]
+        summary = SummaryReport(reservation).get_summary()
+
+        # device_id = reservation.vehicle.gps_device.id
+        # response = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/summary')
+        # if not response.ok:
+        #     raise APIException('Could not receive report summary.', code=response.status_code)
+        # summary = response.json()[0]
         return Response(summary)
 
     def get_permissions(self):
