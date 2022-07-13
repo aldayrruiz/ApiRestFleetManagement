@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from applications.reports.generate.charts.chart_generator import ChartGenerator
+from applications.reports.services.measure import from_meters_to_kilometers, from_knots_to_kph
 from applications.tenants.models import Tenant
 from applications.traccar.utils import report_units_converter
 from applications.traccar.services.api import TraccarAPI
@@ -50,59 +51,29 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
 
     def get_monthly_report(self, vehicle):
         distances, max_speeds, average_speeds = [0], [0], [0]
-        reservations = vehicle.reservations.filter(end__gt=self.first_day, start__lt=self.last_day)
+        reservations = vehicle.reservations.filter(start__month=self.month, start__year=self.year)
         for reservation in reservations.reverse():
             device_id = reservation.vehicle.gps_device_id
 
-            if reservation.start < self.first_day:
-                response = TraccarAPI.get(device_id, self.first_day, reservation.end, 'reports/summary')
-            # Empieza detro del mes y termina en el mes siguiente.
-            elif reservation.end > self.last_day:
-                response = TraccarAPI.get(device_id, reservation.start, self.last_day, 'reports/summary')
-            # Empieza y termina dentro del mes.
-            else:
-                response = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/summary')
-
-            if not response.ok:
-                logger.error(f'Could generate report for {vehicle.brand} {vehicle.model} at {reservation.start}')
-                continue
-
-            reports = response.json()
-
-            if not reports:
-                logger.error(f'Report received but empty [] for {vehicle.brand} {vehicle.model} at {reservation.start}')
-                continue
-
-            time.sleep(0.5)
-            if reservation.start < self.first_day:
-                response = TraccarAPI.get(device_id, self.first_day, reservation.end, 'reports/route')
-            # Empieza detro del mes y termina en el mes siguiente.
-            elif reservation.end > self.last_day:
-                response = TraccarAPI.get(device_id, reservation.start, self.last_day, 'reports/route')
-            # Empieza y termina dentro del mes.
-            else:
-                response = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/route')
-
-            if not response.ok:
-                logger.error(f'Could generate report for {vehicle.brand} {vehicle.model} at {reservation.start}')
-                continue
-
-            route = response.json()
-
-            if not reports:
-                logger.error(f'Report received but empty [] for {vehicle.brand} {vehicle.model} at {reservation.start}')
-                continue
+            reports = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/summary').json()
+            time.sleep(0.2)
+            route = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/route').json()
 
             speeds = np.array(list(map(lambda position: position['speed'], route)))
             speeds = speeds[speeds != 0]
 
+            # Calculate average speed
             if speeds.any():
                 average_speed = np.mean(speeds)
-                average_speeds.append(average_speed)
+                average_speeds.append(from_knots_to_kph(float(average_speed)))
+
+            # Calculate distance (Invalid positions with odometer corrupt summary calculation - Traccar)
+            pos_distances = np.array(list(map(lambda position: position['attributes']['distance'], route)))
+            distance = from_meters_to_kilometers(float(np.sum(pos_distances)))
 
             # Convert units
             report = report_units_converter(reports[0])
-            distances.append(report['distance'])
+            distances.append(distance)
             max_speeds.append(report['maxSpeed'])
 
         total_distance = math.floor(np.sum(np.array(distances)))
