@@ -68,8 +68,7 @@ class UseWithoutReservationChart(ChartGenerator):
             total_duration = 0
             for date in dates:
                 time.sleep(0.1)
-                response = TraccarAPI.get(vehicle.gps_device.id, date['from'], date['to'], 'reports/trips')
-                trips = response.json()
+                trips = TraccarAPI.trips(vehicle.gps_device.id, date['from'], date['to'])
                 durations = list(map(lambda trip: trip['duration'], trips))
                 total_duration = total_duration + np.sum(np.array(durations))
             duration_into_hours = ((total_duration / (1000 * 60 * 60)) % 24)
