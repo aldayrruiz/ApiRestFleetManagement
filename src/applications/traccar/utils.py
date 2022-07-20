@@ -11,24 +11,24 @@ headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
 def get(target, params, pk=None):
     url = _get_url(target, pk)
-    return requests.get(url, headers=headers, params=params, auth=auth)
+    return requests.get(url, headers=headers, params=params, auth=auth, timeout=10)
 
 
 def post(target, data):
     url = _get_url(target)
     payload = json.dumps(data)
-    return requests.post(url, headers=headers, data=payload, auth=auth)
+    return requests.post(url, headers=headers, data=payload, auth=auth, timeout=10)
 
 
 def put(target, data):
     url = _get_url(target, data['id'])
     payload = json.dumps(data)
-    return requests.put(url, headers=headers, data=payload, auth=auth)
+    return requests.put(url, headers=headers, data=payload, auth=auth, timeout=10)
 
 
 def delete(target, pk):
     url = _get_url(target, pk)
-    return requests.delete(url, headers=headers, auth=auth)
+    return requests.delete(url, headers=headers, auth=auth, timeout=10)
 
 
 def _get_url(target, pk=None):
