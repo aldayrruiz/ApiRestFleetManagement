@@ -1,7 +1,6 @@
 from rest_framework.exceptions import ValidationError
-
+from dateutil import parser
 from utils.api.validators import is_valid_uuid
-from utils.dates import get_date_from_str_utc
 
 
 def query_bool(request, query) -> bool:
@@ -15,7 +14,9 @@ def query_bool(request, query) -> bool:
 
 
 def query_date(request, query):
-    return get_date_from_str_utc(request.query_params.get(query))
+    if query not in request.query_params:
+        return None
+    return parser.parse(request.query_params.get(query))
 
 
 def query_str(request, query: str, required=False):
