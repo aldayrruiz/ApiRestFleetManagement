@@ -1,5 +1,6 @@
 import logging
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class AuthViewSet(viewsets.ViewSet):
+    @swagger_auto_schema()
     @action(detail=True, methods=['post'])
     def resend_registration_email(self, request, pk=None):
         logger.info('Retrieve user request received.')

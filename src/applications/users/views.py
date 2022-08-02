@@ -155,17 +155,16 @@ class UserViewSet(viewsets.ViewSet):
 
 
 class RegistrationViewSet(viewsets.ViewSet):
-
+    @swagger_auto_schema(request_body=RegistrationSerializer, responses={201: RegistrationSerializer()})
     def create(self, request):
         """
         Create a user.
         """
         logger.info('Register user request received.')
-        requester: User = self.request.user
         serializer = RegistrationSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.save(tenant=requester.tenant)
+        user = serializer.save()
         logger.info('User registered successfully: {}'.format(user.fullname))
         return Response(serializer.data)
 

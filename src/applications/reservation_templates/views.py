@@ -32,7 +32,7 @@ class ReservationTemplateViewSet(viewsets.ViewSet):
         serializer = ReservationTemplateSerializer(template)
         return Response(serializer.data)
 
-    @swagger_auto_schema(responses={201: ReservationTemplateSerializer()})
+    @swagger_auto_schema(request_body=ReservationTemplateSerializer, responses={201: ReservationTemplateSerializer()})
     def create(self, request):
         """
         Create a reservation template.
