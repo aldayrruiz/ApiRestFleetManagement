@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from applications.tenants.serializers.simple import TenantSerializer
+from applications.tenants.serializers.simple import TenantSerializer, CreateTenantSerializer
 from applications.tenants.services.queryset import get_tenants_queryset
 from shared.permissions import ONLY_SUPER_ADMIN
 
@@ -31,10 +31,10 @@ class TenantViewSet(viewsets.ViewSet):
         serializer = TenantSerializer(tenant)
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=TenantSerializer, responses={201: TenantSerializer()})
+    @swagger_auto_schema(request_body=CreateTenantSerializer, responses={201: TenantSerializer()})
     def create(self, request):
         logger.info('Create tenant request received.')
-        serializer = TenantSerializer(data=self.request.data)
+        serializer = CreateTenantSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
