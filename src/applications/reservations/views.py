@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 
 from applications.reservations.exceptions.already_ended import ReservationAlreadyEnded
-from applications.reservations.exceptions.already_started import ReservationAlreadyStarted
 from applications.reservations.exceptions.cannot_reserve_to_past import CannotReserveToPastError
 from applications.reservations.exceptions.cannot_reserve_vehicle_disabled import CannotReserveVehicleDisabled
 from applications.reservations.serializers.create import CreateReservationSerializer, CreateRecurrentSerializer

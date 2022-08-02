@@ -1,5 +1,6 @@
 import logging
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class AllowedVehicleViewSet(viewsets.ViewSet):
-
+    @swagger_auto_schema()
     def update(self, request, pk=None):
         """
         Update list of allowed vehicles of a user.
