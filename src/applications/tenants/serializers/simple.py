@@ -7,7 +7,7 @@ from applications.tenants.models import Tenant
 class TenantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'diet']
 
 
 class CreateTenantSerializer(serializers.ModelSerializer):
@@ -15,4 +15,4 @@ class CreateTenantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tenant
-        fields = ['id', 'name', 'logo']
+        fields = ['id', 'name', 'diet', 'logo']
