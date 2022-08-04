@@ -62,6 +62,8 @@ class User(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_disabled = models.BooleanField(default=False)
+    is_supervisor = models.BooleanField(default=False)
+    is_interventor = models.BooleanField(default=False)
     ble_user_id = models.CharField(max_length=12, default='', blank=True)
 
     allowed_vehicles = models.ManyToManyField(
