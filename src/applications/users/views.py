@@ -9,6 +9,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
+from applications.tenants.serializers.simple import TenantSerializer
 from applications.users.exceptions.cannot_delete_himself import CannotDeleteHimselfError
 from applications.users.exceptions.user_is_disabled import UserDisabledError
 from applications.users.models import RecoverPassword, RecoverPasswordStatus, User
@@ -155,17 +156,16 @@ class UserViewSet(viewsets.ViewSet):
 
 
 class RegistrationViewSet(viewsets.ViewSet):
-
+    @swagger_auto_schema(request_body=RegistrationSerializer, responses={201: RegistrationSerializer()})
     def create(self, request):
         """
         Create a user.
         """
         logger.info('Register user request received.')
-        requester: User = self.request.user
         serializer = RegistrationSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.save(tenant=requester.tenant)
+        user = serializer.save()
         logger.info('User registered successfully: {}'.format(user.fullname))
         return Response(serializer.data)
 
@@ -198,5 +198,5 @@ class Login(ObtainAuthToken):
             'email': user.email,
             'fullname': user.fullname,
             'role': user.role,
-            'tenant': user.tenant.id
+            'tenant': TenantSerializer(user.tenant).data,
         })

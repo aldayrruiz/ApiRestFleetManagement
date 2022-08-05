@@ -12,5 +12,7 @@ class SimpleUserSerializer(serializers.ModelSerializer):
                   'is_disabled',
                   'role',
                   'allowed_vehicles',
-                  'ble_user_id'
+                  'ble_user_id',
+                  'is_supervisor',
+                  'is_interventor'
                   ]

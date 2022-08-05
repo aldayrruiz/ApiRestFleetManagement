@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReportViewSet(viewsets.ViewSet):
-    @swagger_auto_schema(request_body=SimpleReportSerializer, responses={200: SimpleReportSerializer()})
+    @swagger_auto_schema(responses={200: SimpleReportSerializer()})
     def list(self, request):
         """
         List monthly reports.
