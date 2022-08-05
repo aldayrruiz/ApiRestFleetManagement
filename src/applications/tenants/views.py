@@ -5,7 +5,6 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-
 from applications.reservation_templates.models import ReservationTemplate
 from applications.tenants.serializers.simple import TenantSerializer, CreateTenantSerializer
 from applications.tenants.services.queryset import get_tenants_queryset
