@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
+from applications.reservation_templates.models import ReservationTemplate
 from applications.tenants.serializers.simple import TenantSerializer, CreateTenantSerializer
 from applications.tenants.services.queryset import get_tenants_queryset
 from shared.permissions import ONLY_SUPER_ADMIN
@@ -37,6 +38,8 @@ class TenantViewSet(viewsets.ViewSet):
         serializer = CreateTenantSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        tenant = self.request.user.tenant
+        ReservationTemplate.objects.create(tenant, name='Otro')
         return Response(serializer.data)
 
     @action(detail=True, methods=['put'])

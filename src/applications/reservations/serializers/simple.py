@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from applications.diets.serializers.simple import DietCollectionSerializer
 from applications.reservations.models import Reservation, Recurrent
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
@@ -16,6 +17,7 @@ class SimpleReservationSerializer(serializers.ModelSerializer):
     owner = SimpleUserSerializer()
     vehicle = SimpleVehicleSerializer()
     recurrent = SimpleRecurrentSerializer()
+    diet_collection = DietCollectionSerializer()
 
     class Meta:
         model = Reservation
@@ -30,5 +32,6 @@ class SimpleReservationSerializer(serializers.ModelSerializer):
             'vehicle',
             'is_cancelled',
             'is_recurrent',
-            'recurrent'
+            'recurrent',
+            'diet_collection',
         ]
