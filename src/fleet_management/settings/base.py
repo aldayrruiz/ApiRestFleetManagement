@@ -28,7 +28,8 @@ LOCAL_APPS = [
     'applications.reservations.apps.ReservationsConfig',
     'applications.incidents.apps.IncidentsConfig',
     'applications.tickets.apps.TicketsConfig',
-    'applications.reports.apps.ReportsConfig'
+    'applications.reports.apps.ReportsConfig',
+    'applications.diets.apps.DietsConfig',
 ]
 
 THIRD_APPS = [

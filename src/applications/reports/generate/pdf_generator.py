@@ -33,7 +33,7 @@ WRITABLE_WIDTH = PDF_W - HORIZONTAL_LEFT_MARGIN - HORIZONTAL_RIGHT_MARGIN
 
 LOGOS = {
     'Fundación Intras': f'{REPORTS_PATH}/assets/Intras.png',
-    'Valladolid': f'{REPORTS_PATH}/assets/SACYL.png',
+    'SaCyL ZAMORA': f'{REPORTS_PATH}/assets/SACYL.png',
     'BLUE Drivers': f'{REPORTS_PATH}/assets/BLUEDrivers.png'
 }
 
@@ -223,7 +223,7 @@ previous_month = now - relativedelta(months=1)
 month = previous_month.month
 year = previous_month.year
 
-tenants = Tenant.objects.exclude(name__exact='Fake')
+tenants = Tenant.objects.all()
 
 for tenant in tenants:
     logger.info('Generating image: DistanceMaxAverageSpeedChart')
@@ -257,7 +257,7 @@ for tenant in tenants:
     report = MonthlyReport(pdf=path, month=month, year=year, tenant=tenant)
     report.save()
 
-    # Guardar información sobre las estadísticas del mes para luego obtener la del año.ç
+    # Guardar información sobre las estadísticas del mes para luego obtener la del año.
     distances, max_speeds, average_speeds = chart1.get_stats()
     th_reserved_hours, th_free_hours = chart2.get_stats()
     re_reserved_hours, re_free_hours = chart3.get_stats()

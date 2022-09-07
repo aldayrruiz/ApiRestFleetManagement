@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from applications.allowed_vehicles.views import AllowedVehicleViewSet
 from applications.auth.views import AuthViewSet
+from applications.diets.views import DietViewSet, DietCollectionViewSet, DietPhotoViewSet
 from applications.incidents.views import IncidentViewSet
 from applications.insurance_companies.views import InsuranceCompanyViewSet
 from applications.reports.views import ReportViewSet
@@ -30,6 +31,9 @@ router.register(r'tickets', TicketViewSet, basename='tickets')
 router.register(r'positions', PositionViewSet, basename='positions')
 router.register(r'register', RegistrationViewSet, basename='register')
 router.register(r'reports', ReportViewSet, basename='reports')
+router.register(r'diets', DietViewSet, basename='diets')
+router.register(r'diet-collections', DietCollectionViewSet, basename='diet_collections')
+router.register(r'diet-photos', DietPhotoViewSet, basename='diet_photos')
 
 urlpatterns = router.urls
 
