@@ -53,7 +53,7 @@ def send_email(receiver_email, message):
 
 
 class EmailSender:
-    def __init__(self, to_addrs: Union[str, Sequence[str]], subject: str):
+    def __init__(self, to_addrs: any, subject: str):
         self.to_addrs = to_addrs
         self.message = MIMEMultipart('alternative')
         self.message["From"] = formataddr(('BLUE Drivers', sender_email))
