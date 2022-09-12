@@ -38,7 +38,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 class PartialUpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['ble_user_id', 'is_disabled']
+        fields = ['ble_user_id', 'is_disabled', 'is_supervisor', 'is_interventor']
 
 
 class CreateRecoverPasswordSerializer(serializers.ModelSerializer):
