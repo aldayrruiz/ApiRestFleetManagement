@@ -25,7 +25,7 @@ def send_created_user_email(user, password):
 
 def get_user_created_message(user, password):
 
-    enterprise = 'Fleet Management'
+    enterprise = 'BLUE Drivers'
 
     subject = 'Registro en {}'.format(enterprise)
     body = user_created_body.format(
@@ -51,7 +51,7 @@ Si has realizado esta solicitud de recuperación de contraseña, introduce el si
 
 
 def send_create_recover_password(user, code):
-    subject = 'Fleet Management - Recuperar contraseña'
+    subject = 'BLUE Drivers - Recuperar contraseña'
     email_sender = EmailSender(user.email, subject)
     body = create_recover_password_body.format(user.fullname, code)
     email_sender.attach_plain(body)
@@ -68,7 +68,7 @@ Recuerde que puede cambiar su contraseña una vez dentro de la app.
 
 
 def send_confirmed_recovered_password(user, new_password):
-    subject = 'Fleet Management - Recuperar contraseña'
+    subject = 'BLUE Drivers - Recuperar contraseña'
     email_sender = EmailSender(user.email, subject)
     body = confirmed_recovered_password_body.format(user.fullname, new_password)
     email_sender.attach_plain(body)

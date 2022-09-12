@@ -12,6 +12,7 @@ from applications.diets.serializers.create import CreateDietCollectionSerializer
     CreateDietPhotoSerializer
 from applications.diets.serializers.simple import DietCollectionSerializer, DietSerializer
 from applications.diets.serializers.update import PatchDietCollectionSerializer, PatchDietSerializer
+from applications.diets.services.completer import DietCollectionUpdater
 from applications.diets.services.queryset import get_diet_collection_queryset, get_diet_queryset
 from applications.reservations.models import Reservation
 from applications.users.models import User
@@ -44,12 +45,8 @@ class DietCollectionViewSet(viewsets.ViewSet):
         requester = self.request.user
         queryset = get_diet_collection_queryset(requester)
         collection = get_object_or_404(queryset, pk=pk)
-        if collection.completed:
-            raise CompletedDietCollectionError()
-        collection.modified = True
-        serializer = PatchDietCollectionSerializer(collection, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        updater = DietCollectionUpdater(collection, self.request.data, requester)
+        serializer = updater.update()
         return Response(serializer.data)
 
 
