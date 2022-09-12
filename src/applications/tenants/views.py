@@ -36,9 +36,8 @@ class TenantViewSet(viewsets.ViewSet):
         logger.info('Create tenant request received.')
         serializer = CreateTenantSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        tenant = self.request.user.tenant
-        ReservationTemplate.objects.create(tenant, name='Otro')
+        tenant = serializer.save()
+        ReservationTemplate.objects.create(tenant=tenant, title='Otro')
         return Response(serializer.data)
 
     @action(detail=True, methods=['put'])

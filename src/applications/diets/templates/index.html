@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+<h2>Se ha completado una dieta</h2>
+<p><strong>Creador:</strong></p>
+  <p style="padding-left: 40px;"><strong>Nombre completo: </strong>{{ owner.fullname }}</p>
+  <p style="padding-left: 40px;"><strong>Email: </strong>{{ owner.email }}</p>
+<p><strong>Pagos:</strong></p>
+{% for diet in collection.diets.all %}
+  {% if diet.type == 'Gasolina' %}
+    <p style="padding-left: 40px;">{{ forloop.counter }}.</p>
+      <p style="padding-left: 80px;"><strong>Tipo: </strong>{{ diet.type }}</p>
+      <p style="padding-left: 80px;"><strong>Importe: </strong>{{ diet.amount }} &euro;</p>
+      <p style="padding-left: 80px;"><strong>Litros: </strong>{{ diet.liters }}</p>
+      <p style="padding-left: 80px;"><strong>Descripción: </strong>{{ diet.description }}</p>
+    {% for photo in diet.photos.all %}
+      <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.photo.url }}" alt="" width="300" /></p>
+    {% endfor %}
+  {% else %}
+    <p style="padding-left: 40px;">{{ forloop.counter }}.</p>
+      <p style="padding-left: 80px;"><strong>Tipo: </strong>{{ diet.type }}</p>
+      <p style="padding-left: 80px;"><strong>Importe: </strong>{{ diet.amount }} &euro;</p>
+      <p style="padding-left: 80px;"><strong>Descripción: </strong>{{ diet.description }}</p>
+    {% for photo in diet.photos.all %}
+      <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.url }}" alt="" width="300" /></p>
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+<p>&nbsp;</p>
+</body>
+</html>

@@ -1,9 +1,11 @@
 import logging
 import smtplib
 import ssl
+from email.utils import formataddr
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
+from collections.abc import Sequence
+from typing import Union
 from decouple import config
 
 emails = config('EMAILS_STATUS')
@@ -31,7 +33,7 @@ if not emails_enabled:
 def create_message(receiver_email, subject, body):
     # Create a multipart message and set headers
     message = MIMEMultipart()
-    message["From"] = sender_email
+    message["From"] = formataddr(('BLUE Drivers', sender_email))
     message["To"] = receiver_email
     message["Subject"] = subject
     # message["Bcc"] = receiver_email  # Recommended for mass emails
@@ -51,11 +53,11 @@ def send_email(receiver_email, message):
 
 
 class EmailSender:
-    def __init__(self, receiver: str, subject: str):
-        self.receiver = receiver
+    def __init__(self, to_addrs: Union[str, Sequence[str]], subject: str):
+        self.to_addrs = to_addrs
         self.message = MIMEMultipart('alternative')
-        self.message["From"] = sender_email
-        self.message["To"] = self.receiver
+        self.message["From"] = formataddr(('BLUE Drivers', sender_email))
+        self.message["To"] = self.to_addrs
         self.message["Subject"] = subject
 
     def attach_html(self, html):
@@ -71,4 +73,4 @@ class EmailSender:
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
             server.login(sender_email, sender_password)
-            server.sendmail(sender_email, self.receiver, self.message.as_string())
+            server.send_message(msg=self.message)
