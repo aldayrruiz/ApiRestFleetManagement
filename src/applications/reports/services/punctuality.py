@@ -11,12 +11,6 @@ logger = logging.getLogger(__name__)
 class PunctualityHelpers:
 
     @staticmethod
-    def get_precaution_bounds(reservation):
-        initial_limit = reservation.start - relativedelta(days=3)
-        final_limit = reservation.end + relativedelta(days=3)
-        return initial_limit, final_limit
-
-    @staticmethod
     def get_reservation_bounds(previous, current, next_res):
         start_bound = current.start - relativedelta(hours=1)
         end_bound = current.end + relativedelta(hours=1)
