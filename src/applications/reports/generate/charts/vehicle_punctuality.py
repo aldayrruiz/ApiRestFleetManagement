@@ -142,7 +142,9 @@ class PunctualityChart(ChartGenerator):
         trip_at_end = PunctualityHelpers.get_trip_at(end, trips)
         # Si NO ocurre un viaje durante el final de la reserva, solo contar la puntualidad dentro de la reserva.
         if not trip_at_end:
-            trips = TraccarAPI.trips(device_id, start, end)
+            # Consideramos los viajes que comiencen un poco antes de la reserva. Por si, el viaje empezaba antes.
+            # Y ponemos como límite el final, dado que no ocurre un viaje al final.
+            trips = TraccarAPI.trips(device_id, initial_limit, end)
             if not trips:
                 logger.error('No ha ocurrido ningún TRIP durante la reserva. No se ha tomado el vehículo')
                 return [0, 0]
