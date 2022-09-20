@@ -6,6 +6,7 @@ from django.db import models
 from applications.insurance_companies.models.insurance_company import InsuranceCompany
 from applications.tenants.models.tenant import Tenant
 from applications.traccar.models.device import Device
+from applications.vehicles.models import VehicleType
 from applications.vehicles.models.fuel import Fuel
 
 # In Spain vehicle's number plates have 7 characters, except for motorbikes
@@ -33,6 +34,12 @@ class Vehicle(models.Model):
     date_stored = models.DateField(auto_now_add=True)
 
     is_disabled = models.BooleanField(default=False)
+
+    type = models.CharField(
+        max_length=20,
+        choices=VehicleType.choices,
+        default=VehicleType.TOURISM
+    )
 
     fuel = models.CharField(
         max_length=10,

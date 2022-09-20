@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<h1>Reporte mensual de dietas</h1>
+{% for user in users.all %}
+  {% for reservation in user.reservations.all %}
+    {% if reservation.diet_collection and reservation.diet_collection.completed %}
+      <h2>Dietas de {{ user.fullname }}</h2>
+      <h3>Reserva con motivo "{{ reservation.title }}"</h3>
+      <p>Fecha de recogida:{{ reservation.start }}</p>
+      <p>Fecha de entrega: {{ reservation.end }}</p>
+      <p><strong>Pagos:</strong></p>
+      {% for diet in reservation.diet_collection.diets.all %}
+        {% if diet.type == 'Gasolina' %}
+          <p style="padding-left: 40px;">{{ forloop.counter }}.</p>
+          <p style="padding-left: 80px;"><strong>Tipo: </strong>{{ diet.type }}</p>
+          <p style="padding-left: 80px;"><strong>Importe: </strong>{{ diet.amount }} &euro;</p>
+          <p style="padding-left: 80px;"><strong>Litros: </strong>{{ diet.liters }}</p>
+          {% if diet.description %} <p style="padding-left: 80px;"><strong>Descripción: </strong> {{ diet.description }}</p> {% endif %}
+          {% for photo in diet.photos.all %}
+            <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.photo.url }}" alt="" width="300"/></p>
+          {% endfor %}
+        {% else %}
+          <p style="padding-left: 40px;">{{ forloop.counter }}.</p>
+          <p style="padding-left: 80px;"><strong>Tipo: </strong>{{ diet.type }}</p>
+          <p style="padding-left: 80px;"><strong>Importe: </strong>{{ diet.amount }} &euro;</p>
+          <p style="padding-left: 80px;"><strong>Descripción: </strong>{{ diet.description }}</p>
+          {% for photo in diet.photos.all %}
+            <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.url }}" alt="" width="300"/></p>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+</body>
+</html>

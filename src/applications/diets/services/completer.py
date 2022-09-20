@@ -1,6 +1,6 @@
 from applications.diets.exceptions.completed_collection import CompletedDietCollectionError
 from applications.diets.serializers.update import PatchDietCollectionSerializer
-from applications.diets.services.emails.completed import DietCompletedEmail
+from applications.diets.services.emails.supervisor import DietCompletedSupervisorEmail
 
 
 
@@ -21,7 +21,7 @@ class DietCollectionUpdater:
 
     def send_email(self):
         if self.collection.completed:
-            sender = DietCompletedEmail(self.collection)
+            sender = DietCompletedSupervisorEmail(self.collection)
             sender.send()
 
     def raise_error_if_diet_already_completed(self):

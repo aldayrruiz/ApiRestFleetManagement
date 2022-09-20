@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
+from applications.incidents.models import Incident
 
-class SolveIncidentSerializer(serializers.Serializer):
-    email = serializers.BooleanField(default=True)
-    solved = serializers.BooleanField(default=True)
+
+class SolveIncidentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Incident
+        fields = ['solver_message']
