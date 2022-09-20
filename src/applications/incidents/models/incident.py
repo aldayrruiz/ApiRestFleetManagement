@@ -15,6 +15,8 @@ class Incident(models.Model):
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
     tenant = models.ForeignKey(Tenant, related_name='incidents', on_delete=models.CASCADE)
     photo = models.ImageField(default='incidents/none.png', upload_to='incidents')
+    self_responsible = models.BooleanField(default=False)
+    solver_message = models.TextField(default='', blank=True)
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,

@@ -14,7 +14,7 @@ class DetailedVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = ['id', 'model', 'brand', 'number_plate', 'gps_device', 'date_stored', 'reservations', 'is_disabled',
-                  'fuel', 'insurance_company', 'policy_number', 'icon']
+                  'fuel', 'type', 'insurance_company', 'policy_number', 'icon']
 
 
 class SimpleVehicleSerializer(serializers.ModelSerializer):
@@ -23,7 +23,7 @@ class SimpleVehicleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vehicle
-        fields = ['id', 'model', 'brand', 'number_plate', 'gps_device', 'date_stored', 'is_disabled', 'fuel',
+        fields = ['id', 'model', 'brand', 'number_plate', 'gps_device', 'date_stored', 'is_disabled', 'fuel', 'type',
                   'insurance_company', 'policy_number', 'icon']
 
 

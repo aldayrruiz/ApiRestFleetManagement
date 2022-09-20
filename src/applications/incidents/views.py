@@ -9,6 +9,7 @@ from rest_framework.status import HTTP_200_OK
 
 from applications.incidents.serializers.create import CreateIncidentSerializer
 from applications.incidents.serializers.simple import SimpleIncidentSerializer
+from applications.incidents.serializers.special import SolveIncidentSerializer
 from applications.incidents.services.queryset import get_incident_queryset
 from applications.incidents.services.solver import IncidentSolver
 from applications.users.services.search import get_admins
@@ -70,8 +71,15 @@ class IncidentViewSet(viewsets.ViewSet):
         requester = self.request.user
         queryset = get_incident_queryset(requester, take_all=True)
         incident = get_object_or_404(queryset, pk=pk)
+
+        # Save solver & send emails
         solver = IncidentSolver(incident)
         solver.solve(solver=requester)
+
+        # Save solver message
+        serializer = SolveIncidentSerializer(incident, self.request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(status=HTTP_200_OK)
 
     # THIS RESTRICTS TO REQUESTER CREATE AN INCIDENT OF RESERVATION WHICH IS NOT OWNER.

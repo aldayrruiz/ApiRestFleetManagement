@@ -16,10 +16,12 @@ class SingleUserSerializer(serializers.ModelSerializer):
                   'is_supervisor', 'is_interventor']
 
 
+# Serializer used to update user from mobile
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'fullname', 'password', 'date_joined', 'is_disabled', 'is_supervisor', 'is_interventor']
+        fields = ['id', 'email', 'fullname', 'password', 'date_joined', 'is_disabled', 'is_supervisor',
+                  'is_interventor']
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -35,10 +37,11 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         return instance
 
 
+# Serializer used to update used from web
 class PartialUpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['ble_user_id', 'is_disabled', 'is_supervisor', 'is_interventor']
+        fields = ['ble_user_id', 'is_disabled', 'role', 'is_supervisor', 'is_interventor']
 
 
 class CreateRecoverPasswordSerializer(serializers.ModelSerializer):
