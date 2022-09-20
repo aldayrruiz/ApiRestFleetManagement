@@ -26,10 +26,9 @@
       <p style="padding-left: 80px;"><strong>Importe: </strong>{{ diet.amount }} &euro;</p>
       <p style="padding-left: 80px;"><strong>Descripción: </strong>{{ diet.description }}</p>
     {% for photo in diet.photos.all %}
-      <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.url }}" alt="" width="300" /></p>
+      <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.photo.url }}" alt="" width="300" /></p>
     {% endfor %}
   {% endif %}
 {% endfor %}
-<p>&nbsp;</p>
 </body>
 </html>
