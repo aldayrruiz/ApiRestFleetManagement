@@ -1,27 +1,27 @@
 from rest_framework import serializers
 
-from applications.diets.models.diet import Diet, DietPhoto, DietCollection
+from applications.diets.models import DietPayment, DietPhoto, Diet
 from applications.users.serializers.simple import SimpleUserSerializer
 
 
 class DietPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = DietPhoto
-        fields = ['id', 'owner', 'diet', 'photo']
+        fields = ['id', 'owner', 'payment', 'photo']
 
 
-class DietSerializer(serializers.ModelSerializer):
+class DietPaymentSerializer(serializers.ModelSerializer):
     owner = SimpleUserSerializer(read_only=True)
     photos = DietPhotoSerializer(many=True)
 
     class Meta:
-        model = Diet
-        fields = ['id', 'owner', 'collection', 'type', 'liters', 'photos', 'amount', 'description']
+        model = DietPayment
+        fields = ['id', 'owner', 'diet', 'type', 'liters', 'photos', 'amount', 'description']
 
 
-class DietCollectionSerializer(serializers.ModelSerializer):
-    diets = DietSerializer(many=True)
+class DietSerializer(serializers.ModelSerializer):
+    payments = DietPaymentSerializer(many=True)
 
     class Meta:
-        model = DietCollection
-        fields = ['id', 'reservation', 'start', 'end', 'diets', 'completed', 'modified']
+        model = Diet
+        fields = ['id', 'reservation', 'start', 'end', 'payments', 'completed', 'modified', 'number_of_diets']

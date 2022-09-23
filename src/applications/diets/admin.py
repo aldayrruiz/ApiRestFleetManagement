@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from applications.diets.models.diet import Diet, DietPhoto, DietCollection
+from applications.diets.models import DietPayment, Diet, DietPhoto
 
-admin.site.register(Diet)
+admin.site.register(DietPayment)
 admin.site.register(DietPhoto)
-admin.site.register(DietCollection)
+admin.site.register(Diet)

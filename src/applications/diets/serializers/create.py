@@ -1,26 +1,26 @@
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
-from applications.diets.models.diet import Diet, DietPhoto, DietCollection
-from applications.diets.serializers.simple import DietSerializer
-
-
-class CreateDietCollectionSerializer(serializers.ModelSerializer):
-    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    completed = serializers.ReadOnlyField(default=False)
-    diets = DietSerializer(read_only=True, many=True)
-
-    class Meta:
-        model = DietCollection
-        fields = ['id', 'reservation', 'start', 'end', 'owner', 'diets', 'completed']
+from applications.diets.models import DietPayment, DietPhoto, Diet
+from applications.diets.serializers.simple import DietPaymentSerializer
 
 
 class CreateDietSerializer(serializers.ModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    completed = serializers.ReadOnlyField(default=False)
+    payments = DietPaymentSerializer(read_only=True, many=True)
 
     class Meta:
         model = Diet
-        fields = ['id', 'owner', 'collection', 'type', 'liters', 'amount', 'description']
+        fields = ['id', 'reservation', 'start', 'end', 'owner', 'payments', 'completed']
+
+
+class CreateDietPaymentSerializer(serializers.ModelSerializer):
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = DietPayment
+        fields = ['id', 'owner', 'diet', 'type', 'liters', 'amount', 'description']
 
 
 class CreateDietPhotoSerializer(serializers.ModelSerializer):
@@ -29,4 +29,4 @@ class CreateDietPhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DietPhoto
-        fields = ['id', 'owner', 'diet', 'photo']
+        fields = ['id', 'owner', 'payment', 'photo']
