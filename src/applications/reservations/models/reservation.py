@@ -17,6 +17,7 @@ class Reservation(models.Model):
     description = models.TextField(default='', blank=True)
     is_cancelled = models.BooleanField(default=False)
     is_recurrent = models.BooleanField(default=False)
+    is_driver_needed = models.BooleanField(default=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reservations', on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, related_name='reservations', on_delete=models.CASCADE)
     tenant = models.ForeignKey(Tenant, related_name='reservations', on_delete=models.CASCADE)

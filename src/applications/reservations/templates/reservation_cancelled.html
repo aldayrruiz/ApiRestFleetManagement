@@ -1,0 +1,30 @@
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+{% timezone "Europe/Madrid" %}
+  <h1>Reserva cancelada</h1>
+  <p><strong>Motivo:</strong> {{ reservation.title }}</p>
+  {% if reservation.description %}
+    <p><strong>Descripción:</strong> {{ reservation.description }}</p>
+  {% endif %}
+  <p><strong>Veh&iacute;culo:</strong> {{ vehicle.brand }} {{ vehicle.model }} &lt;{{ vehicle.number_plate }}&gt;</p>
+  <p><strong>Propietario:</strong> {{ owner.fullname }} &lt;{{ owner.email }}&gt;</p>
+  <p><strong>Fecha de salida:</strong> {{ reservation.start }}</p>
+  <p><strong>Fecha de entrega:</strong> {{ reservation.end }}</p>
+  {% if future_reservations.count > 0 %}
+    <p>El propietario de la reserva ha decidido eliminar esta reserva (recurrente) y sus posteriores, las cuales iban a
+      ser llevadas a cabo los días:</p>
+    <ul>
+      {% for future_reservation in future_reservations.all %}
+        <li>{{ future_reservation.start }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endtimezone %}
+</body>
+</html>
