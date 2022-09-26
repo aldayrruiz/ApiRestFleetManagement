@@ -16,7 +16,7 @@ class DietPaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DietPayment
-        fields = ['id', 'owner', 'diet', 'type', 'liters', 'photos', 'amount', 'description']
+        fields = ['id', 'owner', 'diet', 'type', 'liters', 'photos', 'amount', 'description', 'demand']
 
 
 class DietSerializer(serializers.ModelSerializer):

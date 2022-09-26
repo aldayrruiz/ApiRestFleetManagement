@@ -10,6 +10,7 @@ class CreateByRecurrentSerializer(serializers.Serializer):
     startTime = serializers.DateTimeField(required=True)
     endTime = serializers.DateTimeField(required=True)
     vehicles = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
+    is_driver_needed = serializers.BooleanField(required=False)
     recurrent = serializers.PrimaryKeyRelatedField(queryset=Recurrent.objects.all())
 
 
@@ -19,6 +20,7 @@ class CreateByDateSerializer(serializers.Serializer):
     start = serializers.DateTimeField(required=True)
     end = serializers.DateTimeField(required=True)
     vehicles = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
+    is_driver_needed = serializers.BooleanField(required=False)
 
     def validate(self, data):
         validate_reservation_dates(data)

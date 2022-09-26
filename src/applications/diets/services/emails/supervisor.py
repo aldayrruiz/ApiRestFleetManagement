@@ -1,4 +1,5 @@
 from applications.diets.models.diet import Diet
+from applications.users.services.search import get_supervisors
 from utils.email.shared import EmailSender
 from decouple import config
 from django.template.loader import render_to_string
@@ -10,11 +11,11 @@ class DietCompletedSupervisorEmail(EmailSender):
         self.diet = diet
         self.subject = 'Dieta completada'
         self.body = self.get_body()
-        supervisors = self.get_supervisors()
+        supervisors = self.get_supervisors_emails()
         super().__init__(supervisors, self.subject)
 
-    def get_supervisors(self):
-        supervisors = self.diet.tenant.users.filter(is_supervisor=True)
+    def get_supervisors_emails(self):
+        supervisors = get_supervisors(self.diet.tenant)
         emails = list(map(lambda supervisor: supervisor.email, supervisors))
         emails = ', '.join(emails)
         return emails

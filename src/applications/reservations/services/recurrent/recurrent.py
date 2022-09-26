@@ -103,7 +103,8 @@ class RecurrentReservationCreator:
             end=end,
             recurrent=self.config.recurrent,
             owner=self.config.owner,
-            vehicle=vehicle
+            vehicle=vehicle,
+            is_driver_needed=self.config.is_driver_needed,
         )
 
     def __get_fake_reservation__(self, start, end, vehicles):

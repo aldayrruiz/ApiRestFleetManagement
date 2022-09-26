@@ -14,5 +14,5 @@ class PatchDietSerializer(serializers.ModelSerializer):
 class PatchPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = DietPayment
-        fields = ('id', 'type', 'liters', 'amount', 'description')
+        fields = ('id', 'type', 'liters', 'amount', 'description', 'demand')
         read_only_fields = ('id',)

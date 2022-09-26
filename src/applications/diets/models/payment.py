@@ -15,6 +15,7 @@ class DietPayment(models.Model):
     liters = models.IntegerField(default=-1, blank=True)  # Si la dieta es de tipo gasolina, se debe registrar el número de litros
     amount = models.IntegerField(default=0)  # Amount: El importe de la dieta
     description = models.TextField(default='', blank=True)
+    demand = models.BooleanField(default=False)
     diet = models.ForeignKey(Diet, related_name='payments', on_delete=models.CASCADE)
     tenant = models.ForeignKey(Tenant, related_name='payments', on_delete=models.CASCADE)
 

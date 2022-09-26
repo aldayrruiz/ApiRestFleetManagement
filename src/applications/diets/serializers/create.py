@@ -20,7 +20,7 @@ class CreateDietPaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DietPayment
-        fields = ['id', 'owner', 'diet', 'type', 'liters', 'amount', 'description']
+        fields = ['id', 'owner', 'diet', 'type', 'liters', 'amount', 'description', 'demand']
 
 
 class CreateDietPhotoSerializer(serializers.ModelSerializer):

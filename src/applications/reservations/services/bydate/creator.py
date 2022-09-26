@@ -9,13 +9,14 @@ from utils.dates import from_naive_to_aware
 
 
 class ReservationByDateCreator:
-    def __init__(self, title, description, start, end, vehicles, owner):
+    def __init__(self, title, description, start, end, vehicles, owner, is_driver_needed):
         self.title = title
         self.description = description
         self.start = from_naive_to_aware(start)
         self.end = from_naive_to_aware(end)
         self.vehicles = vehicles
         self.owner = owner
+        self.is_driver_needed = is_driver_needed
 
     def create(self):
         """
@@ -41,7 +42,8 @@ class ReservationByDateCreator:
             end=self.end,
             vehicle=vehicle,
             owner=requester,
-            tenant=requester.tenant
+            tenant=requester.tenant,
+            is_driver_needed=self.is_driver_needed
         )
         return reservation
 
@@ -53,14 +55,16 @@ class ReservationByDateCreator:
             description,
             start,
             end,
-            vehicles_ids
+            vehicles_ids,
+            is_driver_needed
         ) = itemgetter('title',
                        'description',
                        'start',
                        'end',
-                       'vehicles')(serializer.validated_data)
+                       'vehicles',
+                       'is_driver_needed')(serializer.validated_data)
 
         # Get vehicles ordered by user preference
         vehicles = get_vehicles_ordered_by_ids(vehicles_ids, owner)
 
-        return ReservationByDateCreator(title, description, start, end, vehicles, owner)
+        return ReservationByDateCreator(title, description, start, end, vehicles, owner, is_driver_needed)

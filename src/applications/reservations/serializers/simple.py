@@ -34,4 +34,5 @@ class SimpleReservationSerializer(serializers.ModelSerializer):
             'is_recurrent',
             'recurrent',
             'diet',
+            'is_driver_needed'
         ]
