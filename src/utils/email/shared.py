@@ -4,8 +4,6 @@ import ssl
 from email.utils import formataddr
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from collections.abc import Sequence
-from typing import Union
 from decouple import config
 
 emails = config('EMAILS_STATUS')

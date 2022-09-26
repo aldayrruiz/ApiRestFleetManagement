@@ -6,7 +6,7 @@ from applications.allowed_vehicles.services.queryset import get_vehicles_ordered
 
 
 class RecurrentConfiguration:
-    def __init__(self, title, description, start_time, end_time, vehicles, recurrent, owner):
+    def __init__(self, title, description, start_time, end_time, vehicles, recurrent, owner, is_driver_needed):
         self.title = title
         self.description = description
         self.start_time = start_time.timetz()
@@ -14,6 +14,7 @@ class RecurrentConfiguration:
         self.vehicles = vehicles
         self.recurrent = recurrent
         self.owner = owner
+        self.is_driver_needed = is_driver_needed
 
     @staticmethod
     def from_serializer(serializer, owner):
@@ -24,13 +25,15 @@ class RecurrentConfiguration:
             startTime,
             endTime,
             recurrent,
-            vehicles_ids
+            vehicles_ids,
+            is_driver_needed,
         ) = itemgetter('title',
                        'description',
                        'startTime',
                        'endTime',
                        'recurrent',
-                       'vehicles')(serializer.validated_data)
+                       'vehicles',
+                       'is_driver_needed')(serializer.validated_data)
 
         if not (owner == recurrent.owner):
             raise PermissionDenied('You must be owner of recurrent data.')
@@ -45,5 +48,6 @@ class RecurrentConfiguration:
             end_time=endTime,
             vehicles=vehicles,
             recurrent=recurrent,
-            owner=owner
+            owner=owner,
+            is_driver_needed=is_driver_needed
         )

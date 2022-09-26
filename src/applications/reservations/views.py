@@ -15,6 +15,7 @@ from applications.reservations.serializers.simple import SimpleReservationSerial
 from applications.reservations.serializers.special import CreateByRecurrentSerializer, CreateByDateSerializer
 from applications.reservations.services.bydate.creator import ReservationByDateCreator
 from applications.reservations.services.destroyer import delete_reservation
+from applications.reservations.services.emails.reservation_cancelled import ReservationCancelledSupervisorEmail
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.recurrent.recurrent import RecurrentReservationCreator
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
@@ -168,8 +169,9 @@ class ReservationViewSet(viewsets.ViewSet):
         if reservation_already_ended(reservation):
             raise ReservationAlreadyEnded()
 
+        ReservationCancelledSupervisorEmail(reservation).send()
         if delete_future_reservations and reservation.is_recurrent:
-            queryset = queryset.filter(recurrent_id=reservation.recurrent_id, start__gte=reservation.start)
+            queryset = queryset.filter(recurrent_id=reservation.recurrent_id, start__gte=reservation.start).all()
             for future_reservation in queryset:
                 delete_reservation(future_reservation)
             return Response(status=HTTP_204_NO_CONTENT)
