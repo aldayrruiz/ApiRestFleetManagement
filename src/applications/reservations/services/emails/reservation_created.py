@@ -5,12 +5,12 @@ from applications.users.services.search import get_supervisors
 from utils.email.shared import EmailSender
 
 
-class ReservationCancelledSupervisorEmail(EmailSender):
+class ReservationCreatedSupervisorEmail(EmailSender):
     def __init__(self, reservation: Reservation):
         self.reservation = reservation
         self.owner = self.reservation.owner
         self.tenant = reservation.tenant
-        self.subject = 'Reserva cancelada'
+        self.subject = 'Reserva creada'
         self.body = self.get_body()
         self.supervisors = self.get_supervisors_emails()
         super().__init__(self.supervisors, self.subject)
@@ -31,7 +31,7 @@ class ReservationCancelledSupervisorEmail(EmailSender):
     def get_body(self):
         future_reservations = self.get_future_recurrent_reservations()
         body = render_to_string(
-            'reservation_cancelled.html',
+            'reservation_created.html',
             {'reservation': self.reservation,
              'owner': self.owner,
              'vehicle': self.reservation.vehicle,

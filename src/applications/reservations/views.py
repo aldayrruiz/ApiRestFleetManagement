@@ -16,6 +16,7 @@ from applications.reservations.serializers.special import CreateByRecurrentSeria
 from applications.reservations.services.bydate.creator import ReservationByDateCreator
 from applications.reservations.services.destroyer import delete_reservation
 from applications.reservations.services.emails.reservation_cancelled import ReservationCancelledSupervisorEmail
+from applications.reservations.services.emails.reservation_created import ReservationCreatedSupervisorEmail
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.recurrent.recurrent import RecurrentReservationCreator
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
@@ -70,7 +71,8 @@ class ReservationViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
 
         self.check_reservation_creation(request, serializer.validated_data)
-        serializer.save(tenant=tenant)
+        reservation = serializer.save(tenant=tenant)
+        ReservationCreatedSupervisorEmail(reservation).send()
         return Response(serializer.data)
 
     @swagger_auto_schema(request_body=CreateByDateSerializer, responses={201: SimpleReservationSerializer()})
@@ -93,6 +95,7 @@ class ReservationViewSet(viewsets.ViewSet):
         if not reservation:
             raise NoVehiclesAvailableError()
 
+        ReservationCreatedSupervisorEmail(reservation).send()
         response = SimpleReservationSerializer(reservation)
         return Response(response.data)
 
@@ -128,6 +131,8 @@ class ReservationViewSet(viewsets.ViewSet):
             }
             return Response(response, status=HTTP_409_CONFLICT)
 
+        if valid_reservations:
+            ReservationCreatedSupervisorEmail(valid_reservations[0]).send()
         RecurrentReservationCreator.create(valid_reservations=valid_reservations, tenant=tenant)
         valid_reservations_serializer = SimpleReservationSerializer(valid_reservations, many=True)
         response = {
