@@ -13,7 +13,7 @@ class Diet(models.Model):
     # Start & end are fields completed by the user. They are used to know if entire day or half day diet is needed.
     start = models.DateTimeField()
     end = models.DateTimeField()
-    number_of_diets = models.PositiveSmallIntegerField(default=0)
+    number_of_diets = models.DecimalField(default=0, max_digits=3, decimal_places=1)
     completed = models.BooleanField(default=False)
     modified = models.BooleanField(default=False)
     last_modified = models.DateTimeField(auto_now=True)
