@@ -12,8 +12,8 @@ class DietPayment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='payments', on_delete=models.CASCADE)
     type = models.CharField(max_length=20, choices=PaymentType.choices, default=PaymentType.Otros)
-    liters = models.IntegerField(default=-1, blank=True)  # Si la dieta es de tipo gasolina, se debe registrar el número de litros
-    amount = models.IntegerField(default=0)  # Amount: El importe de la dieta
+    liters = models.DecimalField(default=-1, max_digits=6, decimal_places=2, blank=True)  # Si la dieta es de tipo gasolina, se debe registrar el número de litros
+    amount = models.DecimalField(default=0, max_digits=8, decimal_places=2)  # Amount: El importe de la dieta
     description = models.TextField(default='', blank=True)
     demand = models.BooleanField(default=False)
     diet = models.ForeignKey(Diet, related_name='payments', on_delete=models.CASCADE)
