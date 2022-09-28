@@ -8,9 +8,16 @@
 <body>
 {% timezone "Europe/Madrid" %}
   <h2>Se ha completado una dieta</h2>
+
   <p><strong>Creador:</strong></p>
   <p style="padding-left: 40px;"><strong>Nombre completo: </strong>{{ owner.fullname }}</p>
   <p style="padding-left: 40px;"><strong>Email: </strong>{{ owner.email }}</p>
+
+  <p><strong>Dieta:</strong></p>
+  <p style="padding-left: 40px;"><strong>Fecha de salida: </strong>{{ diet.start }}</p>
+  <p style="padding-left: 40px;"><strong>Fecha de entrega: </strong>{{ diet.end }}</p>
+  <p style="padding-left: 40px;"><strong>Número de dietas: </strong>{{ diet.number_of_diets }}</p>
+
   <p><strong>Pagos:</strong></p>
   {% for payment in diet.payments.all %}
     {% if payment.type == 'Gasolina' %}
@@ -18,6 +25,7 @@
       <p style="padding-left: 80px;"><strong>Tipo: </strong>{{ payment.type }}</p>
       <p style="padding-left: 80px;"><strong>Importe: </strong>{{ payment.amount }} &euro;</p>
       <p style="padding-left: 80px;"><strong>Litros: </strong>{{ payment.liters }}</p>
+      <p style="padding-left: 80px;"><strong>Reclamar gasto: </strong>{% if payment.demand %} Si {% else %} No {% endif %}</p>
       <p style="padding-left: 80px;"><strong>Descripción: </strong>{{ payment.description }}</p>
       {% for photo in payment.photos.all %}
         <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.photo.url }}" alt="" width="300"/></p>
@@ -26,6 +34,7 @@
       <p style="padding-left: 40px;">{{ forloop.counter }}.</p>
       <p style="padding-left: 80px;"><strong>Tipo: </strong>{{ payment.type }}</p>
       <p style="padding-left: 80px;"><strong>Importe: </strong>{{ payment.amount }} &euro;</p>
+      <p style="padding-left: 80px;"><strong>Reclamar gasto: </strong>{% if payment.demand %} Si {% else %} No {% endif %}</p>
       <p style="padding-left: 80px;"><strong>Descripción: </strong>{{ payment.description }}</p>
       {% for photo in payment.photos.all %}
         <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.photo.url }}" alt="" width="300"/></p>

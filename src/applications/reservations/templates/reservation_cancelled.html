@@ -14,6 +14,7 @@
   {% endif %}
   <p><strong>Veh&iacute;culo:</strong> {{ vehicle.brand }} {{ vehicle.model }} &lt;{{ vehicle.number_plate }}&gt;</p>
   <p><strong>Propietario:</strong> {{ owner.fullname }} &lt;{{ owner.email }}&gt;</p>
+  <p><strong>Requiere conductor:</strong> {% if reservation.is_driver_needed %} Si {% else %} No {% endif %}</p>
   <p><strong>Fecha de salida:</strong> {{ reservation.start }}</p>
   <p><strong>Fecha de entrega:</strong> {{ reservation.end }}</p>
   {% if future_reservations.count > 0 %}
