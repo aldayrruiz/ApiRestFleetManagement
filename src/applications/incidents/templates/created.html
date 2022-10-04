@@ -1,0 +1,36 @@
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+{% timezone "Europe/Madrid" %}
+  <p><strong>Incidencia:</strong></p>
+  <p style="padding-left: 40px;"><strong>Propietario:</strong> {{ incident.owner.fullname }}
+    &lt;{{ incident.owner.email }}&gt;
+  </p>
+  <p style="padding-left: 40px;"><strong>Veh&iacute;culo:</strong> {{ vehicle.get_type_display }}
+    - {{ vehicle.brand }} {{ vehicle.model }}
+    &lt;{{ vehicle.number_plate }}&gt;</p>
+  <p style="padding-left: 40px;"><strong>Tipo:</strong> {{ incident.get_type_display }}</p>
+  <p style="padding-left: 40px;"><strong>Fecha de creación:</strong> {{ incident.date_stored }}</p>
+  {% if incident.description %}
+    <p style="padding-left: 40px;"><strong>Descripción:</strong> {{ incident.description }}</p>
+  {% endif %}
+
+  {% if incident.photo %}
+    <p style="padding-left: 80px;"><img src="{{ baseurl }}{{ photo.url }}" alt="" width="300"/></p>
+  {% endif %}
+
+  <p><strong>Reserva:</strong></p>
+  <p style="padding-left: 40px;"><strong>Motivo:</strong> {{ reservation.title }}</p>
+  <p style="padding-left: 40px;"><strong>Fecha de recogida:</strong> {{ reservation.start }}</p>
+  <p style="padding-left: 40px;"><strong>Fecha de entrega:</strong> {{ reservation.end }}</p>
+  {% if reservation.description %}
+    <p style="padding-left: 40px;"><strong>Descripción:</strong> {{ reservation.description }} </p>
+  {% endif %}
+{% endtimezone %}
+</body>
+</html>
