@@ -4,7 +4,7 @@ from applications.tenants.models import Tenant
 from applications.users.models import Role
 
 
-def get_admins(tenant):
+def get_admins(tenant: Tenant):
     return get_user_model().objects.filter(role=Role.ADMIN, tenant=tenant).all()
 
 

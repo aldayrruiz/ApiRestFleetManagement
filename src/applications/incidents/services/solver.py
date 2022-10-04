@@ -1,5 +1,5 @@
 from applications.incidents.exceptions.incident_already_solved import IncidentAlreadySolvedError
-from utils.email.incidents.solved import send_incident_was_solved_email
+from applications.incidents.services.emails.solved import IncidentSolvedEmail
 
 
 class IncidentSolver:
@@ -12,4 +12,4 @@ class IncidentSolver:
         self.incident.solver = solver
         self.incident.solved = True
         self.incident.save()
-        send_incident_was_solved_email(self.incident)
+        IncidentSolvedEmail(self.incident).send()
