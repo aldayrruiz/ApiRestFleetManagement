@@ -124,5 +124,3 @@ SWAGGER_SETTINGS = {
       }
    }
 }
-
-REPORTS_PATH = config('REPORTS_PATH')
