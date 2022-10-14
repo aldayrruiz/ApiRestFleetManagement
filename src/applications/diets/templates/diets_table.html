@@ -1,0 +1,43 @@
+{% load tz %}
+{% load helpers %}
+{% timezone "Europe/Madrid" %}
+  <table border="1" width="100%">
+    <tr>
+      <th width="20%">Nombre completo</th>
+      <th width="10%">Inicio</th>
+      <th width="10%">Fin</th>
+      <th width="5%">Dieta</th>
+      <th width="10%">Alojamiento</th>
+      <th width="2%">R</th>
+      <th width="7%">Gasolina</th>
+      <th width="2%">R</th>
+      <th width="7%">Peaje</th>
+      <th width="2%">R</th>
+      <th width="7%">Parking</th>
+      <th width="2%">R</th>
+      <th width="6%">Otros</th>
+      <th width="2%">R</th>
+      <th width="8%">Total</th>
+    </tr>
+
+    {% for row in rows %}
+      <tr>
+        <td>{{ row.diet.owner.fullname }}</td>
+        <td>{{ row.diet.start | date:"j/n/y - H:i" }}</td>
+        <td>{{ row.diet.end | date:"j/n/y - H:i" }}</td>
+        <td>{{ row.diet.number_of_diets }}</td>
+        <td>{{ row.payments.Alojamiento.amount | euros }}</td>
+        <td>{{ row.payments.Alojamiento.demand | bool }}</td>
+        <td>{{ row.payments.Gasolina.amount | euros }}</td>
+        <td>{{ row.payments.Gasolina.demand | bool }}</td>
+        <td>{{ row.payments.Peaje.amount | euros }}</td>
+        <td>{{ row.payments.Peaje.demand | bool }}</td>
+        <td>{{ row.payments.Parking.amount | euros }}</td>
+        <td>{{ row.payments.Parking.demand | bool }}</td>
+        <td>{{ row.payments.Otros.amount | euros }}</td>
+        <td>{{ row.payments.Otros.demand | bool }}</td>
+        <td>{{ row.total }} €</td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endtimezone %}

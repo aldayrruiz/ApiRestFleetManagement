@@ -1,11 +1,8 @@
-import calendar
-import locale
 import logging
 import os
 
 from PIL import Image
 from dateutil.relativedelta import relativedelta
-from fpdf import FPDF
 
 from applications.reports.generate.charts.distance_max_average_speed import DistanceMaxAverageSpeedChart
 from applications.reports.generate.charts.real_use_of_vehicle import RealUseOfVehicleChart
@@ -18,44 +15,38 @@ from applications.reports.models.punctuality import PunctualityReport
 from applications.reports.models.use_of_vehicle import TheoreticalUseOfVehicleReport, RealUseOfVehicleReport
 from applications.reports.models.use_without_reservation import UseWithoutReservation
 from applications.tenants.models import Tenant
-from fleet_management.settings.base import REPORTS_PATH
+from shared.pdf.builder import PdfBuilder
+from shared.pdf.constants import HEADER_TOP_MARGIN, PDF_W, HORIZONTAL_LEFT_MARGIN, PDF_H, WRITABLE_WIDTH, DEFAULT_FONT_FAMILY
+
+from applications.reports.generate.reports import ReportsPdfPath
 from utils.dates import get_now_utc
 
-PDF_W = 210
-PDF_H = 297
-
-FONT_FAMILY = 'Arial'
-
-HORIZONTAL_LEFT_MARGIN = 20
-HORIZONTAL_RIGHT_MARGIN = HORIZONTAL_LEFT_MARGIN
-HEADER_TOP_MARGIN = 8
-WRITABLE_WIDTH = PDF_W - HORIZONTAL_LEFT_MARGIN - HORIZONTAL_RIGHT_MARGIN
-
 LOGOS = {
-    'Fundación Intras': f'{REPORTS_PATH}/assets/Intras.png',
-    'SaCyL ZAMORA': f'{REPORTS_PATH}/assets/SACYL.png',
-    'BLUE Drivers': f'{REPORTS_PATH}/assets/BLUEDrivers.png'
+    'Intras': ReportsPdfPath.get_logo('Intras.png'),
+    'SaCyL': ReportsPdfPath.get_logo('SACYL.png'),
+    'BLUE Drivers': ReportsPdfPath.get_logo('BLUEDrivers.png')
 }
 
 logger = logging.getLogger(__name__)
 
 
-class MonthlyReportPdf(FPDF):
+class MonthlyReportPdf(PdfBuilder):
     def __init__(self, tenant: Tenant, month: int, year: int):
-        super().__init__()
-        self.tenant = tenant
-        self.month = month
-        self.year = year
-        self.logo_tenant = LOGOS[tenant.name]
+        super().__init__(tenant, month, year)
+
+    def generate(self):
+        self.add_first_page()
+        self.add_second_page()
 
     def add_first_page(self):
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-        month_label = calendar.month_name[self.month]
-
         # First page
         self.add_page()
-        self.set_header(month_label, self.year)
-        self.set_description()
+        self.set_header('Informe BLUE Drivers')
+
+        txt = 'Este informe tiene por objetivo extraer información relativa al ' \
+              'uso de los vehículos gestionados por BLUE Drivers.'
+        self.set_description(txt, HEADER_TOP_MARGIN + 28)
+
         title = 'Distancia recorrida, y velocidades máxima y media, alcanzadas en un mes'
         desc = 'Fig. 1: El presente gráfico muestra los datos básicos [1] de uso de cada vehículo a lo largo del mes.'
         self.set_graph(title, desc, f'1.png', y=50)
@@ -79,44 +70,8 @@ class MonthlyReportPdf(FPDF):
                'fuera de las horas reservadas por BLUE Drivers.'
         self.set_graph(title, desc, f'5.png', y=150)
 
-    def header(self):
-        # LOGO TENANT (IZQUIERDA)
-        # Aquí la X del logo es + 1. No sé por qué, pero así está alineado con el resto del pdf.
-        x = HORIZONTAL_LEFT_MARGIN + 1
-        y = HEADER_TOP_MARGIN
-        h = 12  # La altura debe ser definida. Sin embargo, el ancho NO, porque varía según el tenant.
-        self.image(self.logo_tenant, x, y, h=h)
-
-        # LOGO BLUE DRIVERS (DERECHA)
-        x = PDF_W - HORIZONTAL_LEFT_MARGIN - h
-        self.image(LOGOS['BLUE Drivers'], x, y, h=h)
-
-    def set_header(self, month: str, year: int):
-        self.set_xy(HORIZONTAL_LEFT_MARGIN, HEADER_TOP_MARGIN + 20)
-        self.set_font(family=FONT_FAMILY, size=16)
-        self.set_text_color(46, 152, 209)  # azul
-
-        title = f'Informe BLUE Drivers - [{month} - {year}]'
-        w = self.get_string_width(title)
-        self.cell(w, h=5, align='L', txt=title)
-
-    def set_description(self):
-        # Texto descriptivo
-        txt = 'Este informe tiene por objetivo extraer información relativa al ' \
-              'uso de los vehículos gestionados por BLUE Drivers.'
-
-        # Definir posiciones
-        h = 5  # Altura de celda. Mientras más altura más separación entre las líneas.
-        x = HORIZONTAL_LEFT_MARGIN
-        y = HEADER_TOP_MARGIN + 28
-
-        self.set_xy(x, y)
-        self.set_font(family=FONT_FAMILY, style='', size=10)
-        self.set_text_color(0, 0, 0)  # negro
-        self.multi_cell(WRITABLE_WIDTH, h, txt)
-
-    def set_graph(self, title, description, name, y):
-        image_path = f'{REPORTS_PATH}/{self.tenant.name}/images/{name}'
+    def set_graph(self, title, description, filename, y):
+        image_path = ReportsPdfPath.get_graph(self.tenant, filename)
         self.set_subtitle(title, y)
         # Colocar la imagen en el pdf. Estará centrada y con una anchura 4/6 del pdf.
         x = (1 / 6) * PDF_W
@@ -134,9 +89,9 @@ class MonthlyReportPdf(FPDF):
         y_text = y + h
         self.set_fig_caption(description, y_text)
 
-    def set_double_graph(self, title, description, name1, name2, y):
-        image_path1 = f'{REPORTS_PATH}/{self.tenant.name}/images/{name1}'
-        image_path2 = f'{REPORTS_PATH}/{self.tenant.name}/images/{name2}'
+    def set_double_graph(self, title, description, filename1, filename2, y):
+        image_path1 = ReportsPdfPath.get_graph(self.tenant, filename1)
+        image_path2 = ReportsPdfPath.get_graph(self.tenant, filename2)
         self.set_subtitle(title, y)
         # Colocar la imagen en el pdf. Estará centrada y con una anchura 4/6 del pdf.
         x = HORIZONTAL_LEFT_MARGIN
@@ -165,22 +120,6 @@ class MonthlyReportPdf(FPDF):
         y_text = y + h
         self.set_fig_caption(description, y_text)
 
-    def set_subtitle(self, txt, y):
-        # Colocar el título en el pdf
-        self.set_xy(HORIZONTAL_LEFT_MARGIN, y)
-        self.set_font(family=FONT_FAMILY, style='', size=12)
-        self.set_text_color(46, 152, 209)  # azul
-        w = self.get_string_width(txt)
-        self.cell(w, h=5, align='L', txt=txt)
-
-    def set_fig_caption(self, txt, y):
-        # Colocar la descripción de la imagen en el pdf.
-        x = HORIZONTAL_LEFT_MARGIN
-        self.set_xy(x, y)
-        self.set_font(family=FONT_FAMILY, style='', size=10)
-        self.set_text_color(0, 0, 0)  # negro
-        self.multi_cell(WRITABLE_WIDTH, 5, txt, align='C')
-
     def set_foot_page(self):
         txt1 = '[1] La velocidad máxima representa la máxima velocidad alcanzada por el vehículo en todos ' \
                'los trayectos del mes. La velocidad media representa la media de las velocidades medias ' \
@@ -189,32 +128,12 @@ class MonthlyReportPdf(FPDF):
         x = HORIZONTAL_LEFT_MARGIN
         y = PDF_H - 42
 
-        self.set_font(family=FONT_FAMILY, style='', size=8)
+        self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=8)
         self.set_text_color(0, 0, 0)  # negro
         self.set_xy(x, y)
         self.multi_cell(w=WRITABLE_WIDTH, h=5, align='L', txt=txt1)
         self.set_xy(x, y + 10)
         self.multi_cell(w=WRITABLE_WIDTH, h=5, align='L', txt=txt2)
-
-    def footer(self) -> None:
-        h = 12  # Logo
-        x = HORIZONTAL_LEFT_MARGIN
-        y = PDF_H - h - HEADER_TOP_MARGIN + 2
-        self.set_font(family=FONT_FAMILY, style='', size=8)
-        self.set_text_color(0, 0, 0)  # negro
-
-        txt1 = 'drivers.bluece.eu'
-        txt2 = 'drivers.app.bluece.eu'
-        w1 = self.get_string_width(txt1)
-        w2 = self.get_string_width(txt2)
-        self.set_xy(x, y)
-        self.cell(w1, h=5, align='L', txt=txt1)
-        self.set_xy(x, y + 5)
-        self.cell(w2, h=5, align='L', txt=txt2)
-
-        # LOGO BLUE DRIVERS (DERECHA)
-        x = PDF_W - HORIZONTAL_LEFT_MARGIN - h
-        self.image(LOGOS['BLUE Drivers'], x, y, h=h)
 
 
 # Main
@@ -223,7 +142,7 @@ previous_month = now - relativedelta(months=1)
 month = previous_month.month
 year = previous_month.year
 
-tenants = Tenant.objects.all()
+tenants = Tenant.objects.exclude(name__in=['Local Pruebas', 'Pruebas BLUE'])
 
 for tenant in tenants:
     logger.info('Generating image: DistanceMaxAverageSpeedChart')
@@ -237,20 +156,19 @@ for tenant in tenants:
     logger.info('Generating image: RealUseOfVehicleChart')
     chart3 = RealUseOfVehicleChart(tenant, month, year, chart2, chart4)
 
-    if not os.path.exists(f'{REPORTS_PATH}/{tenant.name}'):
-        os.mkdir(f'{REPORTS_PATH}/{tenant.name}')
-        os.mkdir(f'{REPORTS_PATH}/{tenant.name}/images')
+    if not os.path.exists(ReportsPdfPath.get_tenant(tenant)):
+        os.mkdir(ReportsPdfPath.get_tenant(tenant))
+        os.mkdir(ReportsPdfPath.get_graphs(tenant))
 
-    chart1.generate_image(f'{REPORTS_PATH}/{tenant.name}/images/1.png')
-    chart2.generate_image(f'{REPORTS_PATH}/{tenant.name}/images/2.png')
-    chart3.generate_image(f'{REPORTS_PATH}/{tenant.name}/images/3.png')
-    chart4.generate_image(f'{REPORTS_PATH}/{tenant.name}/images/4.png')
-    chart5.generate_image(f'{REPORTS_PATH}/{tenant.name}/images/5.png')
+    chart1.generate_image(ReportsPdfPath.get_graph(tenant, '1.png'))
+    chart2.generate_image(ReportsPdfPath.get_graph(tenant, '2.png'))
+    chart3.generate_image(ReportsPdfPath.get_graph(tenant, '3.png'))
+    chart4.generate_image(ReportsPdfPath.get_graph(tenant, '4.png'))
+    chart5.generate_image(ReportsPdfPath.get_graph(tenant, '5.png'))
 
     pdf = MonthlyReportPdf(tenant, month, year)
-    pdf.add_first_page()
-    pdf.add_second_page()
-    path = f'{REPORTS_PATH}/{tenant.name}_{month}_{year}.pdf'
+    pdf.generate()
+    path = ReportsPdfPath.get_pdf(tenant, month, year)
     pdf.output(path)
 
     # Guardar información sobre el pdf (localización y mes)
@@ -306,7 +224,7 @@ for tenant in tenants:
             vehicle=vehicle,
             tenant=tenant
         )
-        
+
         rep1.save()
         rep2.save()
         rep3.save()
