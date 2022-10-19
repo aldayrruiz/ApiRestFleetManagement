@@ -1,22 +1,18 @@
 import locale
 
 import pytz
-from dateutil.relativedelta import relativedelta
 from django.template.loader import render_to_string
 from fpdf import HTMLMixin
 
 from applications.diets.models import Diet, PaymentType, DietPhoto
-from applications.diets.services.pdf.path import DietsPdfPath
-from applications.tenants.models import Tenant
 from applications.users.models import User, Role
 from shared.pdf.builder import PdfBuilder
 from shared.pdf.constants import HEADER_TOP_MARGIN, DEFAULT_FONT_FAMILY, WRITABLE_WIDTH, HORIZONTAL_LEFT_MARGIN
-from utils.dates import get_now_utc
 
 IMAGE_WIDTH_HEIGHT = 60
 
 
-class DietMonthlyReport(PdfBuilder, HTMLMixin):
+class DietMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
     def __init__(self, tenant, month, year):
         super().__init__(tenant, month, year)
         self.diet_amount = 45
@@ -168,18 +164,3 @@ class DietMonthlyReport(PdfBuilder, HTMLMixin):
         if self.will_page_break(h):
             self.add_page()
             self.set_y(HEADER_TOP_MARGIN + 20)
-
-
-# Main
-now = get_now_utc()
-previous_month = now - relativedelta(months=1)
-month = previous_month.month
-year = previous_month.year
-
-tenants = Tenant.objects.exclude(name__in=['Local Pruebas', 'Pruebas BLUE'])
-
-for tenant in tenants:
-    pdf = DietMonthlyReport(tenant, 10, 2022)
-    pdf.generate()
-    path = DietsPdfPath.get_pdf(tenant, month, year)
-    pdf.output(path)

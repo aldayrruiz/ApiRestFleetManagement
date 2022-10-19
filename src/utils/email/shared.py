@@ -1,6 +1,7 @@
 import logging
 import smtplib
 import ssl
+from email.mime.application import MIMEApplication
 from email.utils import formataddr
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -63,6 +64,12 @@ class EmailSender:
 
     def attach_plain(self, plain):
         self.message.attach(MIMEText(plain, 'plain'))
+
+    def attach_pdf(self, path, filename=None):
+        with open(path, "rb") as f:
+            attach = MIMEApplication(f.read(), _subtype="pdf")
+        attach.add_header('Content-Disposition', 'attachment', filename=filename)
+        self.message.attach(attach)
 
     def send(self):
         if not emails_enabled:
