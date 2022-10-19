@@ -13,7 +13,8 @@ LOGOS = {
     'Local': ReportsPdfPath.get_logo('Intras.png'),
     'Intras': ReportsPdfPath.get_logo('Intras.png'),
     'SaCyL': ReportsPdfPath.get_logo('SACYL.png'),
-    'BLUE Drivers': ReportsPdfPath.get_logo('BLUEDrivers.png')
+    'BLUE Drivers': ReportsPdfPath.get_logo('BLUEDrivers.png'),
+    'Pruebas': ReportsPdfPath.get_logo('BLUEDrivers.png')
 }
 
 

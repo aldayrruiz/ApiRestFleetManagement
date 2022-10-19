@@ -1,3 +1,4 @@
+from applications.diets.models import DietMonthlyPdfReport
 from applications.tenants.models import Tenant
 from applications.users.services.search import get_interventors
 from utils.email.shared import EmailSender
@@ -7,12 +8,13 @@ from django.template.loader import render_to_string
 
 class DietCompletedInterventorEmail(EmailSender):
 
-    def __init__(self, tenant: Tenant):
+    def __init__(self, tenant: Tenant, report: DietMonthlyPdfReport):
         self.tenant = tenant
         self.subject = 'Reporte mensual de dietas'
         self.body = self.get_body()
-        interventors = self.get_interventor_emails()
-        super().__init__(interventors, self.subject)
+        self.interventors = self.get_interventor_emails()
+        self.report = report
+        super().__init__(self.interventors, self.subject)
 
     def get_interventor_emails(self):
         interventors = get_interventors(self.tenant)
@@ -28,6 +30,14 @@ class DietCompletedInterventorEmail(EmailSender):
              })
         return body
 
+    def attach_report(self):
+        pdf = self.report.pdf
+        filename = f'ReporteMensualDietas_{self.report.month}_{self.report.year}.pdf'
+        self.attach_pdf(pdf, filename)
+
     def send(self):
+        if not self.tenant.diet:
+            return
         self.attach_html(self.body)
+        self.attach_report()
         super().send()

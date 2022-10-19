@@ -21,12 +21,6 @@ from shared.pdf.constants import HEADER_TOP_MARGIN, PDF_W, HORIZONTAL_LEFT_MARGI
 from applications.reports.generate.reports import ReportsPdfPath
 from utils.dates import get_now_utc
 
-LOGOS = {
-    'Intras': ReportsPdfPath.get_logo('Intras.png'),
-    'SaCyL': ReportsPdfPath.get_logo('SACYL.png'),
-    'BLUE Drivers': ReportsPdfPath.get_logo('BLUEDrivers.png')
-}
-
 logger = logging.getLogger(__name__)
 
 

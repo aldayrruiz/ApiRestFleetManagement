@@ -1,3 +1,4 @@
+from applications.diets.models.monthly import DietMonthlyPdfReport
 from applications.diets.models.type import PaymentType
 from applications.diets.models.diet import Diet
 from applications.diets.models.payment import DietPayment
