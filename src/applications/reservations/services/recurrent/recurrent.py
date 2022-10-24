@@ -104,6 +104,7 @@ class RecurrentReservationCreator:
             recurrent=self.config.recurrent,
             owner=self.config.owner,
             vehicle=vehicle,
+            tenant=vehicle.tenant,
             is_driver_needed=self.config.is_driver_needed,
         )
 
