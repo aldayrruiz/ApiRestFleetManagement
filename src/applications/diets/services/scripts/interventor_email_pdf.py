@@ -14,7 +14,7 @@ previous_month = now - relativedelta(months=1)
 month = previous_month.month
 year = previous_month.year
 
-tenants = Tenant.objects.exclude(name__in=['Local Pruebas', 'Pruebas BLUE']).filter(diet=True)
+tenants = Tenant.objects.filter(diet=True)
 
 for tenant in tenants:
     # Generar informe pdf
