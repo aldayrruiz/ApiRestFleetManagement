@@ -1,0 +1,26 @@
+{% load tz %}
+<table border="1" width="100%">
+    <tr>
+        <th width="20%">Matrícula</th>
+        <th width="20%">Marca</th>
+        <th width="20%">Modelo</th>
+        <th width="20%">Núm Días [Mes]</th>
+        <th width="20%">Unidades a facturar</th>
+    </tr>
+
+    {% for row in data %}
+        <tr>
+            <td>{{ row.vehicle.number_plate }}</td>
+            <td>{{ row.vehicle.brand }}</td>
+            <td>{{ row.vehicle.model }}</td>
+            <td>{{ row.number_of_days }}</td>
+            <td>{{ row.units_to_bill|floatformat:1 }}</td>
+        </tr>
+    {% endfor %}
+    {% if last_page %}
+        <tr>
+            <td colspan="4" align="right">Total (unidades)</td>
+            <td align="right">{{ total|floatformat:1 }}</td>
+        </tr>
+    {% endif %}
+</table>

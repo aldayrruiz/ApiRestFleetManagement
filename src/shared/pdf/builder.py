@@ -9,13 +9,7 @@ from applications.reports.generate.reports import ReportsPdfPath
 from shared.pdf.constants import HORIZONTAL_LEFT_MARGIN, HEADER_TOP_MARGIN, PDF_W, DEFAULT_FONT_FAMILY, WRITABLE_WIDTH, PDF_H
 
 
-LOGOS = {
-    'Local': ReportsPdfPath.get_logo('Intras.png'),
-    'Intras': ReportsPdfPath.get_logo('Intras.png'),
-    'SaCyL': ReportsPdfPath.get_logo('SACYL.png'),
-    'BLUE Drivers': ReportsPdfPath.get_logo('BLUEDrivers.png'),
-    'Pruebas': ReportsPdfPath.get_logo('BLUEDrivers.png')
-}
+BLUE_DRIVERS_LOGO = ReportsPdfPath.get_logo('BLUEDrivers.png')
 
 
 class PdfBuilder(FPDF):
@@ -24,7 +18,7 @@ class PdfBuilder(FPDF):
         self.tenant = tenant
         self.month = month
         self.year = year
-        self.logo_tenant = LOGOS[tenant.short_name]
+        self.logo_tenant = tenant.logo.path
         locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
         self.month_label = calendar.month_name[month]
         self.add_default_font()
@@ -39,7 +33,7 @@ class PdfBuilder(FPDF):
 
         # LOGO BLUE DRIVERS (DERECHA)
         x = PDF_W - HORIZONTAL_LEFT_MARGIN - h
-        self.image(LOGOS['BLUE Drivers'], x, y, h=h)
+        self.image(BLUE_DRIVERS_LOGO, x, y, h=h)
 
     def set_header(self, title: str):
         self.set_xy(HORIZONTAL_LEFT_MARGIN, HEADER_TOP_MARGIN + 20)
@@ -93,7 +87,7 @@ class PdfBuilder(FPDF):
 
         # LOGO BLUE DRIVERS (DERECHA)
         x = PDF_W - HORIZONTAL_LEFT_MARGIN - h
-        self.image(LOGOS['BLUE Drivers'], x, y, h=h)
+        self.image(BLUE_DRIVERS_LOGO, x, y, h=h)
 
         # Set page number
         self.set_y(-15)

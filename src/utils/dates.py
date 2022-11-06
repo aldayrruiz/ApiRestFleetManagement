@@ -62,6 +62,10 @@ def get_first_and_last_day_of(year, month):
     return first_datetime, last_datetime
 
 
+def get_number_of_days_in_month(month, year):
+    return calendar.monthrange(year, month)[1]
+
+
 def get_hours_duration(start, end):
     duration = relativedelta(end, start)
     hours = duration.days * 24 + duration.minutes / 60 + duration.hours
