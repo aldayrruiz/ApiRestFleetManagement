@@ -10,9 +10,11 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
 from applications.tenants.serializers.simple import TenantSerializer
+from applications.users.exceptions.already_exists import UserAlreadyExistsError
 from applications.users.exceptions.cannot_delete_himself import CannotDeleteHimselfError
 from applications.users.exceptions.user_is_disabled import UserDisabledError
-from applications.users.models import RecoverPassword, RecoverPasswordStatus, User
+from applications.users.exceptions.was_created_again import UserCreatedAgainError
+from applications.users.models import RecoverPassword, RecoverPasswordStatus, User, UserRegistrationHistory, ActionType
 from applications.users.serializers.create import RegistrationSerializer
 from applications.users.serializers.simple import SimpleUserSerializer
 from applications.users.serializers.special import UpdateUserSerializer, SingleUserSerializer, \
@@ -64,8 +66,10 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(queryset, pk=pk)
         if requester == user:
             raise CannotDeleteHimselfError()
-        user.delete()
-        logger.info('User was disabled.')
+        user.is_deleted = True
+        user.save()
+        UserRegistrationHistory.objects.create(user=user, tenant=user.tenant, action=ActionType.DELETED)
+        logger.info('User was set as deleted.')
         return Response(status=HTTP_204_NO_CONTENT)
 
     @swagger_auto_schema(request_body=UpdateUserSerializer, responses={200: UpdateUserSerializer()})
@@ -164,8 +168,18 @@ class RegistrationViewSet(viewsets.ViewSet):
         logger.info('Register user request received.')
         serializer = RegistrationSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-
+        user = User.objects.get(email=serializer.initial_data['email'])
+        if user and user.is_deleted:
+            # User already exists
+            UserRegistrationHistory.objects.create(user=user, tenant=user.tenant, action=ActionType.CREATED)
+            user.is_deleted = False
+            user.save()
+            raise UserCreatedAgainError()
+        elif user and not user.is_deleted:
+            raise UserAlreadyExistsError()
+        # User does not exist
         user = serializer.save()
+        UserRegistrationHistory.objects.create(user=user, tenant=user.tenant, action=ActionType.CREATED)
         logger.info('User registered successfully: {}'.format(user.fullname))
         return Response(serializer.data)
 

@@ -8,13 +8,17 @@ from applications.users.services.roler import Roler
 logger = logging.getLogger(__name__)
 
 
-def get_user_queryset(requester: User, even_disabled=False):
+def get_user_queryset(requester: User, even_disabled=False, even_deleted=False):
     tenant = requester.tenant
-    if even_disabled and Roler.is_admin(requester):
-        # Return all users only if requester is admin
+    if even_deleted and even_disabled and Roler.is_admin(requester):
+        # Admins can see all users
         queryset = get_user_model().objects.filter(tenant=tenant)
+        return queryset
+    elif even_disabled and Roler.is_admin(requester):
+        # Return all users only if requester is admin
+        queryset = get_user_model().objects.filter(tenant=tenant, is_deleted=False)
         return queryset
     else:
         # Return only user that are not disabled
-        queryset = get_user_model().objects.filter(tenant=tenant, is_disabled=False)
+        queryset = get_user_model().objects.filter(tenant=tenant, is_disabled=False, is_deleted=False)
         return queryset

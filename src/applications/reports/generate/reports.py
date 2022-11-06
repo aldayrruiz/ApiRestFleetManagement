@@ -7,7 +7,6 @@ from shared.pdf.path.logo import LogoPdfPath
 
 BASE_DIR = Path(config('PDF_PATH'))
 REPORTS_DIR = BASE_DIR / 'reports'
-ASSETS = BASE_DIR / 'assets'
 
 
 class ReportsPdfPath(LogoPdfPath):

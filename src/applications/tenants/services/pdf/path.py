@@ -7,15 +7,15 @@ from shared.pdf.path.logo import LogoPdfPath
 
 
 BASE_DIR = Path(config('PDF_PATH'))
-DIETS_DIR = BASE_DIR / 'diets'
+BILLINGS_DIR = BASE_DIR / 'billings'
 
 
-class DietsPdfPath(LogoPdfPath):
+class TenantBillingMonthlyPdfReportPath(LogoPdfPath):
 
     @staticmethod
     def get_tenant(tenant: Tenant):
-        return str(DIETS_DIR / tenant.short_name)
+        return str(BILLINGS_DIR / tenant.short_name)
 
     @staticmethod
     def get_pdf(tenant: Tenant, month: int, year: int):
-        return str(DIETS_DIR / f'{str(tenant.short_name)}_{month}_{year}.pdf')
+        return str(BILLINGS_DIR / f'{str(tenant.short_name)}_{month}_{year}.pdf')

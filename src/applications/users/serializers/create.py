@@ -6,6 +6,7 @@ from applications.users.models import User, Role
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
     role = ChoiceField(choices=[Role.USER, Role.ADMIN], required=True)
 
     class Meta:

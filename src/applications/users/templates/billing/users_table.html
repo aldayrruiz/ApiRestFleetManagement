@@ -1,0 +1,22 @@
+{% load tz %}
+<table border="1" width="100%">
+    <tr>
+        <th width="50%">Nombre completo</th>
+        <th width="25%">Núm. Días [Mes]</th>
+        <th width="25%">Unidades a facturar</th>
+    </tr>
+
+    {% for row in data %}
+        <tr>
+            <td>{{ row.user.fullname }}</td>
+            <td>{{ row.number_of_days }}</td>
+            <td>{{ row.units_to_bill|floatformat:1 }}</td>
+        </tr>
+    {% endfor %}
+    {% if last_page %}
+        <tr>
+            <td colspan="2" align="right">Total (unidades)</td>
+            <td align="right">{{ total|floatformat:1 }}</td>
+        </tr>
+    {% endif %}
+</table>
