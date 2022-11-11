@@ -9,6 +9,7 @@ class InsuranceCompany(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=50)
     phone = models.CharField(max_length=10)
+    date_stored = models.DateTimeField(auto_now_add=True)
     tenant = models.ForeignKey(Tenant, related_name='insurance_companies', on_delete=models.CASCADE)
 
     class Meta:

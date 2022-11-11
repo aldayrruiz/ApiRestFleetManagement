@@ -8,6 +8,7 @@ from applications.tenants.models.tenant import Tenant
 
 class Recurrent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    date_stored = models.DateTimeField(auto_now_add=True)
     weekdays = models.CharField(max_length=13)  # 0,1,2,3,4,5,6
     since = models.DateTimeField()
     until = models.DateTimeField()

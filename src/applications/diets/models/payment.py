@@ -7,7 +7,6 @@ from applications.diets.models import Diet
 from applications.diets.models.type import PaymentType
 from applications.tenants.models import Tenant
 
-
 class DietPayment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='payments', on_delete=models.CASCADE)
@@ -17,6 +16,7 @@ class DietPayment(models.Model):
     description = models.TextField(default='', blank=True)
     demand = models.BooleanField(default=False)
     diet = models.ForeignKey(Diet, related_name='payments', on_delete=models.CASCADE)
+    date_stored = models.DateTimeField(auto_now_add=True)
     tenant = models.ForeignKey(Tenant, related_name='payments', on_delete=models.CASCADE)
 
     class Meta:

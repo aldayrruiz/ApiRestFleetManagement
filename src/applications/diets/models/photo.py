@@ -14,6 +14,7 @@ class DietPhoto(models.Model):
     payment = models.ForeignKey(DietPayment, related_name='photos', on_delete=models.CASCADE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='diet_photos', on_delete=models.CASCADE)
     photo = models.ImageField(default='diet/none.png', upload_to='diets')
+    date_stored = models.DateTimeField(auto_now_add=True)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
 
     class Meta:

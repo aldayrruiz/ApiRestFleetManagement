@@ -10,6 +10,7 @@ class DietMonthlyPdfReport(models.Model):
     pdf = models.FilePathField()
     month = models.PositiveIntegerField()
     year = models.PositiveIntegerField()
+    date_stored = models.DateTimeField(auto_now_add=True)
     tenant = models.ForeignKey(Tenant, related_name='diet_reports', on_delete=models.CASCADE)
 
     class Meta:
