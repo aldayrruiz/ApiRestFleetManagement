@@ -1,15 +1,16 @@
 import logging
 
+from django.http import FileResponse, Http404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from applications.reservation_templates.models import ReservationTemplate
+from applications.tenants.serializers.billings import SimpleTenantBillingMonthlyPdfReportSerializer
 from applications.tenants.serializers.simple import TenantSerializer, CreateTenantSerializer
-from applications.tenants.services.queryset import get_tenants_queryset
-from shared.permissions import ONLY_SUPER_ADMIN
-
+from applications.tenants.services.queryset import get_tenants_queryset, get_billing_reports
+from shared.permissions import ONLY_SUPER_ADMIN, ONLY_ADMIN_OR_SUPER_ADMIN
 
 logger = logging.getLogger(__name__)
 
@@ -52,4 +53,34 @@ class TenantViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         permission_classes = ONLY_SUPER_ADMIN
+        return [permission() for permission in permission_classes]
+
+
+class TenantBillingMonthlyPdfReportViewSet(viewsets.ViewSet):
+    @swagger_auto_schema(responses={200: SimpleTenantBillingMonthlyPdfReportSerializer()})
+    def list(self, request):
+        """
+        List monthly reports.
+        """
+        requester = self.request.user
+        queryset = get_billing_reports(requester)
+        print(queryset)
+        serializer = SimpleTenantBillingMonthlyPdfReportSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def view(self, request, pk=None):
+        """
+        Return pdf file given its id.
+        """
+        requester = self.request.user
+        queryset = get_billing_reports(requester)
+        report = get_object_or_404(queryset, pk=pk)
+        try:
+            return FileResponse(open(report.pdf, 'rb'), content_type='application/pdf')
+        except FileNotFoundError:
+            raise Http404()
+
+    def get_permissions(self):
+        permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         return [permission() for permission in permission_classes]

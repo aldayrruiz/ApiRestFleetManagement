@@ -11,7 +11,7 @@ def get_reservation_queryset(requester, take_all=False, vehicle_id=None, _from=N
     else:
         # For mobile (Users or Admins) - All reservations made by requester
         # Filter by tenant is not needed because of own requester
-        queryset = requester.reservations.filter()
+        queryset = Reservation.objects.filter(tenant=tenant, owner=requester)
 
     if vehicle_id:
         # If reservations of vehicle is specified

@@ -1,4 +1,4 @@
-from applications.diets.models import Diet, DietPayment
+from applications.diets.models import Diet, DietPayment, DietMonthlyPdfReport
 from applications.users.models import User, Role
 
 
@@ -22,3 +22,7 @@ def get_diet_payment_queryset(requester: User, take_all=False):
         # Otherwise return only diets that belong to requester
         queryset = DietPayment.objects.filter(tenant=tenant, owner=requester)
     return queryset
+
+
+def get_diet_reports_queryset(user):
+    return DietMonthlyPdfReport.objects.filter(tenant=user.tenant)

@@ -1,16 +1,15 @@
-from applications.diets.models import DietMonthlyPdfReport
+from django.template.loader import render_to_string
+
+from applications.reports.models import MonthlyReport
 from applications.tenants.models import Tenant
 from applications.users.services.search import get_interventors
 from utils.email.shared import EmailSender
-from decouple import config
-from django.template.loader import render_to_string
 
 
-class DietCompletedInterventorEmail(EmailSender):
-
-    def __init__(self, tenant: Tenant, report: DietMonthlyPdfReport):
+class VehicleUseReportEmail(EmailSender):
+    def __init__(self, tenant: Tenant, report: MonthlyReport):
         self.tenant = tenant
-        self.subject = 'Reporte mensual de dietas'
+        self.subject = 'Informe de uso de vehículos'
         self.body = self.get_body()
         self.interventors = self.get_interventor_emails()
         self.report = report
@@ -23,20 +22,16 @@ class DietCompletedInterventorEmail(EmailSender):
         return emails
 
     def get_body(self):
-        body = render_to_string(
-            'interventor.html',
-            {'users': self.tenant.users.all(),
-             'baseurl': config('SERVER_URL')
-             })
+        body = render_to_string('use_of_vehicles.html')
         return body
 
     def attach_report(self):
         pdf = self.report.pdf
-        filename = f'ReporteMensualDietas_{self.report.month}_{self.report.year}.pdf'
+        filename = f'InformeDeUsoDeVehiculos{self.report.month}_{self.report.year}.pdf'
         self.attach_pdf(pdf, filename)
 
     def send(self):
-        if not self.tenant.diet or not self.interventors:
+        if not self.interventors:
             return
         self.attach_html(self.body)
         self.attach_report()
