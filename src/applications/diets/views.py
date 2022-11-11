@@ -1,3 +1,4 @@
+from django.http import FileResponse, Http404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -10,12 +11,14 @@ from applications.diets.exceptions.completed_diet import CompletedDietError
 from applications.diets.models import Diet
 from applications.diets.serializers.create import CreateDietSerializer, CreateDietPaymentSerializer, \
     CreateDietPhotoSerializer
+from applications.diets.serializers.report import SimpleDietMonthlyPdfReportSerializer
 from applications.diets.serializers.simple import DietSerializer, DietPaymentSerializer
 from applications.diets.serializers.update import PatchDietSerializer, PatchPaymentSerializer
 from applications.diets.services.completer import DietUpdater
-from applications.diets.services.queryset import get_diet_queryset, get_diet_payment_queryset
+from applications.diets.services.queryset import get_diet_queryset, get_diet_payment_queryset, get_diet_reports_queryset
 from applications.reservations.models import Reservation
 from applications.users.models import User
+from shared.permissions import ONLY_ADMIN_OR_SUPER_ADMIN
 from utils.api.query import query_str
 
 
@@ -107,3 +110,33 @@ class DietPhotoViewSet(viewsets.ViewSet):
             raise CompletedDietError()
         photo.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+
+class DietMonthlyPdfReportViewSet(viewsets.ViewSet):
+    @swagger_auto_schema(responses={200: SimpleDietMonthlyPdfReportSerializer()})
+    def list(self, request):
+        """
+        List monthly reports.
+        """
+        requester = self.request.user
+        queryset = get_diet_reports_queryset(requester)
+        print(queryset)
+        serializer = SimpleDietMonthlyPdfReportSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def view(self, request, pk=None):
+        """
+        Return pdf file given its id.
+        """
+        requester = self.request.user
+        queryset = get_diet_reports_queryset(requester)
+        report = get_object_or_404(queryset, pk=pk)
+        try:
+            return FileResponse(open(report.pdf, 'rb'), content_type='application/pdf')
+        except FileNotFoundError:
+            raise Http404()
+
+    def get_permissions(self):
+        permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
+        return [permission() for permission in permission_classes]

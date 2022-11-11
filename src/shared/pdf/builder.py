@@ -95,7 +95,8 @@ class PdfBuilder(FPDF):
         self.cell(w=0, h=10, txt=str(self.page_no()), align='C')
 
     def add_default_font(self):
-        self.add_font(family=DEFAULT_FONT_FAMILY, fname=BASE_DIR / 'shared/pdf/fonts/DejaVuSansCondensed.ttf', uni=True)
-        self.add_font(family=DEFAULT_FONT_FAMILY, style='B', fname=BASE_DIR / 'shared/pdf/fonts/DejaVuSansCondensed-Bold.ttf', uni=True)
-        self.add_font(family=DEFAULT_FONT_FAMILY, style='I', fname=BASE_DIR / 'shared/pdf/fonts/DejaVuSansCondensed-Oblique.ttf', uni=True)
-        self.add_font(family=DEFAULT_FONT_FAMILY, style='BI', fname=BASE_DIR / 'shared/pdf/fonts/DejaVuSansCondensed-BoldOblique.ttf', uni=True)
+        fonts = BASE_DIR / 'shared/pdf/fonts/'
+        self.add_font(family=DEFAULT_FONT_FAMILY, fname=fonts / 'Barlow-Regular.ttf', uni=True)
+        self.add_font(family=DEFAULT_FONT_FAMILY, style='B', fname=fonts / 'Barlow-Bold.ttf', uni=True)
+        self.add_font(family=DEFAULT_FONT_FAMILY, style='I', fname=fonts / 'Barlow-Italic.ttf', uni=True)
+        self.add_font(family=DEFAULT_FONT_FAMILY, style='BI', fname=fonts / 'Barlow-BoldItalic.ttf', uni=True)

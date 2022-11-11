@@ -10,6 +10,7 @@ from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 from applications.reservations.exceptions.already_ended import ReservationAlreadyEnded
 from applications.reservations.exceptions.cannot_reserve_to_past import CannotReserveToPastError
 from applications.reservations.exceptions.cannot_reserve_vehicle_disabled import CannotReserveVehicleDisabled
+from applications.reservations.exceptions.has_not_yet_started import ReservationHasNotYetStarted
 from applications.reservations.serializers.create import CreateReservationSerializer, CreateRecurrentSerializer
 from applications.reservations.serializers.simple import SimpleReservationSerializer
 from applications.reservations.serializers.special import CreateByRecurrentSerializer, CreateByDateSerializer
@@ -20,11 +21,11 @@ from applications.reservations.services.emails.reservation_created import Reserv
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.recurrent.recurrent import RecurrentReservationCreator
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
-from applications.reservations.services.timer import reservation_already_ended
+from applications.reservations.services.timer import reservation_already_ended, reservation_already_started
 from applications.vehicles.exceptions.no_vehicles_available import NoVehiclesAvailableError
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled, ONLY_AUTHENTICATED
 from utils.api.query import query_bool, query_date, query_str
-from utils.dates import is_after_now
+from utils.dates import is_after_now, now_utc
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +41,8 @@ class ReservationViewSet(viewsets.ViewSet):
         _from = query_date(self.request, 'from')
         _to = query_date(self.request, 'to')
 
-        logger.info('List reservations request received. [takeAll: {}, vehicleId: {}, from: {}, to: {}]'
-                    .format(take_all, vehicle_id, _from, _to))
+        logger.info(f'List reservations request received. '
+                    f'[takeAll: {take_all}, vehicleId: {vehicle_id}, from: {_from}, to: {_to}]')
         requester = self.request.user
         queryset = get_reservation_queryset(requester, take_all, vehicle_id, _from, _to)
         serializer = SimpleReservationSerializer(queryset, many=True)
@@ -52,7 +53,7 @@ class ReservationViewSet(viewsets.ViewSet):
         """
         Retrieve a reservation.
         """
-        logger.info('Retrieve reservation request received.')
+        logger.info(f'Retrieve reservation request received.')
         requester = self.request.user
         queryset = get_reservation_queryset(requester, take_all=True)
         reservation = get_object_or_404(queryset, pk=pk)
@@ -183,6 +184,26 @@ class ReservationViewSet(viewsets.ViewSet):
 
         delete_reservation(reservation)
         return Response(status=HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['patch'])
+    def finish(self, request, pk=None):
+        """
+        Mark a reservation as finished. The end time will be set to the current time.
+        """
+        logger.info('A reservation has been finished manually.')
+        requester = self.request.user
+        queryset = get_reservation_queryset(requester)
+        reservation = get_object_or_404(queryset, pk=pk)
+
+        if reservation_already_ended(reservation):
+            raise ReservationAlreadyEnded()
+
+        if not reservation_already_started(reservation):
+            raise ReservationHasNotYetStarted()
+
+        reservation.end = now_utc()
+        reservation.save()
+        return Response()
 
     # THIS RESTRICT TO REQUESTER MAKE A RESERVATION OF VEHICLE TYPES THAT HE DOESN'T HAVE ACCESS.
     def get_permissions(self):

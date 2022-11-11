@@ -75,9 +75,12 @@ class DietMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
         self.cell(w, h=5, align='L', txt=txt)
         users = User.objects.filter(tenant=self.tenant, role__in=[Role.USER, Role.ADMIN])
         for user in users:
-            self.set_diets_of_user(user)
+            diets = self.diets.filter(owner=user)
+            if diets:
+                self.set_diets_of_user(user, diets)
 
-    def set_diets_of_user(self, user: User):
+    def set_diets_of_user(self, user: User, diets):
+        self.add_page_if_will_break(20)
         self.ln(10)
         self.set_x(HORIZONTAL_LEFT_MARGIN)
         locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
@@ -85,7 +88,6 @@ class DietMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
         self.set_text_color(1, 41, 102)  # azul oscuro
         w = self.get_string_width(user.fullname)
         self.cell(w, h=5, align='L', txt=user.fullname)
-        diets = self.diets.filter(owner=user)
         self.set_text_color(0, 0, 0)  # negro
         self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=8)
         for diet in diets:

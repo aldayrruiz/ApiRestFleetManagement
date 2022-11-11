@@ -3,13 +3,13 @@ from rest_framework.routers import DefaultRouter
 
 from applications.allowed_vehicles.views import AllowedVehicleViewSet
 from applications.auth.views import AuthViewSet
-from applications.diets.views import DietPaymentViewSet, DietViewSet, DietPhotoViewSet
+from applications.diets.views import DietPaymentViewSet, DietViewSet, DietPhotoViewSet, DietMonthlyPdfReportViewSet
 from applications.incidents.views import IncidentViewSet
 from applications.insurance_companies.views import InsuranceCompanyViewSet
 from applications.reports.views import ReportViewSet
 from applications.reservation_templates.views import ReservationTemplateViewSet
 from applications.reservations.views import ReservationViewSet
-from applications.tenants.views import TenantViewSet
+from applications.tenants.views import TenantViewSet, TenantBillingMonthlyPdfReportViewSet
 from applications.tickets.views import TicketViewSet
 from applications.traccar.views import PositionViewSet, ReservationReportViewSet
 from applications.users.views import UserViewSet, Login, RegistrationViewSet
@@ -30,10 +30,16 @@ router.register(r'reservations/reports', ReservationReportViewSet, basename='rep
 router.register(r'tickets', TicketViewSet, basename='tickets')
 router.register(r'positions', PositionViewSet, basename='positions')
 router.register(r'register', RegistrationViewSet, basename='register')
-router.register(r'reports', ReportViewSet, basename='reports')
+
+# Diets
 router.register(r'diets', DietViewSet, basename='diets')
 router.register(r'diet-payments', DietPaymentViewSet, basename='diet_payments')
 router.register(r'diet-photos', DietPhotoViewSet, basename='diet_photos')
+
+# Informes
+router.register(r'reports', ReportViewSet, basename='reports')
+router.register(r'diet-reports', DietMonthlyPdfReportViewSet, basename='diet_reports')
+router.register(r'billing-reports', TenantBillingMonthlyPdfReportViewSet, basename='billing_reports')
 
 urlpatterns = router.urls
 

@@ -50,6 +50,13 @@ def get_now_utc():
     return datetime.datetime.now().astimezone(timezone)
 
 
+def now_utc():
+    """
+    Returns the current datetime in UTC timezone. This must be used to store in database.
+    """
+    return datetime.datetime.utcnow().astimezone(datetime.timezone.utc)
+
+
 def is_after_now(date):
     now = get_now_utc()
     return now < date
