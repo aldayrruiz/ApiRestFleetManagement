@@ -11,8 +11,8 @@ class DietCompletedSupervisorEmail(EmailSender):
         self.diet = diet
         self.subject = 'Dieta completada'
         self.body = self.get_body()
-        supervisors = self.get_supervisors_emails()
-        super().__init__(supervisors, self.subject)
+        self.supervisors = self.get_supervisors_emails()
+        super().__init__(self.supervisors, self.subject)
 
     def get_supervisors_emails(self):
         supervisors = get_supervisors(self.diet.tenant)
@@ -30,5 +30,7 @@ class DietCompletedSupervisorEmail(EmailSender):
         return body
 
     def send(self):
+        if not self.supervisors:
+            return
         self.attach_html(self.body)
         super().send()

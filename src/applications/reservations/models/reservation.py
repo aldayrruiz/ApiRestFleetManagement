@@ -11,7 +11,7 @@ from applications.vehicles.models.vehicle import Vehicle
 class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=50)
-    date_stored = models.DateField(auto_now_add=True)
+    date_stored = models.DateTimeField(auto_now_add=True)
     start = models.DateTimeField()
     end = models.DateTimeField()
     description = models.TextField(default='', blank=True)

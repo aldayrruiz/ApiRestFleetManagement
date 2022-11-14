@@ -10,8 +10,7 @@ class CreateOrUpdateVehicleSerializer(serializers.Serializer):
     model = serializers.CharField(max_length=50)
     brand = serializers.CharField(max_length=20)
     number_plate = serializers.CharField(max_length=8,
-                                         min_length=7,
-                                         validators=[UniqueValidator(queryset=Vehicle.objects.all())])
+                                         min_length=7)
     is_disabled = serializers.BooleanField(required=False)
     fuel = serializers.ChoiceField(choices=Fuel.choices, required=False)
     type = serializers.ChoiceField(choices=VehicleType.choices, required=False)

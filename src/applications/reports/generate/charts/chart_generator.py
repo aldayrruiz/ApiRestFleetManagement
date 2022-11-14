@@ -16,7 +16,7 @@ class ChartGenerator:
         self.tenant = tenant
         self.admin = get_admins(self.tenant).first()
         self.WORK_HOURS_PER_MONTH = 8 * 22
-        self.vehicles = get_vehicles_queryset(self.admin).order_by('date_stored')
+        self.vehicles = get_vehicles_queryset(self.admin, even_disabled=True).order_by('date_stored')
         self.vehicles_labels = self.get_vehicles_labels()
         self.first_day, self.last_day = get_first_and_last_day_of(self.year, self.month)
         self.first_day, self.last_day = from_naive_to_aware(self.first_day), from_naive_to_aware(self.last_day)

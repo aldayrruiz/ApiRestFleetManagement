@@ -9,6 +9,10 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
 from applications.traccar.models import Device
 from applications.traccar.utils import post, put, delete
+from applications.users.models import ActionType
+from applications.vehicles.exceptions.number_plate_already_in_use import NumberPlateAlreadyInUse
+from applications.vehicles.exceptions.was_created_again import VehicleCreatedAgainError
+from applications.vehicles.models import VehicleRegistrationHistory, Vehicle
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer, DisableVehicleSerializer
@@ -56,7 +60,19 @@ class VehicleViewSet(viewsets.ViewSet):
         logger.info('Create vehicle request received.')
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
+        vehicle = Vehicle.objects.get(number_plate=serializer.initial_data['number_plate'])
 
+        if vehicle and vehicle.is_deleted:
+            # Vehicle already exists but was deleted. We can create it again.
+            VehicleRegistrationHistory.objects.create(vehicle=vehicle, tenant=tenant, action=ActionType.CREATED)
+            vehicle.is_deleted = False
+            vehicle.save()
+            raise VehicleCreatedAgainError()
+        elif vehicle and not vehicle.is_deleted:
+            # Vehicle already exists and is not deleted. We cannot create it again.
+            return NumberPlateAlreadyInUse()
+
+        # Vehicle does not exist. We can create it.
         if not serializer.initial_data.__contains__('gps_device'):
             return Response({'gps_device': ['Este campo es requerido']}, status=HTTP_400_BAD_REQUEST)
 
@@ -72,6 +88,7 @@ class VehicleViewSet(viewsets.ViewSet):
         device = Device(id=j_device['id'], imei=j_device['uniqueId'], name=j_device['name'], tenant=tenant)
         device.save()
         serializer.save(tenant=requester.tenant, gps_device=device)
+        VehicleRegistrationHistory.objects.create(vehicle=vehicle, tenant=tenant, action=ActionType.CREATED)
         return Response(serializer.data)
 
     @swagger_auto_schema(request_body=CreateOrUpdateVehicleSerializer, responses={200: CreateOrUpdateVehicleSerializer()})
@@ -131,7 +148,11 @@ class VehicleViewSet(viewsets.ViewSet):
         response = delete('devices', vehicle.gps_device.id)
         if not response.ok:
             return Response({'errors': 'Error trying to delete gps device'}, status=response.status_code)
-        vehicle.delete()
+
+        # Mark vehicle as deleted and register deleting in history..
+        vehicle.is_deleted = True
+        vehicle.save()
+        VehicleRegistrationHistory.objects.create(vehicle=vehicle, tenant=requester.tenant, action=ActionType.DELETED)
         return Response(status=HTTP_204_NO_CONTENT)
 
     def get_permissions(self):
