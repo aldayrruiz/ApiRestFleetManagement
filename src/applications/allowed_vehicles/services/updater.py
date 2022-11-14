@@ -21,10 +21,6 @@ class AllowedVehiclesUpdater:
         update_allowed_vehicles(user, vehicles)
 
     def get_vehicles_from_ids(self, vehicle_ids):
-        queryset = get_vehicles_queryset(self.requester)
+        queryset = get_vehicles_queryset(self.requester, even_disabled=True)
         new_vehicles = queryset.filter(id__in=vehicle_ids)
         return new_vehicles
-
-
-
-

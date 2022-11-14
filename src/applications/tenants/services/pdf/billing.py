@@ -1,11 +1,10 @@
 import datetime
-
+from dateutil.relativedelta import relativedelta
 from django.template.loader import render_to_string
 from fpdf import HTMLMixin
 
 from applications.tenants.models import Tenant
 from applications.users.models import ActionType
-from applications.vehicles.models import Vehicle
 from shared.pdf.builder import PdfBuilder
 from shared.pdf.constants import HEADER_TOP_MARGIN, DEFAULT_FONT_FAMILY
 from utils.dates import get_number_of_days_in_month
@@ -15,11 +14,11 @@ class TenantBillingMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
 
     def __init__(self, tenant: Tenant, month: int, year: int):
         super().__init__(tenant, month, year)
-        self.users = tenant.users.all()
-        self.vehicles = tenant.vehicles.all()
         self.total_days = get_number_of_days_in_month(self.month, self.year)
         self.first_day_of_this_month = datetime.date(self.year, self.month, 1)
-        self.last_day_of_this_month = datetime.date(self.year, self.month, self.total_days)
+        self.first_day_of_next_month = self.first_day_of_this_month + relativedelta(months=1)
+        self.users = tenant.users.exclude(date_joined__gt=self.first_day_of_next_month)
+        self.vehicles = tenant.vehicles.all()
 
     def generate(self):
         self.add_page()
@@ -62,29 +61,80 @@ class TenantBillingMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
             self.write_html(table, table_line_separators=True)
 
     def get_user_data_table(self):
-        total_days = get_number_of_days_in_month(self.month, self.year)
         rows = []
         total_bill = 0
         for user in self.users:
-            number_of_days = self.get_user_number_of_days_registered(user)
-            units_to_bill = number_of_days / total_days
+            number_of_days = self.get_number_of_days_registered(user)
+            units_to_bill = number_of_days / self.total_days
             total_bill += units_to_bill
             row = {'user': user, 'number_of_days': number_of_days, 'units_to_bill': units_to_bill}
             rows.append(row)
-        n_rows_first_page = 70
-        first_page = rows[:n_rows_first_page]
-        rest_pages_rows = rows[n_rows_first_page:]
-        default_n_rows = 80
-        rest_pages = [rest_pages_rows[i:i + default_n_rows] for i in range(0, len(rest_pages_rows), default_n_rows)]
-        pages = [first_page]
-        pages.extend(rest_pages)
+        pages = self.divide_into_pages(rows, 70, 80)
         return pages, total_bill
 
-    def get_user_number_of_days_registered(self, user):
-        history = user.registration_history.all()
+    def set_table_of_vehicles(self, y: int):
+        """
+        Generate a table with the list of vehicles and their billing information.
+
+        :param y: y position of the table
+        :return:
+        """
+        self.set_subtitle('Listado de vehículos', y)
+        self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=6)
+        self.set_text_color(0, 0, 0)  # negro
+        # Get Data table: Pages: [70 rows, 80 rows, 80 rows, ...]
+        pages, total = self.get_vehicle_data_table()
+        n_pages = len(pages)
+        table = render_to_string('billing/vehicles_table.html', {'data': pages[0], 'total': total, 'last_page': 1 == n_pages})
+        table = table.replace('\n', '')
+        self.set_y(y + 10)
+        self.write_html(table, table_line_separators=True)
+
+        for i, data in enumerate(pages[1:], 1):
+            self.add_page()
+            table = render_to_string('billing/vehicles_table.html', {'data': data, 'total': total, 'last_page': i == n_pages - 1})
+            self.set_y(30)
+            self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=6)
+            self.write_html(table, table_line_separators=True)
+
+    def get_vehicle_data_table(self):
+        rows = []
+        total_bill = 0
+        for vehicle in self.vehicles:
+            number_of_days = self.get_number_of_days_registered(vehicle)
+            units_to_bill = number_of_days / self.total_days
+            total_bill += units_to_bill
+            row = {'vehicle': vehicle, 'number_of_days': number_of_days, 'units_to_bill': units_to_bill}
+            rows.append(row)
+        pages = self.divide_into_pages(rows, 70, 80)
+        return pages, total_bill
+
+    def divide_into_pages(self, rows, first, default):
+        """
+        Divide an array of rows into an array of pages, where each page has a maximum number of rows.
+        The first array will have a different number of rows than the rest of the arrays.
+
+        :param rows: Rows to divide
+        :param first: Number of rows to first array
+        :param default: Number of rows to default array
+        :return: Return a list of arrays [first, default, default, ...]
+        """
+        first_page = rows[:first]
+        rest_pages_rows = rows[first:]
+        rest_pages = [rest_pages_rows[i:i + default] for i in range(0, len(rest_pages_rows), default)]
+        pages = [first_page]
+        pages.extend(rest_pages)
+        return pages
+
+    def get_number_of_days_registered(self, obj):
+        history = obj.registration_history.exclude(date__gt=self.first_day_of_next_month).order_by('-date').all()
+        last_registry = history.first()
+
+        # Error: No hay registro de alta
+        if not last_registry:
+            raise Exception(f'No hay registro de alta para {obj}')
 
         # Si el último registro que se tiene es de meses anteriores.
-        last_registry = history.first()
         if last_registry.date < datetime.datetime(self.year, self.month, 1, 0, 0, 0, 0, tzinfo=datetime.timezone.utc):
             # Y este mismo ha sido borrado en meses anteriores.
             if last_registry.action == ActionType.DELETED:
@@ -122,55 +172,3 @@ class TenantBillingMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
             number_of_days += datetime.timedelta(self.total_days)
 
         return number_of_days.days
-
-    def set_table_of_vehicles(self, y: int):
-        """
-        Generate a table with the list of vehicles and their billing information.
-
-        :param y: y position of the table
-        :return:
-        """
-        self.set_subtitle('Listado de vehículos', y)
-        self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=6)
-        self.set_text_color(0, 0, 0)  # negro
-        # Get Data table: Pages: [70 rows, 80 rows, 80 rows, ...]
-        pages, total = self.get_vehicle_data_table()
-        n_pages = len(pages)
-        table = render_to_string('billing/vehicles_table.html', {'data': pages[0], 'total': total, 'last_page': 1 == n_pages})
-        table = table.replace('\n', '')
-        self.set_y(y + 10)
-        self.write_html(table, table_line_separators=True)
-
-        for i, data in enumerate(pages[1:], 1):
-            self.add_page()
-            table = render_to_string('billing/vehicles_table.html', {'data': data, 'total': total, 'last_page': i == n_pages - 1})
-            self.set_y(30)
-            self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=6)
-            self.write_html(table, table_line_separators=True)
-
-    def get_vehicle_data_table(self):
-        rows = []
-        total_bill = 0
-        for vehicle in self.vehicles:
-            number_of_days = self.get_vehicle_number_of_days_registered(vehicle)
-            units_to_bill = number_of_days / self.total_days
-            total_bill += units_to_bill
-            row = {'vehicle': vehicle, 'number_of_days': number_of_days, 'units_to_bill': units_to_bill}
-            rows.append(row)
-        n_rows_first_page = 70
-        first_page = rows[:n_rows_first_page]
-        rest_pages_rows = rows[n_rows_first_page:]
-        default_n_rows = 80
-        rest_pages = [rest_pages_rows[i:i + default_n_rows] for i in range(0, len(rest_pages_rows), default_n_rows)]
-        pages = [first_page]
-        pages.extend(rest_pages)
-        return pages, total_bill
-
-    def get_vehicle_number_of_days_registered(self, vehicle: Vehicle):
-        created = vehicle.date_stored
-        if created < datetime.date(self.year, self.month, 1):
-            return get_number_of_days_in_month(self.month, self.year)
-        elif self.first_day_of_this_month >= created <= self.last_day_of_this_month:
-            return get_number_of_days_in_month(self.month, self.year) - created.day
-        else:
-            return 0

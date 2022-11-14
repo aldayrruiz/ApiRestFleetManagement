@@ -31,9 +31,10 @@ class Vehicle(models.Model):
 
     tenant = models.ForeignKey(Tenant, related_name='vehicles', on_delete=models.CASCADE)
 
-    date_stored = models.DateField(auto_now_add=True)
+    date_stored = models.DateTimeField(auto_now_add=True)
 
     is_disabled = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
 
     type = models.CharField(
         max_length=20,
