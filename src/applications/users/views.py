@@ -168,7 +168,10 @@ class RegistrationViewSet(viewsets.ViewSet):
         logger.info('Register user request received.')
         serializer = RegistrationSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-        user = User.objects.get(email=serializer.initial_data['email'])
+        try:
+            user = User.objects.get(email=serializer.initial_data['email'])
+        except User.DoesNotExist:
+            user = None
         if user and user.is_deleted:
             # User already exists
             UserRegistrationHistory.objects.create(user=user, tenant=user.tenant, action=ActionType.CREATED)
