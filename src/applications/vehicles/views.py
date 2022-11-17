@@ -60,7 +60,10 @@ class VehicleViewSet(viewsets.ViewSet):
         logger.info('Create vehicle request received.')
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-        vehicle = Vehicle.objects.get(number_plate=serializer.initial_data['number_plate'])
+        try:
+            vehicle = Vehicle.objects.get(number_plate=serializer.initial_data['number_plate'])
+        except Vehicle.DoesNotExist:
+            vehicle = None
 
         if vehicle and vehicle.is_deleted:
             # Vehicle already exists but was deleted. We can create it again.
