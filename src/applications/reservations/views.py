@@ -23,6 +23,7 @@ from applications.reservations.services.recurrent.recurrent import RecurrentRese
 from applications.reservations.services.recurrent.recurrent_config import RecurrentConfiguration
 from applications.reservations.services.timer import reservation_already_ended, reservation_already_started
 from applications.vehicles.exceptions.no_vehicles_available import NoVehiclesAvailableError
+from shared.pagination.default import StandardResultsSetPagination
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled, ONLY_AUTHENTICATED
 from utils.api.query import query_bool, query_date, query_str
 from utils.dates import is_after_now, now_utc
@@ -221,3 +222,16 @@ class ReservationViewSet(viewsets.ViewSet):
         if vehicle.is_disabled:
             logger.error('Cannot reserve a vehicle disabled: {} {}'.format(vehicle.brand, vehicle.model))
             raise CannotReserveVehicleDisabled()
+
+
+class NewReservationViewSet(viewsets.ModelViewSet):
+    serializer_class = SimpleReservationSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        requester = self.request.user
+        take_all = query_bool(self.request, 'takeAll')
+        vehicle_id = query_str(self.request, 'vehicleId')
+        _from = query_date(self.request, 'from')
+        _to = query_date(self.request, 'to')
+        return get_reservation_queryset(requester, take_all, vehicle_id, _from, _to)
