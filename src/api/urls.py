@@ -8,7 +8,7 @@ from applications.incidents.views import IncidentViewSet
 from applications.insurance_companies.views import InsuranceCompanyViewSet
 from applications.reports.views import ReportViewSet
 from applications.reservation_templates.views import ReservationTemplateViewSet
-from applications.reservations.views import ReservationViewSet
+from applications.reservations.views import ReservationViewSet, NewReservationViewSet
 from applications.tenants.views import TenantViewSet, TenantBillingMonthlyPdfReportViewSet
 from applications.tickets.views import TicketViewSet
 from applications.traccar.views import PositionViewSet, ReservationReportViewSet
@@ -26,6 +26,8 @@ router.register(r'users/allowed-vehicles', AllowedVehicleViewSet, basename='allo
 router.register(r'reservation-templates', ReservationTemplateViewSet, basename='reservation_templates')
 router.register(r'incidents', IncidentViewSet, basename='incidents')
 router.register(r'reservations', ReservationViewSet, basename='reservations')
+router.register(r'new_reservations', NewReservationViewSet, basename='new_reservations')
+
 router.register(r'reservations/reports', ReservationReportViewSet, basename='reports')
 router.register(r'tickets', TicketViewSet, basename='tickets')
 router.register(r'positions', PositionViewSet, basename='positions')

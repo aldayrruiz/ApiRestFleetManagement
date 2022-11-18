@@ -13,20 +13,25 @@ from utils.email.tickets.reservation_deleted import send_reservation_deleted_ema
 logger = logging.getLogger(__name__)
 
 
-def solve_ticket(ticket, new_status):
+def solve_ticket(ticket, status):
     reservation = ticket.reservation
     if reservation_already_started(reservation):
         raise ReservationAlreadyStarted()
 
-    if new_status == TicketStatus.UNSOLVED:
+    if status == TicketStatus.UNSOLVED:
         logger.exception('Cannot solve a ticket with status UNSOLVED')
-    elif new_status == TicketStatus.ACCEPTED:
+    elif status == TicketStatus.ACCEPTED:
         send_reservation_deleted_email(reservation)
         send_accepted_ticket_email(ticket)
-        ticket.delete()
-        delete_reservation(reservation, new_ticket_st=TicketStatus.DENIED)
-    elif new_status == TicketStatus.DENIED:
+        # Update ticket status
+        ticket.status = status
+        ticket.save()
+        # Delete reservation and send emails to users which have a ticket into reservation that their ticket was denied.
+        reservation.delete()
+    elif status == TicketStatus.DENIED:
+        # Update ticket status
+        ticket.status = status
+        ticket.save()
         send_denied_ticket_email(ticket)
-        ticket.delete()
     else:
         raise ValidationError('Unknown ticket status')

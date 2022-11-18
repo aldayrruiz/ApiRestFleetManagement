@@ -69,6 +69,16 @@ class TicketViewSet(viewsets.ViewSet):
         admins = get_admins(tenant)
         for admin in admins:
             send_created_ticket_email(admin, ticket)
+
+        # Save data from reservation to ticket (In case reservation is deleted)
+        ticket.reservation_start = reservation.start
+        ticket.reservation_end = reservation.end
+        ticket.reservation_owner = reservation.owner
+        ticket.reservation_vehicle = reservation.vehicle
+        ticket.reservation_title = reservation.title
+        ticket.reservation_description = reservation.description
+        ticket.save()
+
         return Response(serializer.data)
 
     @swagger_auto_schema()
