@@ -73,7 +73,7 @@ class VehicleViewSet(viewsets.ViewSet):
             raise VehicleCreatedAgainError()
         elif vehicle and not vehicle.is_deleted:
             # Vehicle already exists and is not deleted. We cannot create it again.
-            return NumberPlateAlreadyInUse()
+            raise NumberPlateAlreadyInUse()
 
         # Vehicle does not exist. We can create it.
         if not serializer.initial_data.__contains__('gps_device'):
