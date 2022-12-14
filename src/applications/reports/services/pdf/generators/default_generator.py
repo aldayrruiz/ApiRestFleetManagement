@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 
 class DefaultChartImages:
     def __init__(self,
-                 distance_max_average_speed_images: list[str],
-                 fuel_consumed_images: list[str],
-                 punctuality_images: list[str],
-                 use_of_vehicles_without_reservation_images: list[str],
-                 use_of_vehicles_by_vehicles_images: list[str],
+                 distance_max_average_speed_images,
+                 fuel_consumed_images,
+                 punctuality_images,
+                 use_of_vehicles_without_reservation_images,
+                 use_of_vehicles_by_vehicles_images,
                  ):
         self.distance_max_average_speed_images = distance_max_average_speed_images
         self.fuel_consumed_images = fuel_consumed_images
