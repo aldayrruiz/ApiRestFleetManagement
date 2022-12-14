@@ -15,7 +15,7 @@ previous_month = now - relativedelta(months=1)
 month = previous_month.month
 year = previous_month.year
 
-tenants = Tenant.objects.filter(name='Pruebas BLUE')
+tenants = Tenant.objects.all()
 
 
 for tenant in tenants:
