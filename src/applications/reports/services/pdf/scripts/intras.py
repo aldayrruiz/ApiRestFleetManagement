@@ -84,6 +84,12 @@ pdf.generate()
 path = ReportsPdfPath.get_pdf(tenant, month, year)
 pdf.output(path)
 
+# If report is already generated delete pdf and update report
+report = MonthlyReport.objects.filter(tenant=tenant, month=month, year=year).first()
+if report:
+    os.remove(report.pdf)
+    report.delete()
+
 # Guardar información sobre el pdf (localización y mes)
 report = MonthlyReport(pdf=path, month=month, year=year, tenant=tenant)
 report.save()
