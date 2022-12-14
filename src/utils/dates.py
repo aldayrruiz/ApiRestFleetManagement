@@ -77,3 +77,15 @@ def get_hours_duration(start, end):
     duration = relativedelta(end, start)
     hours = duration.days * 24 + duration.minutes / 60 + duration.hours
     return hours
+
+
+def from_date_to_utc(year, month, day, hour, minute=0, second=0):
+    """
+    Returns a datetime object in UTC timezone. For example, if the server is in UTC+2, and the
+    parameters are 2020, 1, 1, 0, 0, 0, the returned datetime will be 2019-12-31 22:00:00.
+    """
+    local = pytz.timezone('Europe/Madrid')
+    naive = datetime.datetime(year, month, day, hour, minute, second)
+    local_dt = local.localize(naive)
+    utc_dt = local_dt.astimezone(pytz.utc)
+    return utc_dt

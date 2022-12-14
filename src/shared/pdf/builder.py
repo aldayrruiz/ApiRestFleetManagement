@@ -1,15 +1,19 @@
 import calendar
 import locale
+import logging
 
 from fpdf import FPDF
+from PIL import Image
 
 from applications.tenants.models import Tenant
 from fleet_management.settings.base import BASE_DIR
-from applications.reports.generate.reports import ReportsPdfPath
+from applications.reports.services.pdf.reports import ReportsPdfPath
 from shared.pdf.constants import HORIZONTAL_LEFT_MARGIN, HEADER_TOP_MARGIN, PDF_W, DEFAULT_FONT_FAMILY, WRITABLE_WIDTH, PDF_H
 
 
 BLUE_DRIVERS_LOGO = ReportsPdfPath.get_logo('BLUEDrivers.png')
+
+logger = logging.getLogger(__name__)
 
 
 class PdfBuilder(FPDF):
@@ -60,6 +64,53 @@ class PdfBuilder(FPDF):
         self.set_text_color(46, 152, 209)  # azul
         w = self.get_string_width(txt)
         self.cell(w, h=5, align='L', txt=txt)
+
+    def set_graph(self, title, description, filename, y):
+        self.set_subtitle(title, y)
+        # Colocar la imagen en el pdf. Estará centrada y con una anchura 4/6 del pdf.
+        x = (1 / 6) * PDF_W
+        y = y + 5
+
+        image = Image.open(filename)
+        width, height = image.size
+        w = (4 / 6) * PDF_W
+        h = height * w / width
+
+        self.set_xy(x, y)
+        self.image(filename, x, y, w, h)
+
+        # Colocar la descripción de la imagen en el pdf.
+        y_text = y + h
+        self.set_fig_caption(description, y_text)
+
+    def set_double_graph(self, title, description, filename1, filename2, y):
+        self.set_subtitle(title, y)
+        # Colocar la imagen en el pdf. Estará centrada y con una anchura 4/6 del pdf.
+        x = HORIZONTAL_LEFT_MARGIN
+        y = y + 5
+
+        image1 = Image.open(filename1)
+        image2 = Image.open(filename2)
+        width1, height1 = image1.size
+        width2, height2 = image2.size
+
+        if width1 != width2 or height1 != height2 or width1 != height2:
+            logger.error(f'Tamaño de la primera imagen: {width1}x{height1}')
+            logger.error(f'Tamaño de la segunda imagen: {width2}x{height2}')
+            logger.error('La altura y anchura debe ser igual. Las imágenes deben tener el mismo tamaño')
+
+        horizontal_sep_images = 1
+        w = (WRITABLE_WIDTH - horizontal_sep_images) / 2
+        h = height1 * w / width1
+
+        self.set_xy(x, y)
+        self.image(filename1, x, y, w, h)
+        x = x + w + horizontal_sep_images
+        self.image(filename2, x, y, w, h)
+
+        # Colocar la descripción de la imagen en el pdf.
+        y_text = y + h
+        self.set_fig_caption(description, y_text)
 
     def set_fig_caption(self, txt: str, y: int):
         # Colocar la descripción de la imagen en el pdf.

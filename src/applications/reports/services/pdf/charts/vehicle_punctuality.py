@@ -7,7 +7,8 @@ import plotly.graph_objects as go
 from dateutil import parser
 from plotly.subplots import make_subplots
 
-from applications.reports.generate.charts.chart_generator import ChartGenerator
+from applications.reports.services.pdf.charts.chart_generator import ChartGenerator
+from applications.reports.services.pdf.configuration.chart_configuration import HoursChartConfiguration
 from applications.reports.services.punctuality import PunctualityHelpers
 from applications.tenants.models import Tenant
 from applications.traccar.services.api import TraccarAPI
@@ -18,36 +19,46 @@ logger = logging.getLogger(__name__)
 
 class PunctualityChart(ChartGenerator):
 
-    def __init__(self, tenant: Tenant, month: int, year: int):
-        super().__init__(tenant, month, year)
+    def __init__(self, tenant: Tenant, month: int, year: int, hour_config: HoursChartConfiguration = None,
+                 by: str = 'vehicle',
+                 n_values: int = 25,
+                 orientation: str = 'h'):
+        super().__init__(tenant, month, year, hour_config, by, n_values, orientation)
         self.takes_out, self.takes_in, self.not_taken, self.frees_out, self.frees_in = self.get_hours()
 
-    def generate_image(self, filename):
+    def generate_image(self, filename, start, end, i):
         fig = make_subplots()
-        takes_out_scatter = self.get_takes_out_scatter()
-        takes_in_scatter = self.get_takes_in_scatter()
-        frees_out_scatter = self.get_frees_out_scatter()
-        frees_in_scatter = self.get_frees_in_scatter()
-        not_taken_scatter = self.get_not_taken_scatter()
+        takes_out_scatter = self.get_takes_out_scatter(start, end)
+        takes_in_scatter = self.get_takes_in_scatter(start, end)
+        frees_out_scatter = self.get_frees_out_scatter(start, end)
+        frees_in_scatter = self.get_frees_in_scatter(start, end)
+        not_taken_scatter = self.get_not_taken_scatter(start, end)
         traces = [takes_out_scatter, takes_in_scatter, not_taken_scatter, frees_out_scatter, frees_in_scatter]
         fig.add_traces(traces)
         fig.update_layout(legend=dict(y=-0.3, yanchor="bottom", xanchor="center", x=0.5))
-        fig.update_yaxes(title_text='Tiempo (horas)')
-        fig.write_image(f'{filename}', width=1000, height=800)
-        img = cv2.imread(f'{filename}')
-        cropped = img[80:-10, :]
-        cv2.imwrite(f'{filename}', cropped)
+        fig.update_layout(plot_bgcolor='rgb(255,255,255)')
+        self.update_axes(fig)
+        fig.write_image(f'{filename}{i}.png', width=1000, height=800)
+        self.remove_image_header(f'{filename}{i}.png', bottom=-10)
+        self.images.append(f'{filename}{i}.png')
         logger.info('PunctualityChart image generated')
+
+    def update_axes(self, fig):
+        if self.orientation == 'h':
+            fig.update_xaxes(title_text='Tiempo (horas)')
+        else:
+            fig.update_yaxes(title_text='Tiempo (horas)')
 
     def get_hours(self):
         takes_out, takes_in = [], []  # Tomar el vehículo FUERA y DENTRO de la hora de la reserva.
         frees_out, frees_in = [], []  # Liberar el vehículo FUERA y DENTRO de la hora de la reserva.
         not_taken = []
 
-        for vehicle in self.vehicles:
-            reservations = vehicle.reservations.filter(end__gt=self.first_day, start__lt=self.last_day)
-            reservations_ordered_by_start = reservations.order_by('start')
-            punctualities = self.get_punctuality_from_reservations(reservations_ordered_by_start)
+        objs = self.filter_by.get_data()
+
+        for obj in objs:
+            reservations = self.filter_by.filter(self.all_reservations, obj)
+            punctualities = self.get_punctuality_from_reservations(reservations)
             takes_out.append(punctualities[0])
             takes_in.append(punctualities[1])
             frees_out.append(punctualities[2])
@@ -59,8 +70,8 @@ class PunctualityChart(ChartGenerator):
         takes_out, takes_in = 0, 0
         frees_out, frees_in = 0, 0
         not_taken = 0
-        for i, reservation in enumerate(reservations):
-            previous_reservation, next_reservation = PunctualityHelpers.get_closer_reservations(reservations, i)
+        for reservation in reservations:
+            previous_reservation, next_reservation = PunctualityHelpers.get_closer_reservations(reservation)
             [t_hours_out, t_hours_in, t_not_taken] = self.get_takes_punctuality(previous_reservation, reservation,
                                                                                 next_reservation)
             [f_hours_out, f_hours_in] = self.get_frees_punctuality(previous_reservation, reservation, next_reservation)
@@ -156,40 +167,33 @@ class PunctualityChart(ChartGenerator):
             hours_out = get_hours_duration(end, trip_end)
             return [hours_out, 0]
 
-    def get_takes_in_scatter(self):
-        return go.Scatter(x=self.vehicles_labels,
-                          y=self.takes_in,
-                          name='Inicio del servicio después del tiempo de reserva',
-                          mode='lines+markers',
-                          marker=dict(symbol='circle', size=10, color='green'))
+    def get_takes_in_scatter(self, start, end):
+        x, y = self.get_xy(self.takes_in)
+        return self.get_scatter(x, y, 'Inicio del servicio después del tiempo de reserva', 'green', start, end)
 
-    def get_takes_out_scatter(self):
-        return go.Scatter(x=self.vehicles_labels,
-                          y=self.takes_out,
-                          name='Inicio del servicio antes del tiempo de reserva',
-                          mode='lines+markers',
-                          marker=dict(symbol='circle', size=10, color='red'))
+    def get_takes_out_scatter(self, start, end):
+        x, y = self.get_xy(self.takes_out)
+        return self.get_scatter(x, y, 'Inicio del servicio antes del tiempo de reserva', 'red', start, end)
 
-    def get_frees_in_scatter(self):
-        return go.Scatter(x=self.vehicles_labels,
-                          y=self.frees_in,
-                          name='Fin del servicio antes del tiempo de reserva',
-                          mode='lines+markers',
-                          marker=dict(symbol='circle', size=10, color='blue'))
+    def get_frees_in_scatter(self, start, end):
+        x, y = self.get_xy(self.frees_in)
+        return self.get_scatter(x, y, 'Fin del servicio antes del tiempo de reserva', 'blue', start, end)
 
-    def get_frees_out_scatter(self):
-        return go.Scatter(x=self.vehicles_labels,
-                          y=self.frees_out,
-                          name='Fin del servicio después del tiempo de reserva',
-                          mode='lines+markers',
-                          marker=dict(symbol='circle', size=10, color='orange'))
+    def get_frees_out_scatter(self, start, end):
+        x, y = self.get_xy(self.frees_out)
+        return self.get_scatter(x, y, 'Fin del servicio después del tiempo de reserva', 'orange', start, end)
 
-    def get_not_taken_scatter(self):
-        return go.Scatter(x=self.vehicles_labels,
-                          y=self.not_taken,
-                          name='Sin servicio en tiempo de reserva',
+    def get_not_taken_scatter(self, start, end):
+        x, y = self.get_xy(self.not_taken)
+        return self.get_scatter(x, y, 'Sin servicio en tiempo de espera', 'black', start, end)
+
+    def get_scatter(self, x, y, name, color, start, end):
+        return go.Scatter(x=x[start:end],
+                          y=y[start:end],
+                          name=name,
                           mode='lines+markers',
-                          marker=dict(symbol='circle', size=10, color='black'))
+                          marker=dict(symbol='circle', size=10, color=color),
+                          orientation=self.orientation)
 
     def get_stats(self):
         return np.array(self.takes_out, np.float), \

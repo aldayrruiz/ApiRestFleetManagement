@@ -90,7 +90,7 @@ class VehicleViewSet(viewsets.ViewSet):
         j_device = response.json()
         device = Device(id=j_device['id'], imei=j_device['uniqueId'], name=j_device['name'], tenant=tenant)
         device.save()
-        serializer.save(tenant=requester.tenant, gps_device=device)
+        vehicle = serializer.save(tenant=requester.tenant, gps_device=device)
         VehicleRegistrationHistory.objects.create(vehicle=vehicle, tenant=tenant, action=ActionType.CREATED)
         return Response(serializer.data)
 

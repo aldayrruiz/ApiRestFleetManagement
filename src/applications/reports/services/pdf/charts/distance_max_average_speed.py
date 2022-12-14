@@ -1,44 +1,47 @@
 import logging
-import math
 import time
 
-import cv2
+import math
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from applications.reports.generate.charts.chart_generator import ChartGenerator
 from applications.reports.services.measure import from_meters_to_kilometers, from_knots_to_kph
+from applications.reports.services.pdf.charts.chart_generator import ChartGenerator
+from applications.reports.services.pdf.configuration.chart_configuration import HoursChartConfiguration
 from applications.tenants.models import Tenant
-from applications.traccar.utils import report_units_converter
 from applications.traccar.services.api import TraccarAPI
+from applications.traccar.utils import report_units_converter
 
 logger = logging.getLogger(__name__)
 
 
 class DistanceMaxAverageSpeedChart(ChartGenerator):
 
-    def __init__(self, tenant: Tenant, month: int, year: int):
-        super().__init__(tenant, month, year)
+    def __init__(self, tenant: Tenant, month: int, year: int, hour_config: HoursChartConfiguration = None,
+                 by: str = 'vehicle',
+                 n_values: int = 25,
+                 orientation: str = 'h'):
+        super().__init__(tenant, month, year, hour_config, by, n_values, orientation)
         self.distances, self.max_speeds, self.average_speeds = self.get_reports()
 
-    def generate_image(self, filename):
-        bar = self.get_distance_bar()
-        scatter1 = self.get_max_speed_scatter()
-        scatter2 = self.get_average_speed_scatter()
+    def generate_image(self, filename, start, end, i):
+        # This chart cannot be horizontal
+        bar = self.get_distance_bar(start, end)
+        scatter1 = self.get_max_speed_scatter(start, end)
+        scatter2 = self.get_average_speed_scatter(start, end)
         traces = [bar, scatter1, scatter2]
         secondary_ys = [False, True, True]
         fig = make_subplots(specs=[[{'secondary_y': True}]])
         fig.add_traces(traces, secondary_ys=secondary_ys)
         fig.update_layout(title_text='Distancia y velocidad de vehículos')
+        fig.update_layout(plot_bgcolor='rgb(255,255,255)')
         fig.update_yaxes(showgrid=False)
         fig.update_yaxes(title_text='Distancia (km)', secondary_y=False)
         fig.update_yaxes(title_text='Velocidad (km/h)', secondary_y=True)
-        fig.write_image(f'{filename}')
-        img = cv2.imread(f'{filename}')
-        cropped = img[80:-20, :]
-        cv2.imwrite(f'{filename}', cropped)
-        logger.info('DistanceMaxAverageSpeedChart image generated')
+        fig.write_image(f'{filename}{i}.png')
+        self.remove_image_header(f'{filename}{i}.png')
+        self.images.append(f'{filename}{i}.png')
 
     def get_reports(self):
         distances, max_speeds, average_speeds = [], [], []
@@ -51,8 +54,8 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
 
     def get_monthly_report(self, vehicle):
         distances, max_speeds, average_speeds = [0], [0], [0]
-        reservations = vehicle.reservations.filter(start__month=self.month, start__year=self.year)
-        for reservation in reservations.reverse():
+        reservations = self.all_reservations.filter(vehicle=vehicle)
+        for reservation in reservations:
             device_id = reservation.vehicle.gps_device_id
 
             reports = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/summary').json()
@@ -81,37 +84,43 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
         total_average_speed = math.floor(np.mean(np.array(average_speeds)))
         return total_distance, total_max_speed, total_average_speed
 
-    def get_distance_bar(self):
+    def get_distance_bar(self, start, end):
+        x, y = self.get_xy(self.distances)
         return go.Bar(
-            x=self.vehicles_labels,
-            y=self.distances,
+            x=x[start:end],
+            y=y[start:end],
+            marker=dict(color='#a6bde3'),
             name='Distancia (km)',
-            opacity=0.4,
-            text=self.distances,
-            textposition='auto'
+            text=self.distances[start:end],
+            textposition='auto',
+            orientation=self.orientation
         )
 
-    def get_max_speed_scatter(self):
+    def get_max_speed_scatter(self, start, end):
+        x, y = self.get_xy(self.max_speeds)
         return go.Scatter(
-            x=self.vehicles_labels,
-            y=self.max_speeds,
+            x=x[start:end],
+            y=y[start:end],
             name='Vel. Max (km/h)',
             mode='lines+markers+text',
-            text=self.max_speeds,
+            text=self.max_speeds[start:end],
             textposition='bottom center',
             textfont=dict(color='red'),
-            marker=dict(symbol='triangle-up', size=10, color='red')
+            marker=dict(symbol='triangle-up', size=10, color='red'),
+            orientation=self.orientation
         )
 
-    def get_average_speed_scatter(self):
+    def get_average_speed_scatter(self, start, end):
+        x, y = self.get_xy(self.average_speeds)
         return go.Scatter(
-            x=self.vehicles_labels,
-            y=self.average_speeds,
+            x=x[start:end],
+            y=y[start:end],
             name='Vel. Med (km/h)',
             mode='lines+markers+text',
-            text=self.average_speeds,
+            text=self.average_speeds[start:end],
             textposition='bottom center',
-            marker=dict(symbol='square', size=10, color='grey')
+            marker=dict(symbol='square', size=10, color='grey'),
+            orientation=self.orientation
         )
 
     def get_stats(self):

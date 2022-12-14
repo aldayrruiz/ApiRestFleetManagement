@@ -2,6 +2,8 @@ import logging
 
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
+
+from applications.reservations.models import Reservation
 from applications.traccar.services.api import TraccarAPI
 
 
@@ -81,13 +83,9 @@ class PunctualityHelpers:
         return hours
 
     @staticmethod
-    def get_closer_reservations(reservations, index):
-        try:
-            previous_reservation = reservations[index - 1]
-        except ValueError or IndexError:
-            previous_reservation = None
-        try:
-            next_reservation = reservations[index + 1]
-        except IndexError:
-            next_reservation = None
+    def get_closer_reservations(reservation: Reservation):
+        vehicle = reservation.vehicle
+        reservations = Reservation.objects.filter(vehicle=vehicle).order_by('start')
+        previous_reservation = reservations.filter(start__lt=reservation.start).last()
+        next_reservation = reservations.filter(start__gt=reservation.start).first()
         return previous_reservation, next_reservation
