@@ -3,6 +3,8 @@ import os
 
 from dateutil.relativedelta import relativedelta
 
+from applications.reports.models import MonthlyReport
+from applications.reports.services.emails.report import VehicleUseReportEmail
 from applications.reports.services.pdf.charts.distance_max_average_speed import DistanceMaxAverageSpeedChart
 from applications.reports.services.pdf.charts.fuel_consumed import FuelConsumedChart
 from applications.reports.services.pdf.charts.use_without_reservation import UseWithoutReservationChart
@@ -67,10 +69,19 @@ for tenant in tenants:
     path = ReportsPdfPath.get_pdf(tenant, month, year)
     pdf.output(path)
 
+    # If report is already generated delete pdf and update report
+    report = MonthlyReport.objects.filter(tenant=tenant, month=month, year=year).first()
+    if report:
+        os.remove(report.pdf)
+        report.delete()
+
     # Guardar información sobre el pdf (localización y mes)
-    # report = MonthlyReport(pdf=path, month=month, year=year, tenant=tenant)
-    # report.save()
-    #
+    report = MonthlyReport(pdf=path, month=month, year=year, tenant=tenant)
+    report.save()
+
+    sender = VehicleUseReportEmail(tenant, report)
+    sender.send()
+
     # # Guardar información sobre las estadísticas del mes para luego obtener la del año.
     # distances, max_speeds, average_speeds = chart1.get_stats()
     # th_reserved_hours, th_free_hours = chart3.get_stats()

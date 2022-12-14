@@ -1,3 +1,5 @@
+import os
+
 from dateutil.relativedelta import relativedelta
 
 from applications.diets.models import DietMonthlyPdfReport
@@ -22,6 +24,13 @@ for tenant in tenants:
     pdf.generate()
     path = DietsPdfPath.get_pdf(tenant, month, year)
     pdf.output(path)
+
+    # If report is already generated delete pdf and update report
+    report = DietMonthlyPdfReport.objects.filter(tenant=tenant, month=month, year=year).first()
+    if report:
+        os.remove(report.pdf)
+        report.delete()
+
     # Guardar información sobre el pdf (path, fecha)
     report = DietMonthlyPdfReport(pdf=path, month=month, year=year, tenant=tenant)
     report.save()
