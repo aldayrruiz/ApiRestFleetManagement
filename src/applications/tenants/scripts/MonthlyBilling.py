@@ -22,14 +22,14 @@ for tenant in tenants:
     # Generar informe pdf
     pdf = TenantBillingMonthlyPdfReportGenerator(tenant, month, year)
     pdf.generate()
-    path = TenantBillingMonthlyPdfReportPath.get_pdf(tenant, month, year)
-    pdf.output(path)
 
     # If report is already generated delete pdf and update report
     report = TenantBillingMonthlyPdfReport.objects.filter(tenant=tenant, month=month, year=year).first()
     if report:
-        os.remove(report.pdf)
         report.delete()
+
+    path = TenantBillingMonthlyPdfReportPath.get_pdf(tenant, month, year)
+    pdf.output(path)
 
     # Guardar información sobre el pdf (path, fecha)
     report = TenantBillingMonthlyPdfReport(pdf=path, month=month, year=year, tenant=tenant)

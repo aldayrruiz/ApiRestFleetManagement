@@ -81,14 +81,14 @@ image_charts = IntrasChartImages(distance_max_average_speed_images=distance_max_
                                  use_of_vehicles_by_user_images=use_of_vehicles_by_users_chart.images)
 pdf = IntrasUseOfVehiclesReportPdf(tenant, month, year, image_charts)
 pdf.generate()
-path = ReportsPdfPath.get_pdf(tenant, month, year)
-pdf.output(path)
 
 # If report is already generated delete pdf and update report
 report = MonthlyReport.objects.filter(tenant=tenant, month=month, year=year).first()
 if report:
-    os.remove(report.pdf)
     report.delete()
+
+path = ReportsPdfPath.get_pdf(tenant, month, year)
+pdf.output(path)
 
 # Guardar información sobre el pdf (localización y mes)
 report = MonthlyReport(pdf=path, month=month, year=year, tenant=tenant)

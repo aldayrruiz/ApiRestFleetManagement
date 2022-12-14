@@ -66,14 +66,14 @@ for tenant in tenants:
     )
     pdf = DefaultUseOfVehiclesReportPdf(tenant, month, year, chart_images)
     pdf.generate()
-    path = ReportsPdfPath.get_pdf(tenant, month, year)
-    pdf.output(path)
 
     # If report is already generated delete pdf and update report
     report = MonthlyReport.objects.filter(tenant=tenant, month=month, year=year).first()
     if report:
-        os.remove(report.pdf)
         report.delete()
+
+    path = ReportsPdfPath.get_pdf(tenant, month, year)
+    pdf.output(path)
 
     # Guardar información sobre el pdf (localización y mes)
     report = MonthlyReport(pdf=path, month=month, year=year, tenant=tenant)
