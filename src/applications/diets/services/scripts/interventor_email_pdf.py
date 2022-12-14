@@ -22,14 +22,14 @@ for tenant in tenants:
     # Generar informe pdf
     pdf = DietMonthlyPdfReportGenerator(tenant, month, year)
     pdf.generate()
-    path = DietsPdfPath.get_pdf(tenant, month, year)
-    pdf.output(path)
 
     # If report is already generated delete pdf and update report
     report = DietMonthlyPdfReport.objects.filter(tenant=tenant, month=month, year=year).first()
     if report:
-        os.remove(report.pdf)
         report.delete()
+
+    path = DietsPdfPath.get_pdf(tenant, month, year)
+    pdf.output(path)
 
     # Guardar información sobre el pdf (path, fecha)
     report = DietMonthlyPdfReport(pdf=path, month=month, year=year, tenant=tenant)

@@ -151,12 +151,12 @@ class TenantBillingMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
         deleted_this_month = history_this_month.filter(action=ActionType.DELETED)
 
         # Si solo se ha creado este mes.
-        if created_this_month.n_values() == 1 and deleted_this_month.n_values() == 0:
+        if created_this_month.count() == 1 and deleted_this_month.count() == 0:
             number_of_days = self.total_days - created_this_month.first().date.day
             return number_of_days
 
         # Si solo se ha eliminado este mes.
-        if created_this_month.n_values() == 0 and deleted_this_month.n_values() == 1:
+        if created_this_month.count() == 0 and deleted_this_month.count() == 1:
             number_of_days = deleted_this_month.first().date.day
             return number_of_days
 
@@ -168,7 +168,7 @@ class TenantBillingMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
             else:
                 number_of_days += datetime.timedelta(entry.date.day)
 
-        if created_this_month.n_values() > deleted_this_month.n_values():
+        if created_this_month.count() > deleted_this_month.count():
             number_of_days += datetime.timedelta(self.total_days)
 
         return number_of_days.days
