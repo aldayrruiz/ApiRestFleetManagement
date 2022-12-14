@@ -205,12 +205,12 @@ class Login(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         if created:
             logger.debug('Token was created.')
-        if token.key:
+        if token.x_axis:
             logger.info('Login was successfully.')
         else:
             logger.warning('Login of user {} failed.', user.fullname)
         return Response({
-            'token': token.key,
+            'token': token.x_axis,
             'user_id': user.id,
             'email': user.email,
             'fullname': user.fullname,

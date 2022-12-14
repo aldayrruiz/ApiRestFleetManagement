@@ -1,6 +1,6 @@
 from rest_framework.exceptions import APIException
 
-from applications.reports.generate.charts.vehicle_punctuality import PunctualityChart
+from applications.reports.services.pdf.charts.vehicle_punctuality import PunctualityChart
 from applications.reports.services.punctuality import PunctualityHelpers
 from applications.reservations.models import Reservation
 from dateutil.relativedelta import relativedelta
@@ -31,20 +31,12 @@ class SummaryReport:
     def get_real_start_and_end(self):
         start = self.reservation.start
         end = self.reservation.end
-        month = start.month
-        year = start.year
 
-        reservations = Reservation.objects.filter(start__month=month, start__year=year, vehicle=self.vehicle)
-        reservations = reservations.order_by('start').all()
-        index = list(reservations).index(self.reservation)
-        previous, nxt = PunctualityHelpers.get_closer_reservations(reservations, index)
+        previous, nxt = PunctualityHelpers.get_closer_reservations(self.reservation)
         [t_hours_out, t_hours_in, not_taken] = PunctualityChart.get_takes_punctuality(previous, self.reservation, nxt)
         [f_hours_out, f_hours_in] = PunctualityChart.get_frees_punctuality(previous, self.reservation, nxt)
 
-        real_start = start - relativedelta(hours=t_hours_out)
-        real_start = real_start + relativedelta(hours=t_hours_in)
-
-        real_end = end - relativedelta(hours=f_hours_in)
-        real_end = real_end + relativedelta(hours=f_hours_out)
+        real_start = start - relativedelta(hours=t_hours_out) + relativedelta(hours=t_hours_in)
+        real_end = end - relativedelta(hours=f_hours_in) + relativedelta(hours=f_hours_out)
 
         return real_start, real_end

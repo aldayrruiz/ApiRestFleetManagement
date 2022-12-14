@@ -1,13 +1,12 @@
 import logging
 import time
 
-import cv2
 import numpy as np
-import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from applications.reports.generate.charts.chart_generator import ChartGenerator
+from applications.reports.services.pdf.charts.chart_generator import ChartGenerator
+from applications.reports.services.pdf.configuration.chart_configuration import HoursChartConfiguration
 from applications.tenants.models import Tenant
 from applications.traccar.services.api import TraccarAPI
 
@@ -15,28 +14,35 @@ logger = logging.getLogger(__name__)
 
 
 class UseWithoutReservationChart(ChartGenerator):
-    def __init__(self, tenant: Tenant, month: int, year: int):
-        super().__init__(tenant, month, year)
+    def __init__(self, tenant: Tenant, month: int, year: int, hour_config: HoursChartConfiguration = None,
+                 by: str = 'vehicle',
+                 n_values: int = 25,
+                 orientation: str = 'h'):
+        super().__init__(tenant, month, year, hour_config, by, n_values, orientation)
         self.hours = self.get_hours()
-        df_dict = {'vehicles': self.vehicles_labels, 'hours': self.hours}
-        self.df = pd.DataFrame(df_dict)
 
-    def generate_image(self, filename):
-        histogram = self.get_histogram()
+    def generate_image(self, filename, start, end, i):
+        histogram = self.get_histogram(start, end)
         fig = make_subplots()
         fig.add_trace(histogram)
-        fig.update_layout()
-        fig.update_yaxes(title_text='Tiempo (horas)', range=[0, 60])
-        fig.write_image(f'{filename}')
-        img = cv2.imread(f'{filename}')
-        cropped = img[80:-20, :]
-        cv2.imwrite(f'{filename}', cropped)
+        fig.update_layout(plot_bgcolor='rgb(255,255,255)')
+        fig.update_yaxes(title_text='Tiempo (horas)')
+        self.update_axes(fig)
+        fig.write_image(f'{filename}{i}.png')
+        self.remove_image_header(f'{filename}{i}.png')
+        self.images.append(f'{filename}{i}.png')
         logger.info('UseWithoutReservationChart image generated')
+
+    def update_axes(self, fig):
+        if self.orientation == 'h':
+            fig.update_xaxes(title_text='Tiempo (horas)')
+        else:
+            fig.update_yaxes(title_text='Tiempo (horas)')
 
     def get_hours(self):
         hours = []
         for vehicle in self.vehicles:
-            reservations = vehicle.reservations.filter(end__gt=self.first_day, start__lt=self.last_day).reverse()
+            reservations = self.all_reservations.filter(vehicle=vehicle)
             if not reservations:
                 hours.append(0)
                 continue
@@ -75,12 +81,14 @@ class UseWithoutReservationChart(ChartGenerator):
             hours.append(duration_into_hours)
         return hours
 
-    def get_histogram(self):
+    def get_histogram(self, start, end):
+        x, y = self.get_xy(self.hours)
         return go.Bar(
-            x=self.df['vehicles'],
-            y=self.df['hours'],
+            x=x[start:end],
+            y=y[start:end],
             marker=dict(color='#a6bde3'),
+            orientation=self.orientation,
         )
 
     def get_stats(self):
-        return np.array(self.df['hours'], np.float)
+        return np.array(self.hours, np.float)

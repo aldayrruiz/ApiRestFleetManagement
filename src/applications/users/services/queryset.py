@@ -3,7 +3,6 @@ import logging
 from django.contrib.auth import get_user_model
 
 from applications.users.models import User, Role
-from applications.users.services.roler import Roler
 
 logger = logging.getLogger(__name__)
 
