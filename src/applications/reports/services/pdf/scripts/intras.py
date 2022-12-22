@@ -64,7 +64,7 @@ afternoon_configuration = HoursChartConfiguration(True, 15, 22, workdays_per_mon
 use_of_vehicles_by_vehicles_afternoon_chart = get_use_by_vehicle_chart(tenant, month, year, afternoon_configuration)
 filename = ReportsPdfPath.get_graph(tenant, 'UseOfVehicleByVehiclesAfternoonChart')
 use_of_vehicles_by_vehicles_afternoon_chart.generate_images(filename)
-
+#
 logger.info('Generating image: UseOfVehicleByUsersChart')
 workdays_per_month = get_number_of_days_in_month(month, year)
 by_user_config = HoursChartConfiguration(False, working_hours_per_day=14, workdays_per_month=workdays_per_month)
@@ -79,6 +79,7 @@ image_charts = IntrasChartImages(distance_max_average_speed_images=distance_max_
                                  use_of_vehicles_by_vehicle_morning_images=use_of_vehicles_by_vehicles_morning_chart.images,
                                  use_of_vehicles_by_vehicle_afternoon_images=use_of_vehicles_by_vehicles_afternoon_chart.images,
                                  use_of_vehicles_by_user_images=use_of_vehicles_by_users_chart.images)
+
 pdf = IntrasUseOfVehiclesReportPdf(tenant, month, year, image_charts)
 pdf.generate()
 

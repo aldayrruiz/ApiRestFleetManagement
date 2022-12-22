@@ -48,14 +48,20 @@ class TenantBillingMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
         # Get Data table: Pages: [70 rows, 80 rows, 80 rows, ...]
         pages, total = self.get_user_data_table()
         n_pages = len(pages)
-        table = render_to_string('billing/users_table.html', {'data': pages[0], 'total': total, 'last_page': 1 == n_pages})
+        table = render_to_string('billing/users_table.html',
+                                 {'data': pages[0],
+                                  'total': total,
+                                  'last_page': 1 == n_pages})
         table = table.replace('\n', '')
         self.set_y(y + 10)
         self.write_html(table, table_line_separators=True)
 
         for i, data in enumerate(pages[1:], 1):
             self.add_page()
-            table = render_to_string('billing/users_table.html', {'data': data, 'total': total, 'last_page': i == n_pages - 1})
+            table = render_to_string('billing/users_table.html',
+                                     {'data': data,
+                                      'total': total,
+                                      'last_page': i == n_pages - 1})
             self.set_y(30)
             self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=6)
             self.write_html(table, table_line_separators=True)

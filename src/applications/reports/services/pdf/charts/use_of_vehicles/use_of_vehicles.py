@@ -98,14 +98,14 @@ class UseOfVehicleChart(ChartGenerator):
                     labels[i] += mark
         return labels
 
-    def get_reserved_theoretical_hours_bar(self, start, end):
-        x, y = self.get_xy(self.bars['theoretical_bar'])
+    def get_movement_hours_bar(self, start, end):
+        x, y = self.get_xy(self.bars['movement_bar'])
         return go.Bar(
-            name='Tiempo reservado',
+            name='Tiempo en movimiento',
             x=x[start:end],
             y=y[start:end],
-            marker=dict(color='#a6bde3'),
-            text=self.theoretical.reserved_hours_percentages[start:end],
+            marker=dict(color='#E0E0E0'),
+            text=self.movement_percentages[start:end],
             orientation=self.orientation
         )
 
@@ -115,8 +115,19 @@ class UseOfVehicleChart(ChartGenerator):
             name='Tiempo ocupado',
             x=x[start:end],
             y=y[start:end],
-            marker=dict(color='#4280E3'),
+            marker=dict(color='#7D8597'),
             text=self.real.reserved_hours_percentages[start:end],
+            orientation=self.orientation
+        )
+
+    def get_reserved_theoretical_hours_bar(self, start, end):
+        x, y = self.get_xy(self.bars['theoretical_bar'])
+        return go.Bar(
+            name='Tiempo reservado',
+            x=x[start:end],
+            y=y[start:end],
+            marker=dict(color='#33415C'),
+            text=self.theoretical.reserved_hours_percentages[start:end],
             orientation=self.orientation
         )
 
@@ -128,16 +139,5 @@ class UseOfVehicleChart(ChartGenerator):
             y=y[start:end],
             marker=dict(color='white'),
             text=self.theoretical.free_hours_percentages[start:end],
-            orientation=self.orientation
-        )
-
-    def get_movement_hours_bar(self, start, end):
-        x, y = self.get_xy(self.bars['movement_bar'])
-        return go.Bar(
-            name='Tiempo en movimiento',
-            x=x[start:end],
-            y=y[start:end],
-            marker=dict(color='red'),
-            text=self.movement_percentages[start:end],
             orientation=self.orientation
         )

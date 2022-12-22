@@ -39,6 +39,8 @@ class FuelConsumedChart(ChartGenerator):
             fig.update_xaxes(title_text='Combustible consumido (€)')
         else:
             fig.update_yaxes(title_text='Combustible consumido (€)')
+        fig.update_xaxes(showline=True, linewidth=1, linecolor='black')
+        fig.update_yaxes(showline=True, linewidth=1, linecolor='black')
 
     def get_fuels(self):
         fuels = []
@@ -50,23 +52,29 @@ class FuelConsumedChart(ChartGenerator):
             fuels.append(self.calculate_fuel_consumed(vehicle, distances[i]))
         return fuels
 
+    def get_consumed_in_euros(self):
+        result = [f'{fuel:.2f} €' for fuel in self.fuels]
+        return result
+
     @staticmethod
     def calculate_fuel_consumed(vehicle, distance):
         if vehicle.fuel == Fuel.DIESEL:
             fuel = (distance * 1.8 * 8) / 100
         elif vehicle.fuel == Fuel.ELECTRIC:
-            fuel = (distance * 0.55 * 18) / 100
+            fuel = (distance * 0.25 * 18) / 100
         else:
             fuel = (distance * 1.7 * 6) / 100
         return fuel
 
     def get_histogram(self, start, end):
         x, y = self.get_xy(self.fuels)
+        text = self.get_consumed_in_euros()
         return go.Bar(
             x=x[start:end],
             y=y[start:end],
-            marker=dict(color='#a6bde3'),
+            marker=dict(color='#0353A4'),
             orientation=self.orientation,
+            text=text[start:end],
         )
 
     def get_stats(self):

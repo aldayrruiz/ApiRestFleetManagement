@@ -60,7 +60,7 @@ class PdfBuilder(FPDF):
     def set_subtitle(self, txt: str, y: int):
         # Colocar el título en el pdf
         self.set_xy(HORIZONTAL_LEFT_MARGIN, y)
-        self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=12)
+        self.set_font(family=DEFAULT_FONT_FAMILY, style='B', size=12)
         self.set_text_color(46, 152, 209)  # azul
         w = self.get_string_width(txt)
         self.cell(w, h=5, align='L', txt=txt)
