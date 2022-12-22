@@ -48,6 +48,8 @@ class PunctualityChart(ChartGenerator):
             fig.update_xaxes(title_text='Tiempo (horas)')
         else:
             fig.update_yaxes(title_text='Tiempo (horas)')
+        fig.update_xaxes(showline=True, linewidth=1, linecolor='black')
+        fig.update_yaxes(showline=True, linewidth=1, linecolor='black')
 
     def get_hours(self):
         takes_out, takes_in = [], []  # Tomar el vehículo FUERA y DENTRO de la hora de la reserva.
@@ -169,29 +171,34 @@ class PunctualityChart(ChartGenerator):
 
     def get_takes_in_scatter(self, start, end):
         x, y = self.get_xy(self.takes_in)
-        return self.get_scatter(x, y, 'Inicio del servicio después del tiempo de reserva', 'green', start, end)
+        return self.get_scatter(x, y, 'Inicio del servicio después del tiempo de reserva', 'lines+markers',
+                                '#218380', start, end)
 
     def get_takes_out_scatter(self, start, end):
         x, y = self.get_xy(self.takes_out)
-        return self.get_scatter(x, y, 'Inicio del servicio antes del tiempo de reserva', 'red', start, end)
+        return self.get_scatter(x, y, 'Inicio del servicio antes del tiempo de reserva', 'lines',
+                                '#218380', start, end)
 
     def get_frees_in_scatter(self, start, end):
         x, y = self.get_xy(self.frees_in)
-        return self.get_scatter(x, y, 'Fin del servicio antes del tiempo de reserva', 'blue', start, end)
+        return self.get_scatter(x, y, 'Fin del servicio antes del tiempo de reserva', 'lines+markers',
+                                '#D81159', start, end)
 
     def get_frees_out_scatter(self, start, end):
         x, y = self.get_xy(self.frees_out)
-        return self.get_scatter(x, y, 'Fin del servicio después del tiempo de reserva', 'orange', start, end)
+        return self.get_scatter(x, y, 'Fin del servicio después del tiempo de reserva', 'lines',
+                                '#D81159', start, end)
 
     def get_not_taken_scatter(self, start, end):
         x, y = self.get_xy(self.not_taken)
-        return self.get_scatter(x, y, 'Sin servicio en tiempo de espera', 'black', start, end)
+        return self.get_scatter(x, y, 'Tiempo reservado no utilizado en su totalidad', 'lines+markers',
+                                '#001233', start, end)
 
-    def get_scatter(self, x, y, name, color, start, end):
+    def get_scatter(self, x, y, name, mode, color, start, end):
         return go.Scatter(x=x[start:end],
                           y=y[start:end],
                           name=name,
-                          mode='lines+markers',
+                          mode=mode,
                           marker=dict(symbol='circle', size=10, color=color),
                           orientation=self.orientation)
 

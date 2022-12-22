@@ -36,7 +36,8 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
         fig.add_traces(traces, secondary_ys=secondary_ys)
         fig.update_layout(title_text='Distancia y velocidad de vehículos')
         fig.update_layout(plot_bgcolor='rgb(255,255,255)')
-        fig.update_yaxes(showgrid=False)
+        fig.update_xaxes(showline=True, linewidth=1, linecolor='black')
+        fig.update_yaxes(showline=True, linewidth=1, linecolor='black')
         fig.update_yaxes(title_text='Distancia (km)', secondary_y=False)
         fig.update_yaxes(title_text='Velocidad (km/h)', secondary_y=True)
         fig.write_image(f'{filename}{i}.png')
@@ -89,7 +90,7 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
         return go.Bar(
             x=x[start:end],
             y=y[start:end],
-            marker=dict(color='#a6bde3'),
+            marker=dict(color='#0466C8'),
             name='Distancia (km)',
             text=self.distances[start:end],
             textposition='auto',
@@ -105,8 +106,8 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
             mode='lines+markers+text',
             text=self.max_speeds[start:end],
             textposition='bottom center',
-            textfont=dict(color='red'),
-            marker=dict(symbol='triangle-up', size=10, color='red'),
+            textfont=dict(color='black'),
+            marker=dict(symbol='triangle-up', size=10, color='#023E7D'),
             orientation=self.orientation
         )
 
@@ -119,7 +120,8 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
             mode='lines+markers+text',
             text=self.average_speeds[start:end],
             textposition='bottom center',
-            marker=dict(symbol='square', size=10, color='grey'),
+            textfont=dict(color='white'),
+            marker=dict(symbol='square', size=10, color='#E0E0E0'),
             orientation=self.orientation
         )
 

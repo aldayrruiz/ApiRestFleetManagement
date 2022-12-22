@@ -81,12 +81,17 @@ class UseWithoutReservationChart(ChartGenerator):
             hours.append(duration_into_hours)
         return hours
 
+    def get_text_hours(self):
+        return list(map(lambda hour: f'{hour:.2f}h', self.hours))
+
     def get_histogram(self, start, end):
         x, y = self.get_xy(self.hours)
+        text = self.get_text_hours()
         return go.Bar(
             x=x[start:end],
             y=y[start:end],
-            marker=dict(color='#a6bde3'),
+            marker=dict(color='#023E7D'),
+            text=text[start:end],
             orientation=self.orientation,
         )
 

@@ -2,7 +2,8 @@ import logging
 
 from applications.tenants.models import Tenant
 from shared.pdf.builder import PdfBuilder
-from shared.pdf.constants import HEADER_TOP_MARGIN, HORIZONTAL_LEFT_MARGIN, PDF_H, WRITABLE_WIDTH, DEFAULT_FONT_FAMILY
+from shared.pdf.constants import HEADER_TOP_MARGIN, HORIZONTAL_LEFT_MARGIN, PDF_H, WRITABLE_WIDTH, DEFAULT_FONT_FAMILY, \
+    PDF_W
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,8 @@ class DefaultUseOfVehiclesReportPdf(PdfBuilder):
         self.set_description(txt, HEADER_TOP_MARGIN + 28)
 
         title = 'Distancia recorrida, y velocidades máxima y media, alcanzadas en un mes'
-        desc = 'Fig. 1: El presente gráfico muestra los datos básicos [1] de uso de cada vehículo a lo largo del mes.'
+        desc = 'Fig. 1: El presente gráfico muestra los datos básicos (velocidad máxima alcanzada, ' \
+               'velocidad promedio y distancia) de uso de cada vehículo a lo largo del mes.'
         image = self.chart_images.distance_max_average_speed_images[0]
         self.set_graph(title, desc, image, y=50)
 
@@ -54,22 +56,22 @@ class DefaultUseOfVehiclesReportPdf(PdfBuilder):
 
         data = (
             ('Diesel', 'Eléctrico', 'Gasolina'),
-            ('1,8 €/litro', '0,55 €/kWh', '1,7 €/litro'),
+            ('1,8 €/litro', '0,25 €/kWh', '1,7 €/litro'),
             ('8 litros/100km', '18kWh/100km', '6 litros/100km')
         )
 
-        col_width = self.epw / 3
+        col_width = self.epw / 4
 
         self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=10)
         self.set_text_color(0, 0, 0)  # negro
         self.ln()
 
         for row in data:
+            self.set_x((PDF_W - col_width * len(row)) / 2)
             for datum in row:
                 self.multi_cell(col_width, h=7, txt=datum, border=1, align='C',
                                 new_x="RIGHT", new_y="TOP", max_line_height=self.font_size)
             self.ln()
-        self.set_foot_page_1()
 
     def add_use_of_vehicles_by_vehicles_pages(self):
         title = 'Grado de uso de los vehículos'
@@ -90,18 +92,10 @@ class DefaultUseOfVehiclesReportPdf(PdfBuilder):
         self.set_graph(title, desc, image, y=HEADER_TOP_MARGIN + 20)
 
         title = 'Uso del vehículo sin reserva previa'
-        desc = 'Fig. 5: El presente gráfico muestra el número total de horas que el vehículo se ha utilizado ' \
+        desc = 'Fig. 5: El presente gráfico muestra el número total de horas que el vehículo ha estado en movimiento ' \
                'fuera de las horas reservadas por BLUE Drivers.'
         image = self.chart_images.use_of_vehicles_without_reservation_images[0]
         self.set_graph(title, desc, image, y=150)
-
-    def set_foot_page_1(self):
-        txt = '[1] La velocidad máxima representa la máxima velocidad alcanzada por el vehículo en todos ' \
-               'los trayectos del mes. La velocidad media representa la media de las velocidades medias ' \
-               'en todos los trayectos del mes.'
-        x = HORIZONTAL_LEFT_MARGIN
-        y = PDF_H - 32
-        self.set_foot_page(txt, x, y)
 
     def set_foot_page_2(self):
         txt = '[2] Suponemos un máximo teórico de 176 horas/mes (8 horas/día, 22 días laborales/mes).'
