@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import plotly.graph_objects as go
+from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
 
 from applications.reports.services.pdf.charts.chart_generator import ChartGenerator
@@ -43,8 +44,15 @@ class UseWithoutReservationChart(ChartGenerator):
         hours = []
         for vehicle in self.vehicles:
             reservations = self.all_reservations.filter(vehicle=vehicle)
+            # Si no hay reservas, obtener los viajes del mes, y sumar los tiempos
             if not reservations:
-                hours.append(0)
+                first_day_this_month = self.first_day
+                first_day_next_month = self.first_day + relativedelta(months=1)
+                trips = TraccarAPI.trips(vehicle.gps_device.id, first_day_this_month, first_day_next_month)
+                durations = list(map(lambda trip: trip['duration'], trips))
+                total_duration = np.sum(np.array(durations))
+                duration_into_hours = self.get_hours_from_duration(total_duration)
+                hours.append(duration_into_hours)
                 continue
             first_reservation = reservations.first()
             last_reservation = reservations.last()
@@ -77,9 +85,13 @@ class UseWithoutReservationChart(ChartGenerator):
                 trips = TraccarAPI.trips(vehicle.gps_device.id, date['from'], date['to'])
                 durations = list(map(lambda trip: trip['duration'], trips))
                 total_duration = total_duration + np.sum(np.array(durations))
-            duration_into_hours = ((total_duration / (1000 * 60 * 60)) % 24)
+            duration_into_hours = self.get_hours_from_duration(total_duration)
             hours.append(duration_into_hours)
         return hours
+
+    @staticmethod
+    def get_hours_from_duration(duration):
+        return (duration / (1000 * 60 * 60)) % 24
 
     def get_text_hours(self):
         return list(map(lambda hour: f'{hour:.2f}h', self.hours))
