@@ -27,60 +27,59 @@ year = previous_month.year
 
 tenants = Tenant.objects.exclude(name__in=['Pruebas Local', 'Pruebas BLUE', 'Fundación Intras'])
 
-for month in range(5, 13):
-    for tenant in tenants:
-        if not os.path.exists(ReportsPdfPath.get_tenant(tenant)):
-            os.mkdir(ReportsPdfPath.get_tenant(tenant))
-            os.mkdir(ReportsPdfPath.get_graphs(tenant))
+for tenant in tenants:
+    if not os.path.exists(ReportsPdfPath.get_tenant(tenant)):
+        os.mkdir(ReportsPdfPath.get_tenant(tenant))
+        os.mkdir(ReportsPdfPath.get_graphs(tenant))
 
-        logger.info('Generating image: DistanceMaxAverageSpeedChart')
-        distance_max_average_speed_chart = DistanceMaxAverageSpeedChart(tenant, month, year, orientation='v')
-        filename = ReportsPdfPath.get_graph(tenant, 'DistanceMaxAverageSpeedChart')
-        distance_max_average_speed_chart.generate_images(filename)
+    logger.info('Generating image: DistanceMaxAverageSpeedChart')
+    distance_max_average_speed_chart = DistanceMaxAverageSpeedChart(tenant, month, year, orientation='v')
+    filename = ReportsPdfPath.get_graph(tenant, 'DistanceMaxAverageSpeedChart')
+    distance_max_average_speed_chart.generate_images(filename)
 
-        logger.info('Generating image: FuelConsumedChart')
-        fuel_consumed_chart = FuelConsumedChart(tenant, month, year, distance_max_average_speed_chart, orientation='v')
-        filename = ReportsPdfPath.get_graph(tenant, 'FuelConsumedChart')
-        fuel_consumed_chart.generate_images(filename)
+    logger.info('Generating image: FuelConsumedChart')
+    fuel_consumed_chart = FuelConsumedChart(tenant, month, year, distance_max_average_speed_chart, orientation='v')
+    filename = ReportsPdfPath.get_graph(tenant, 'FuelConsumedChart')
+    fuel_consumed_chart.generate_images(filename)
 
-        logger.info('Generating image: PunctualityChart')
-        punctuality_chart = PunctualityChart(tenant, month, year, orientation='v')
-        filename = ReportsPdfPath.get_graph(tenant, 'PunctualityChart')
-        punctuality_chart.generate_images(filename)
+    logger.info('Generating image: PunctualityChart')
+    punctuality_chart = PunctualityChart(tenant, month, year, orientation='v')
+    filename = ReportsPdfPath.get_graph(tenant, 'PunctualityChart')
+    punctuality_chart.generate_images(filename)
 
-        logger.info('Generating image: UseWithoutReservationChart')
-        use_of_vehicles_without_reservation_chart = UseWithoutReservationChart(tenant, month, year, orientation='v')
-        filename = ReportsPdfPath.get_graph(tenant, 'UseWithoutReservationChart')
-        use_of_vehicles_without_reservation_chart.generate_images(filename)
+    logger.info('Generating image: UseWithoutReservationChart')
+    use_of_vehicles_without_reservation_chart = UseWithoutReservationChart(tenant, month, year, orientation='v')
+    filename = ReportsPdfPath.get_graph(tenant, 'UseWithoutReservationChart')
+    use_of_vehicles_without_reservation_chart.generate_images(filename)
 
-        logger.info('Generating image: UseOfVehicleChart')
-        use_of_vehicles_by_vehicles_chart = get_use_by_vehicle_chart(tenant, month, year)
-        filename = ReportsPdfPath.get_graph(tenant, 'UseOfVehicleByVehiclesChart')
-        use_of_vehicles_by_vehicles_chart.generate_images(filename)
+    logger.info('Generating image: UseOfVehicleChart')
+    use_of_vehicles_by_vehicles_chart = get_use_by_vehicle_chart(tenant, month, year)
+    filename = ReportsPdfPath.get_graph(tenant, 'UseOfVehicleByVehiclesChart')
+    use_of_vehicles_by_vehicles_chart.generate_images(filename)
 
-        chart_images = DefaultChartImages(
-            distance_max_average_speed_images=distance_max_average_speed_chart.images,
-            fuel_consumed_images=fuel_consumed_chart.images,
-            punctuality_images=punctuality_chart.images,
-            use_of_vehicles_without_reservation_images=use_of_vehicles_without_reservation_chart.images,
-            use_of_vehicles_by_vehicles_images=use_of_vehicles_by_vehicles_chart.images,
-        )
-        pdf = DefaultUseOfVehiclesReportPdf(tenant, month, year, chart_images)
-        pdf.generate()
+    chart_images = DefaultChartImages(
+        distance_max_average_speed_images=distance_max_average_speed_chart.images,
+        fuel_consumed_images=fuel_consumed_chart.images,
+        punctuality_images=punctuality_chart.images,
+        use_of_vehicles_without_reservation_images=use_of_vehicles_without_reservation_chart.images,
+        use_of_vehicles_by_vehicles_images=use_of_vehicles_by_vehicles_chart.images,
+    )
+    pdf = DefaultUseOfVehiclesReportPdf(tenant, month, year, chart_images)
+    pdf.generate()
 
-        # If report is already generated delete pdf and update report
-        report = MonthlyReport.objects.filter(tenant=tenant, month=month, year=year).first()
-        if report:
-            report.delete()
+    # If report is already generated delete pdf and update report
+    report = MonthlyReport.objects.filter(tenant=tenant, month=month, year=year).first()
+    if report:
+        report.delete()
 
-        path = ReportsPdfPath.get_pdf(tenant, month, year)
-        pdf.output(path)
+    path = ReportsPdfPath.get_pdf(tenant, month, year)
+    pdf.output(path)
 
-        # Guardar información sobre el pdf (localización y mes)
-        report = MonthlyReport(pdf=path, month=month, year=year, tenant=tenant)
-        report.save()
+    # Guardar información sobre el pdf (localización y mes)
+    report = MonthlyReport(pdf=path, month=month, year=year, tenant=tenant)
+    report.save()
 
-        # sender = VehicleUseReportEmail(tenant, report)
-        # sender.send()
+    sender = VehicleUseReportEmail(tenant, report)
+    sender.send()
 
-        logger.info('Pdf generated')
+    logger.info('Pdf generated')
