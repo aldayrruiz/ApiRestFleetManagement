@@ -26,9 +26,17 @@ def query_str(request, query: str, required=False):
     return result
 
 
-def query_uuid(request, query):
+def query_uuid(request, query, required=False):
     val = query_str(request, query)
     is_valid = is_valid_uuid(val)
-    if not is_valid:
+
+    if not required and val in [None, '', 'undefined']:
+        return None
+
+    if required and val in [None, '', 'undefined']:
+        raise ValidationError(f'Query {query} is required.')
+
+    if required and not is_valid:
         raise ValidationError(f'Query {query} is not an UUID v4.')
+
     return val

@@ -48,8 +48,9 @@ class IntrasUseOfVehiclesReportPdf(PdfBuilder):
         self.set_description(txt, HEADER_TOP_MARGIN + 28)
 
         title = 'Distancia recorrida, y velocidades máxima y media, alcanzadas en un mes'
-        desc = 'Fig. 1: El presente gráfico muestra los datos básicos (velocidad máxima alcanzada, ' \
-               'velocidad promedio y distancia) de uso de cada vehículo a lo largo del mes.'
+        desc = 'El presente gráfico muestra los datos básicos (velocidad máxima alcanzada, ' \
+               'velocidad promedio y distancia) de uso de cada vehículo durante las reservas ' \
+               'a lo largo del mes'
         image = self.chart_images.distance_max_average_speed_images[0]
         self.set_graph(title, desc, image, y=50)
 

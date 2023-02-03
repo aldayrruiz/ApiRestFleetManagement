@@ -1,4 +1,4 @@
-from django.urls import re_path, path
+from django.urls import re_path
 from rest_framework.routers import DefaultRouter
 
 from applications.allowed_vehicles.views import AllowedVehicleViewSet
@@ -6,6 +6,9 @@ from applications.auth.views import AuthViewSet
 from applications.diets.views import DietPaymentViewSet, DietViewSet, DietPhotoViewSet, DietMonthlyPdfReportViewSet
 from applications.incidents.views import IncidentViewSet
 from applications.insurance_companies.views import InsuranceCompanyViewSet
+from applications.maintenance.views import CleaningPhotoViewSet, CleaningViewSet, ItvViewSet, OdometerViewSet, \
+    ItvPhotoViewSet, OdometerPhotoViewSet, RevisionViewSet, RevisionPhotoViewSet, WheelsViewSet, WheelsPhotoViewSet, \
+    CleaningCardViewSet
 from applications.reports.views import ReportViewSet
 from applications.reservation_templates.views import ReservationTemplateViewSet
 from applications.reservations.views import ReservationViewSet, NewReservationViewSet
@@ -37,6 +40,19 @@ router.register(r'register', RegistrationViewSet, basename='register')
 router.register(r'diets', DietViewSet, basename='diets')
 router.register(r'diet-payments', DietPaymentViewSet, basename='diet_payments')
 router.register(r'diet-photos', DietPhotoViewSet, basename='diet_photos')
+
+# Maintenance
+router.register(r'maintenance/cleanings', CleaningViewSet, basename='cleanings')
+router.register(r'maintenance/cleaning-photos', CleaningPhotoViewSet, basename='cleaning_photos')
+router.register(r'maintenance/cleaning-cards', CleaningCardViewSet, basename='cleaning_cards')
+router.register(r'maintenance/itvs', ItvViewSet, basename='itvs')
+router.register(r'maintenance/itv-photos', ItvPhotoViewSet, basename='itv_photos')
+router.register(r'maintenance/odometers', OdometerViewSet, basename='odometers')
+router.register(r'maintenance/odometer-photos', OdometerPhotoViewSet, basename='odometers_photos')
+router.register(r'maintenance/revisions', RevisionViewSet, basename='revisions')
+router.register(r'maintenance/revision-photos', RevisionPhotoViewSet, basename='revision_photos')
+router.register(r'maintenance/wheels', WheelsViewSet, basename='wheels')
+router.register(r'maintenance/wheels-photos', WheelsPhotoViewSet, basename='wheels_photos')
 
 # Informes
 router.register(r'reports', ReportViewSet, basename='reports')

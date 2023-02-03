@@ -1,7 +1,7 @@
 import logging
 
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, authentication
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -227,6 +227,7 @@ class ReservationViewSet(viewsets.ViewSet):
 class NewReservationViewSet(viewsets.ModelViewSet):
     serializer_class = SimpleReservationSerializer
     pagination_class = StandardResultsSetPagination
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         requester = self.request.user

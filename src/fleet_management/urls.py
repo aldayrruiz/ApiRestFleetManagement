@@ -23,13 +23,13 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="BLUE Drivers API Docs",
-      default_version='v1',
-      contact=openapi.Contact(email="contact@contact.com"),
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
+    openapi.Info(
+        title="BLUE Drivers API Docs",
+        default_version='v1',
+        contact=openapi.Contact(email="contact@contact.com")
+    ),
+    public=False,
+    permission_classes=(permissions.IsAuthenticated,),
 )
 
 urlpatterns = [

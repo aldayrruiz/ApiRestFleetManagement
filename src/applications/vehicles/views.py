@@ -2,12 +2,14 @@ import logging
 
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
 from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
 from applications.traccar.models import Device
+from applications.traccar.services.positions import TraccarPositions
 from applications.traccar.utils import post, put, delete
 from applications.users.models import ActionType
 from applications.vehicles.exceptions.number_plate_already_in_use import NumberPlateAlreadyInUse
@@ -16,6 +18,7 @@ from applications.vehicles.models import VehicleRegistrationHistory, Vehicle
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer, DisableVehicleSerializer
+from applications.vehicles.services.queryset import get_vehicles_queryset
 from shared import permissions
 from utils.api.query import query_bool
 
@@ -113,7 +116,7 @@ class VehicleViewSet(viewsets.ViewSet):
         device = vehicle.gps_device
         imei = serializer.initial_data['gps_device']
         name = get_vehicle_name_for_traccar(tenant, serializer)
-        response = put('devices', data={'id': device.id, 'uniqueId': imei, 'name': name})
+        response = put(f'devices/{device.id}', data={'id': device.id, 'uniqueId': imei, 'name': name})
 
         if not response.ok:
             return Response({'errors': 'Error trying to edit gps device'}, status=response.status_code)
@@ -157,6 +160,16 @@ class VehicleViewSet(viewsets.ViewSet):
         vehicle.save()
         VehicleRegistrationHistory.objects.create(vehicle=vehicle, tenant=requester.tenant, action=ActionType.DELETED)
         return Response(status=HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['get'])
+    def current_kilometers(self, request, pk=None):
+        requester = self.request.user
+        queryset = get_vehicles_queryset(requester)
+        vehicle = get_object_or_404(queryset, pk=pk)
+        # Distance is returned in meters by Traccar API. We convert it to kilometers.
+        last_position = TraccarPositions.last_position(vehicle)
+        kilometers = last_position['attributes']['totalDistance'] / 1000
+        return Response(kilometers)
 
     def get_permissions(self):
         """
