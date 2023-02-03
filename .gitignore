@@ -119,5 +119,5 @@ production.py
 /src/applications/traccar/pdf/images/*.png
 /src/fleet_management/delete_pruebas_tenant.py
 /src/fleet_management/init_pruebas_tenant.py
-
+!/src/applications/maintenance/**/wheels/
 /pdf/*

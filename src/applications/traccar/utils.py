@@ -21,7 +21,7 @@ def post(target, data):
 
 
 def put(target, data):
-    url = _get_url(target, data['id'])
+    url = f'{base_url}{target}'
     payload = json.dumps(data)
     return requests.put(url, headers=headers, data=payload, auth=auth, timeout=10)
 
