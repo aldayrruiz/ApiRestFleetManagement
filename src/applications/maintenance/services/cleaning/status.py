@@ -9,6 +9,8 @@ class CleaningStatusUpdater:
 
     def __init__(self, tenant):
         self.tenant = tenant
+        self.updates_to_pending = []
+        self.updates_to_expired = []
 
     def update(self):
         vehicles = Vehicle.objects.filter(tenant=self.tenant, cleaning_card__isnull=False)
@@ -20,13 +22,16 @@ class CleaningStatusUpdater:
         for cleaning in vehicle.cleanings.filter(status__in=[MaintenanceStatus.NEW, MaintenanceStatus.PENDING]):
             self.__update_cleaning(cleaning, card)
 
-    @staticmethod
-    def __update_cleaning(cleaning: Cleaning, card: CleaningCard):
+    def __update_cleaning(self, cleaning: Cleaning, card: CleaningCard):
         duration = parse_duration(card.date_period)
         next_cleaning = cleaning.date_stored + duration
         caution_date = next_cleaning - relativedelta(days=7)
         if caution_date < now_utc() < next_cleaning:
             cleaning.status = MaintenanceStatus.PENDING
+            self.updates_to_pending.append(cleaning)
+            cleaning.save()
         if now_utc() > next_cleaning:
             cleaning.status = MaintenanceStatus.EXPIRED
-        cleaning.save()
+            self.updates_to_expired.append(cleaning)
+            cleaning.save()
+
