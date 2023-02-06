@@ -6,15 +6,22 @@ from utils.dates import now_utc
 
 
 class StateUpdater:
-    @staticmethod
-    def update_register(register):
+
+    def __init__(self, tenant):
+        self.tenant = tenant
+        self.updates_to_pending = []
+        self.updates_to_expired = []
+
+    def update_register(self, register):
         caution_date = register.next_revision - relativedelta(months=1)
         if caution_date < now_utc() < register.next_revision:
             register.status = MaintenanceStatus.PENDING
+            self.updates_to_pending.append(register)
             register.save()
             return
         if now_utc() > register.next_revision:
             register.status = MaintenanceStatus.EXPIRED
+            self.updates_to_expired.append(register)
             register.save()
             return
 
@@ -29,6 +36,11 @@ class StateUpdater:
         caution_kilometers = register.next_kilometers - 1000
         if caution_kilometers < current_kilometers < register.next_kilometers:
             register.status = MaintenanceStatus.PENDING
+            self.updates_to_pending.append(register)
+            register.save()
+            return
         if current_kilometers > register.next_kilometers:
             register.status = MaintenanceStatus.EXPIRED
-        register.save()
+            self.updates_to_expired.append(register)
+            register.save()
+            return
