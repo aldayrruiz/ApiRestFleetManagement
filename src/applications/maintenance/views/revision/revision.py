@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from applications.maintenance.serializers.revision.revision import CreateRevisionSerializer, SimpleRevisionSerializer
+from applications.maintenance.services.emails.created import MaintenanceOperationCreatedEmail
 from applications.maintenance.services.revision.queryset import get_revision_queryset
 from utils.api.query import query_uuid
 
@@ -10,9 +11,11 @@ from utils.api.query import query_uuid
 class RevisionViewSet(viewsets.ViewSet):
     @swagger_auto_schema(request_body=CreateRevisionSerializer, responses={200: CreateRevisionSerializer()})
     def create(self, request):
+        requester = self.request.user
         serializer = CreateRevisionSerializer(data=self.request.data, context={'request': self.request})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        revision = serializer.save()
+        MaintenanceOperationCreatedEmail(requester.tenant, revision).send()
         return Response(serializer.data)
 
     @swagger_auto_schema(responses={200: SimpleRevisionSerializer()})
