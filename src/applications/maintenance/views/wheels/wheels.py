@@ -1,5 +1,5 @@
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 
 from applications.maintenance.models import WheelsOperation, MaintenanceStatus
@@ -31,3 +31,11 @@ class WheelsViewSet(viewsets.ViewSet):
         queryset = get_wheels_queryset(requester, vehicle_id)
         serializer = SimpleWheelsSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    @swagger_auto_schema()
+    def destroy(self, request, pk=None):
+        requester = self.request.user
+        queryset = get_wheels_queryset(requester)
+        wheels = queryset.get(pk=pk)
+        wheels.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

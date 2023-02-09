@@ -1,5 +1,6 @@
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from applications.maintenance.serializers.revision.revision import CreateRevisionSerializer, SimpleRevisionSerializer
@@ -25,3 +26,12 @@ class RevisionViewSet(viewsets.ViewSet):
         queryset = get_revision_queryset(requester, vehicle_id)
         serializer = SimpleRevisionSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    @swagger_auto_schema()
+    def destroy(self, request, pk=None):
+        requester = self.request.user
+        queryset = get_revision_queryset(requester)
+        revision = get_object_or_404(queryset, pk=pk)
+        revision.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
