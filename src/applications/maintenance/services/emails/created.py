@@ -27,7 +27,7 @@ class MaintenanceOperationCreatedEmail(EmailSender, MaintenanceOperationEmailSen
         return emails
 
     def get_body(self):
-        body = render_to_string('expired.html',
+        body = render_to_string('created.html',
                                 {'vehicle': self.operation.vehicle,
                                  'operation_label': self.operation_label,
                                  'url': self.get_maintenance_url()})

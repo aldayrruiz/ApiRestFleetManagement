@@ -16,7 +16,7 @@ class Cleaning(models.Model):
     date = models.DateTimeField()
     type = models.CharField(max_length=10, choices=CleaningType.choices, default=CleaningType.Inside)
     completed = models.BooleanField(default=False)
-    status = models.CharField(max_length=14, choices=MaintenanceStatus.choices, default=MaintenanceStatus.PENDING)
+    status = models.CharField(max_length=14, choices=MaintenanceStatus.choices, default=MaintenanceStatus.NEW)
     last_updated = models.DateTimeField(auto_now=True)
     date_stored = models.DateTimeField(auto_now_add=True)
     tenant = models.ForeignKey(Tenant, related_name='cleanings', on_delete=models.CASCADE)

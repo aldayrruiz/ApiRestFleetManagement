@@ -1,5 +1,6 @@
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from applications.maintenance.serializers.cleaning.cleaning import SimpleCleaningSerializer, CreateCleaningSerializer
@@ -25,3 +26,11 @@ class CleaningViewSet(viewsets.ViewSet):
         queryset = get_cleaning_queryset(requester, vehicle_id)
         serializer = SimpleCleaningSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    @swagger_auto_schema()
+    def destroy(self, request, pk=None):
+        requester = self.request.user
+        queryset = get_cleaning_queryset(requester)
+        cleaning = get_object_or_404(queryset, pk=pk)
+        cleaning.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
