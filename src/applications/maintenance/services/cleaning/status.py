@@ -23,7 +23,7 @@ class CleaningStatusUpdater:
         # Si la última limpieza está completa, significa que se ha eliminado previamente la última operación, quedando
         # esta última con un estado que no debería tener de limpieza. Por lo tanto, se debe actualizar el estado de la
         # última limpieza a PENDING o EXPIRED.
-        if last_cleaning.status == MaintenanceStatus.COMPLETED:
+        if last_cleaning and last_cleaning.status == MaintenanceStatus.COMPLETED:
             self.__update_cleaning(last_cleaning, card)
 
         # Se actualizan los estados de las limpiezas NEW o PENDING. Los estados EXPIRED o COMPLETED no se actualizan.
@@ -34,12 +34,12 @@ class CleaningStatusUpdater:
         duration = parse_duration(card.date_period)
         next_cleaning = cleaning.date_stored + duration
         caution_date = next_cleaning - relativedelta(days=7)
+        if now_utc() < caution_date:
+            cleaning.status = MaintenanceStatus.NEW
         if caution_date < now_utc() < next_cleaning:
             cleaning.status = MaintenanceStatus.PENDING
             self.updates_to_pending.append(cleaning)
-            cleaning.save()
         if now_utc() > next_cleaning:
             cleaning.status = MaintenanceStatus.EXPIRED
             self.updates_to_expired.append(cleaning)
-            cleaning.save()
-
+        cleaning.save()

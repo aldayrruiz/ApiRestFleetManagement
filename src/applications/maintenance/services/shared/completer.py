@@ -6,5 +6,5 @@ class OperationCompleter:
     @staticmethod
     def notify_operation_completed_if_last_one_pending_or_expired(queryset, new_operation):
         last_operation = queryset.last()
-        if last_operation.status in [MaintenanceStatus.PENDING, MaintenanceStatus.EXPIRED]:
+        if last_operation and last_operation.status in [MaintenanceStatus.PENDING, MaintenanceStatus.EXPIRED]:
             MaintenanceOperationCompletedEmail(new_operation.tenant, last_operation).send()

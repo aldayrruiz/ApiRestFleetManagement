@@ -19,7 +19,7 @@ class RevisionStatusUpdater(StateUpdater):
         # Si la última revisión está completa, significa que se ha eliminado previamente la última operación, quedando
         # esta última con un estado que no debería tener de revisión. Por lo tanto, se debe actualizar el estado de la
         # última revisión a PENDING o EXPIRED.
-        if last_revision.status == MaintenanceStatus.COMPLETED:
+        if last_revision and last_revision.status == MaintenanceStatus.COMPLETED:
             self.update_register(last_revision)
 
         for revision in vehicle.revisions.filter(status__in=[MaintenanceStatus.NEW, MaintenanceStatus.PENDING]):
