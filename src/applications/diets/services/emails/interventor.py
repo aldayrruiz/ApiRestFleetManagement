@@ -24,7 +24,7 @@ class DietCompletedInterventorEmail(EmailSender):
 
     def get_body(self):
         body = render_to_string(
-            'interventor.html',
+            'diets/interventor.html',
             {'users': self.tenant.users.all(),
              'baseurl': config('SERVER_URL')
              })

@@ -47,13 +47,13 @@ class DietMonthlyPdfReportGenerator(PdfBuilder, HTMLMixin):
         self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=6)
         self.set_text_color(0, 0, 0)  # negro
         first_page, rest_pages = self.get_data_table()
-        table = render_to_string('diets_table.html', {'rows': first_page})
+        table = render_to_string('diets/diets_table.html', {'rows': first_page})
         table = table.replace('\n', '')
         self.set_y(y + 10)
         self.write_html(table, table_line_separators=True)
         for rows in rest_pages:
             self.add_page()
-            table = render_to_string('diets_table.html', {'rows': rows})
+            table = render_to_string('diets/diets_table.html', {'rows': rows})
             self.set_y(30)
             self.set_font(family=DEFAULT_FONT_FAMILY, style='', size=6)
             self.write_html(table, table_line_separators=True)

@@ -17,6 +17,12 @@ class ItvStatusUpdater:
             self.__update_itv_states_of_vehicle(vehicle)
 
     def __update_itv_states_of_vehicle(self, vehicle):
+        last_itv = vehicle.itvs.last()
+        # Si la última ITV está completa, significa que se ha eliminado previamente la última operación, quedando
+        # esta última con un estado que no debería tener de ITV. Por lo tanto, se debe actualizar el estado de la
+        # última ITV a PENDING o EXPIRED.
+        if last_itv.status == MaintenanceStatus.COMPLETED:
+            self.__update_itv(last_itv)
         for itv in vehicle.itvs.filter(status__in=[MaintenanceStatus.NEW, MaintenanceStatus.PENDING]):
             self.__update_itv(itv)
 

@@ -22,7 +22,7 @@ class VehicleUseReportEmail(EmailSender):
         return emails
 
     def get_body(self):
-        body = render_to_string('use_of_vehicles.html')
+        body = render_to_string('reports/use_of_vehicles.html')
         return body
 
     def attach_report(self):

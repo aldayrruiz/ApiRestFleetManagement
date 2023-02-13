@@ -22,7 +22,7 @@ class IncidentSolvedEmail(EmailSender):
     def get_body(self):
         payload = {'incident': self.incident, 'vehicle': self.vehicle, 'reservation': self.reservation,
                    'base_url': config('SERVER_URL')}
-        body = render_to_string('solved.html', payload)
+        body = render_to_string('incidents/solved.html', payload)
         return body
 
     def send(self):

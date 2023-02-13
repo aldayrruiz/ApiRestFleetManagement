@@ -15,10 +15,18 @@ class CleaningStatusUpdater:
     def update(self):
         vehicles = Vehicle.objects.filter(tenant=self.tenant, cleaning_card__isnull=False)
         for vehicle in vehicles:
-            self.__update_itv_states_of_vehicle(vehicle)
+            self.__update_cleaning_states_of_vehicle(vehicle)
 
-    def __update_itv_states_of_vehicle(self, vehicle: Vehicle):
+    def __update_cleaning_states_of_vehicle(self, vehicle: Vehicle):
         card = vehicle.cleaning_card
+        last_cleaning = vehicle.cleanings.last()
+        # Si la última limpieza está completa, significa que se ha eliminado previamente la última operación, quedando
+        # esta última con un estado que no debería tener de limpieza. Por lo tanto, se debe actualizar el estado de la
+        # última limpieza a PENDING o EXPIRED.
+        if last_cleaning.status == MaintenanceStatus.COMPLETED:
+            self.__update_cleaning(last_cleaning, card)
+
+        # Se actualizan los estados de las limpiezas NEW o PENDING. Los estados EXPIRED o COMPLETED no se actualizan.
         for cleaning in vehicle.cleanings.filter(status__in=[MaintenanceStatus.NEW, MaintenanceStatus.PENDING]):
             self.__update_cleaning(cleaning, card)
 

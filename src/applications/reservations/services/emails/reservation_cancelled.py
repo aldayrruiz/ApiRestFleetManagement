@@ -31,7 +31,7 @@ class ReservationCancelledSupervisorEmail(EmailSender):
     def get_body(self):
         future_reservations = self.get_future_recurrent_reservations()
         body = render_to_string(
-            'reservation_cancelled.html',
+            'reservations/cancelled.html',
             {'reservation': self.reservation,
              'owner': self.owner,
              'vehicle': self.reservation.vehicle,

@@ -21,7 +21,7 @@ class TenantBillingEmail(EmailSender):
         return emails
 
     def get_body(self):
-        body = render_to_string('tenant_billing.html')
+        body = render_to_string('tenant/tenant_billing.html')
         return body
 
     def attach_report(self):

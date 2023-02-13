@@ -7,17 +7,16 @@ from applications.users.services.search import get_admins
 from utils.email.shared import EmailSender
 
 
-class MaintenanceOperationCreatedEmail(EmailSender, MaintenanceOperationEmailSender):
+class MaintenanceOperationCompletedEmail(EmailSender, MaintenanceOperationEmailSender):
 
     def __init__(self, tenant: Tenant, operation):
         self.tenant = tenant
         self.operation = operation
         self.operation_label = get_maintenance_operation_label(operation)
         self.vehicle_label = self.get_vehicle_label(self.operation.vehicle)
-        self.subject = f'Se ha registrado una operación de mantenimiento'
+        self.subject = f'Se ha completado una operación de mantenimiento'
         self.body = self.get_body()
         self.admins = self.get_admin_emails()
-
         super().__init__(self.admins, self.subject)
 
     def get_admin_emails(self):
@@ -27,7 +26,7 @@ class MaintenanceOperationCreatedEmail(EmailSender, MaintenanceOperationEmailSen
         return emails
 
     def get_body(self):
-        body = render_to_string('created.html',
+        body = render_to_string('maintenance/completed.html',
                                 {'vehicle': self.operation.vehicle,
                                  'operation_label': self.operation_label,
                                  'url': self.get_maintenance_url()})

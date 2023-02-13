@@ -30,7 +30,7 @@ class IncidentCreatedEmail(EmailSender):
     def get_body(self):
         payload = {'incident': self.incident, 'vehicle': self.vehicle, 'reservation': self.reservation,
                    'base_url': config('SERVER_URL')}
-        body = render_to_string('created.html', payload)
+        body = render_to_string('incidents/created.html', payload)
         return body
 
     def send(self):
