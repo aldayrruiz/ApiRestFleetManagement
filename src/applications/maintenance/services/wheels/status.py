@@ -19,7 +19,7 @@ class WheelsStatusUpdater(StateUpdater):
         # Si la última revisión está completa, significa que se ha eliminado previamente la última operación, quedando
         # esta última con un estado que no debería tener de revisión. Por lo tanto, se debe actualizar el estado de la
         # última revisión a PENDING o EXPIRED.
-        if last_wheels.status == MaintenanceStatus.COMPLETED:
+        if last_wheels and last_wheels.status == MaintenanceStatus.COMPLETED:
             self.update_register(last_wheels)
 
         for wheels in vehicle.wheels.filter(status__in=[MaintenanceStatus.NEW, MaintenanceStatus.PENDING],
