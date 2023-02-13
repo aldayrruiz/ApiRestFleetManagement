@@ -1,12 +1,9 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_204_NO_CONTENT
 
-from applications.maintenance.exceptions.operation_completed import MaintenanceOperationCompletedError
 from applications.maintenance.serializers.odometer.photo import CreateOdometerPhotoSerializer
-from applications.users.models import User
+from shared.permissions import ONLY_AUTHENTICATED
 
 
 class OdometerPhotoViewSet(viewsets.ViewSet):
@@ -17,11 +14,9 @@ class OdometerPhotoViewSet(viewsets.ViewSet):
         serializer.save()
         return Response(serializer.data)
 
-    def destroy(self, request, pk=None):
-        requester: User = self.request.user
-        queryset = requester.odometer_photos.all()
-        photo = get_object_or_404(queryset, pk=pk)
-        if photo.odometer.completed:
-            raise MaintenanceOperationCompletedError()
-        photo.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
+    def get_permissions(self):
+        if self.action in ['create']:
+            permission_classes = ONLY_AUTHENTICATED
+        else:
+            raise Exception('The HTTP action {} is not supported'.format(self.action))
+        return [permission() for permission in permission_classes]

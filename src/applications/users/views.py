@@ -151,7 +151,7 @@ class UserViewSet(viewsets.ViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'update']:
             permission_classes = ONLY_AUTHENTICATED
-        elif self.action in ['create', 'destroy', 'partial_update']:
+        elif self.action in ['destroy', 'partial_update']:
             permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
         else:
             permission_classes = ALLOW_UNAUTHENTICATED

@@ -18,7 +18,7 @@ from applications.diets.services.completer import DietUpdater
 from applications.diets.services.queryset import get_diet_queryset, get_diet_payment_queryset, get_diet_reports_queryset
 from applications.reservations.models import Reservation
 from applications.users.models import User
-from shared.permissions import ONLY_ADMIN_OR_SUPER_ADMIN
+from shared.permissions import ONLY_ADMIN_OR_SUPER_ADMIN, ONLY_AUTHENTICATED
 from utils.api.query import query_str
 
 
@@ -51,6 +51,13 @@ class DietViewSet(viewsets.ViewSet):
         updater = DietUpdater(diet, self.request.data, requester)
         serializer = updater.update()
         return Response(serializer.data)
+
+    def get_permissions(self):
+        if self.action in ['create', 'get_diet_by_reservation', 'partial_update']:
+            permission_classes = ONLY_AUTHENTICATED
+        else:
+            raise Exception('The HTTP action {} is not supported'.format(self.action))
+        return [permission() for permission in permission_classes]
 
 
 class DietPaymentViewSet(viewsets.ViewSet):
@@ -92,6 +99,13 @@ class DietPaymentViewSet(viewsets.ViewSet):
         payment.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
+    def get_permissions(self):
+        if self.action in ['create', 'retrieve', 'partial_update', 'destroy']:
+            permission_classes = ONLY_AUTHENTICATED
+        else:
+            raise Exception('The HTTP action {} is not supported'.format(self.action))
+        return [permission() for permission in permission_classes]
+
 
 class DietPhotoViewSet(viewsets.ViewSet):
 
@@ -110,6 +124,13 @@ class DietPhotoViewSet(viewsets.ViewSet):
             raise CompletedDietError()
         photo.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+    def get_permissions(self):
+        if self.action in ['create', 'destroy']:
+            permission_classes = ONLY_AUTHENTICATED
+        else:
+            raise Exception('The HTTP action {} is not supported'.format(self.action))
+        return [permission() for permission in permission_classes]
 
 
 class DietMonthlyPdfReportViewSet(viewsets.ViewSet):

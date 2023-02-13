@@ -22,7 +22,7 @@ class DietCompletedSupervisorEmail(EmailSender):
 
     def get_body(self):
         body = render_to_string(
-            'supervisor.html',
+            'diets/supervisor.html',
             {'diet': self.diet,
              'owner': self.diet.owner,
              'baseurl': config('SERVER_URL')

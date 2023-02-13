@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from applications.maintenance.models import CleaningCard
 from applications.maintenance.serializers.cleaning.card import CleaningCardSerializer
+from shared.permissions import ONLY_ADMIN_OR_SUPER_ADMIN
 
 
 class CleaningCardViewSet(viewsets.ViewSet):
@@ -23,3 +24,11 @@ class CleaningCardViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    def get_permissions(self):
+        if self.action in ['create', 'update']:
+            permission_classes = ONLY_ADMIN_OR_SUPER_ADMIN
+        else:
+            raise Exception('The HTTP action {} is not supported'.format(self.action))
+        return [permission() for permission in permission_classes]
+
