@@ -3,6 +3,8 @@ from dateutil import parser
 from utils.api.validators import is_valid_uuid
 
 
+INVALID_STRINGS = [None, '', 'undefined']
+
 def query_bool(request, query) -> bool:
     """
     The query must be a boolean like True, 'True', 'true'
@@ -13,30 +15,39 @@ def query_bool(request, query) -> bool:
     return request.query_params.get(query) in [True, 'true', 'True']
 
 
-def query_date(request, query):
+def query_date(request, query, required=False):
     if query not in request.query_params:
         return None
-    return parser.parse(request.query_params.get(query))
+    value = request.query_params.get(query)
+
+    if not required and value in INVALID_STRINGS:
+        return None
+
+    if required and value in INVALID_STRINGS:
+        raise ValidationError(f'Query {query} is required.')
+    return parser.parse(value)
 
 
 def query_str(request, query: str, required=False):
-    result = request.query_params.get(query)
-    if required and result in [None, '', 'undefined']:
+    value = request.query_params.get(query)
+
+    if required and value in INVALID_STRINGS:
         raise ValidationError(f'Query {query} is required.')
-    return result
+    return value
 
 
 def query_uuid(request, query, required=False):
-    val = query_str(request, query)
-    is_valid = is_valid_uuid(val)
+    value = query_str(request, query)
+    is_valid = is_valid_uuid(value)
 
-    if not required and val in [None, '', 'undefined']:
+    if not required and value in INVALID_STRINGS:
         return None
 
-    if required and val in [None, '', 'undefined']:
+    if required and value in INVALID_STRINGS:
         raise ValidationError(f'Query {query} is required.')
 
     if required and not is_valid:
         raise ValidationError(f'Query {query} is not an UUID v4.')
 
-    return val
+    return value
+

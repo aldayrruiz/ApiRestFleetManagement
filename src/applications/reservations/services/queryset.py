@@ -1,9 +1,11 @@
 from applications.reservations.models import Reservation
-from applications.users.models import Role
+from applications.tenants.models import Tenant
+from applications.users.models import Role, User
+from applications.vehicles.models import Vehicle
 from utils.dates import get_now_utc
 
 
-def get_reservation_queryset(requester, take_all=False, vehicle_id=None, _from=None, _to=None):
+def get_reservation_queryset(requester, take_all=False, owner_id=None, vehicle_id=None, _from=None, _to=None):
     tenant = requester.tenant
     if requester.role in [Role.ADMIN, Role.SUPER_ADMIN] and take_all:
         # For admin web - All reservations
@@ -13,9 +15,13 @@ def get_reservation_queryset(requester, take_all=False, vehicle_id=None, _from=N
         # Filter by tenant is not needed because of own requester
         queryset = Reservation.objects.filter(tenant=tenant, owner=requester)
 
+    if owner_id:
+        # If reservations of user is specified
+        queryset = queryset.filter(owner_id=owner_id)
+
     if vehicle_id:
         # If reservations of vehicle is specified
-        queryset = Reservation.objects.filter(tenant=tenant, vehicle_id=vehicle_id)
+        queryset = queryset.filter(vehicle_id=vehicle_id)
 
     if _from and _to:
         # Not needed, but useful in future
