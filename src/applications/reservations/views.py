@@ -25,7 +25,7 @@ from applications.reservations.services.timer import reservation_already_ended, 
 from applications.vehicles.exceptions.no_vehicles_available import NoVehiclesAvailableError
 from shared.pagination.default import StandardResultsSetPagination
 from shared.permissions import IsVehicleAllowedOrAdmin, IsNotDisabled, ONLY_AUTHENTICATED
-from utils.api.query import query_bool, query_date, query_str
+from utils.api.query import query_bool, query_date, query_str, query_uuid
 from utils.dates import is_after_now, now_utc
 
 logger = logging.getLogger(__name__)
@@ -224,15 +224,33 @@ class ReservationViewSet(viewsets.ViewSet):
             raise CannotReserveVehicleDisabled()
 
 
-class NewReservationViewSet(viewsets.ModelViewSet):
+class PaginatedReservationViewSet(viewsets.ModelViewSet):
     serializer_class = SimpleReservationSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsNotDisabled, IsVehicleAllowedOrAdmin]
+
+    def create(self, request, *args, **kwargs):
+        pass
+
+    def update(self, request, *args, **kwargs):
+        pass
+
+    def partial_update(self, request, *args, **kwargs):
+        pass
+
+    def destroy(self, request, *args, **kwargs):
+        pass
 
     def get_queryset(self):
         requester = self.request.user
         take_all = query_bool(self.request, 'takeAll')
-        vehicle_id = query_str(self.request, 'vehicleId')
+        vehicle_id = query_uuid(self.request, 'vehicleId')
+        owner_id = query_uuid(self.request, 'ownerId')
         _from = query_date(self.request, 'from')
         _to = query_date(self.request, 'to')
-        return get_reservation_queryset(requester, take_all, vehicle_id, _from, _to)
+        return get_reservation_queryset(requester=requester,
+                                        take_all=take_all,
+                                        owner_id=owner_id,
+                                        vehicle_id=vehicle_id,
+                                        _from=_from,
+                                        _to=_to)
