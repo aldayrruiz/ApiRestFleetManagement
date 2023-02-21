@@ -13,7 +13,7 @@ class MaintenanceOperationPendingEmail(EmailSender, MaintenanceOperationEmailSen
         self.operation = operation
         self.operation_label = operation_label
         self.vehicle_label = self.get_vehicle_label(self.operation.vehicle)
-        self.subject = f'Operación de mantenimiento a punto de caducar'
+        self.subject = f'Operación de mantenimiento pendiente de revisar'
         self.body = self.get_body()
         self.admins = self.get_admin_emails()
 
