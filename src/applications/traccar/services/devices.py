@@ -6,7 +6,7 @@ from applications.vehicles.models import Vehicle
 
 class TraccarDevices:
     @staticmethod
-    def get(self, vehicle: Vehicle):
+    def get(vehicle: Vehicle):
         """
         List of devices.
         """
