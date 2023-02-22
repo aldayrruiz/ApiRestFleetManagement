@@ -13,6 +13,7 @@ class Odometer(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='odometers')
     date = models.DateTimeField()
     kilometers = models.DecimalField(default=0, max_digits=10, decimal_places=2, blank=True)
+    old_kilometers = models.DecimalField(default=0, max_digits=10, decimal_places=2, blank=True)
     completed = models.BooleanField(default=False)
     last_updated = models.DateTimeField(auto_now=True)
     date_stored = models.DateTimeField(auto_now_add=True)
