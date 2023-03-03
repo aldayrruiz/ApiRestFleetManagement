@@ -19,7 +19,7 @@ class CleaningStatusUpdater:
 
     def __update_cleaning_states_of_vehicle(self, vehicle: Vehicle):
         card = vehicle.cleaning_card
-        last_cleaning = vehicle.cleanings.last()
+        last_cleaning = vehicle.cleanings.order_by('date').last()
         # Si la última limpieza está completa, significa que se ha eliminado previamente la última operación, quedando
         # esta última con un estado que no debería tener de limpieza. Por lo tanto, se debe actualizar el estado de la
         # última limpieza a PENDING o EXPIRED.

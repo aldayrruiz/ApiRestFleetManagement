@@ -20,7 +20,7 @@ class OdometerStatusUpdater:
             self.__update_odometer_states_of_vehicle(vehicle, card)
 
     def __update_odometer_states_of_vehicle(self, vehicle: Vehicle, card: OdometerCard):
-        last_odometer = vehicle.odometers.last()
+        last_odometer = vehicle.odometers.order_by('date').last()
         # Si la última limpieza está completa, significa que se ha eliminado previamente la última operación, quedando
         # esta última con un estado que no debería tener de limpieza. Por lo tanto, se debe actualizar el estado de la
         # última limpieza a PENDING o EXPIRED.

@@ -7,7 +7,7 @@ from applications.maintenance.services.revision.status import RevisionStatusUpda
 from applications.maintenance.services.wheels.status import WheelsStatusUpdater
 from applications.tenants.models import Tenant
 
-tenants = Tenant.objects.filter(name='Pruebas Local')
+tenants = Tenant.objects.all()
 
 for tenant in tenants:
 
