@@ -12,8 +12,9 @@ class OdometerCreator:
         # Get current_kilometers kilometers & save it because of rollback
         last_position = TraccarPositions.last_position(vehicle=self.vehicle)
         current_kilometers = last_position['attributes']['totalDistance'] / 1000
-        self.serializer.save(old_kilometers=current_kilometers)
+        odometer = self.serializer.save(old_kilometers=current_kilometers)
         self.__update_total_distance()
+        return odometer
 
     def __update_total_distance(self):
         kilometers = self.serializer.validated_data['kilometers']

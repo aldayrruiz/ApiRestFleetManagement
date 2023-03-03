@@ -4,6 +4,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from applications.maintenance.serializers.odometer.odometer import CreateOdometerSerializer, SimpleOdometerSerializer
+from applications.maintenance.services.odometer.completer import OdometerCompleter
 from applications.maintenance.services.odometer.create import OdometerCreator
 from applications.maintenance.services.odometer.destroyer import OdometerDestroyer
 from applications.maintenance.services.odometer.queryset import get_odometer_queryset
@@ -17,7 +18,8 @@ class OdometerViewSet(viewsets.ViewSet):
         serializer = CreateOdometerSerializer(data=self.request.data, context={'request': self.request})
         serializer.is_valid(raise_exception=True)
         creator = OdometerCreator(serializer)
-        creator.save()
+        odometer = creator.save()
+        OdometerCompleter(odometer).update_old_ones_to_completed()
         return Response(serializer.data)
 
     @swagger_auto_schema(responses={200: SimpleOdometerSerializer()})

@@ -23,4 +23,4 @@ class SimpleOdometerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Odometer
-        fields = ['id', 'owner', 'vehicle', 'date', 'kilometers', 'completed', 'last_updated', 'date_stored', 'photos']
+        fields = ['id', 'owner', 'vehicle', 'date', 'kilometers', 'completed', 'status', 'last_updated', 'date_stored', 'photos']

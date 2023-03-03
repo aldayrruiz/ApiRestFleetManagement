@@ -33,6 +33,8 @@ class StateUpdater:
         current_kilometers = last_position['attributes']['totalDistance'] / 1000
         state_changed_by_km = None
         caution_kilometers = register.next_kilometers - 1000
+        if current_kilometers < caution_kilometers:
+            state_changed_by_km = MaintenanceStatus.NEW
         if caution_kilometers < current_kilometers < register.next_kilometers:
             state_changed_by_km = MaintenanceStatus.PENDING
         if current_kilometers > register.next_kilometers:
@@ -52,5 +54,3 @@ class StateUpdater:
             self.updates_to_expired.append(register)
         if new_state == MaintenanceStatus.PENDING:
             self.updates_to_pending.append(register)
-
-
