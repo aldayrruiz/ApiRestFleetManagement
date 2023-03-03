@@ -15,7 +15,7 @@ class WheelsStatusUpdater(StateUpdater):
             self.__update_itv_states_of_vehicle(vehicle)
 
     def __update_itv_states_of_vehicle(self, vehicle):
-        last_wheels = vehicle.wheels.last()
+        last_wheels = vehicle.wheels.order_by('date').last()
         # Si la última revisión está completa, significa que se ha eliminado previamente la última operación, quedando
         # esta última con un estado que no debería tener de revisión. Por lo tanto, se debe actualizar el estado de la
         # última revisión a PENDING o EXPIRED.
