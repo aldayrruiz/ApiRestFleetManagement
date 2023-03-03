@@ -32,7 +32,7 @@ class CleaningStatusUpdater:
 
     def __update_cleaning(self, cleaning: Cleaning, card: CleaningCard):
         duration = parse_duration(card.date_period)
-        next_cleaning = cleaning.date_stored + duration
+        next_cleaning = cleaning.date + duration
         caution_date = next_cleaning - relativedelta(days=7)
         if now_utc() < caution_date:
             cleaning.status = MaintenanceStatus.NEW
