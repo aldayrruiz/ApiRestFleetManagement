@@ -185,5 +185,6 @@ class VehicleViewSet(viewsets.ViewSet):
 
 
 def get_vehicle_name_for_traccar(tenant, serializer):
-    name = '{} {} {}'.format(tenant.name, serializer.validated_data['brand'], serializer.validated_data['model'])
+    data = serializer.validated_data
+    name = f"{tenant.short_name} {data['brand']} {data['model']} {data['number_plate']}"
     return name

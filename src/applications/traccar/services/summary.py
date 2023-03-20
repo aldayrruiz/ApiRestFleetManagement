@@ -16,12 +16,12 @@ class SummaryReport:
 
     def get_summary(self):
         device_id = self.reservation.vehicle.gps_device_id
-        response = TraccarAPI.get(device_id, self.reservation.start, self.reservation.end, 'reports/summary')
+        real_start, real_end = self.get_real_start_and_end()
+
+        response = TraccarAPI.get(device_id, real_start, real_end, 'reports/summary')
         if not response.ok:
             raise APIException('Could not receive report summary.', code=response.status_code)
         summary = response.json()[0]
-
-        real_start, real_end = self.get_real_start_and_end()
 
         summary['realStartTime'] = from_date_to_str_date_traccar(real_start)
         summary['realEndTime'] = from_date_to_str_date_traccar(real_end)
