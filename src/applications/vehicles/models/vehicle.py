@@ -2,6 +2,7 @@ import uuid
 
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django_resized import ResizedImageField
 
 from applications.insurance_companies.models.insurance_company import InsuranceCompany
 from applications.tenants.models.tenant import Tenant
@@ -16,9 +17,7 @@ MAX_LENGTH_NUMBER_PLATE = 8
 
 class Vehicle(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-
     model = models.CharField(max_length=50)
-
     brand = models.CharField(max_length=20)
 
     number_plate = models.CharField(
@@ -28,25 +27,12 @@ class Vehicle(models.Model):
     )
 
     gps_device = models.OneToOneField(Device, null=True, on_delete=models.CASCADE)
-
     tenant = models.ForeignKey(Tenant, related_name='vehicles', on_delete=models.CASCADE)
-
     date_stored = models.DateTimeField(auto_now_add=True)
-
     is_disabled = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
-
-    type = models.CharField(
-        max_length=20,
-        choices=VehicleType.choices,
-        default=VehicleType.TOURISM
-    )
-
-    fuel = models.CharField(
-        max_length=10,
-        choices=Fuel.choices,
-        default=Fuel.DIESEL
-    )
+    type = models.CharField(max_length=20, choices=VehicleType.choices, default=VehicleType.TOURISM)
+    fuel = models.CharField(max_length=10, choices=Fuel.choices, default=Fuel.DIESEL)
 
     insurance_company = models.ForeignKey(
         InsuranceCompany,
@@ -58,8 +44,7 @@ class Vehicle(models.Model):
     )
 
     policy_number = models.CharField(default='', blank=True, max_length=20)
-
-    icon = models.PositiveSmallIntegerField(default=1)
+    icon = ResizedImageField(force_format='WEBP', size=[568, 568], quality=100, upload_to='vehicles/icons', blank=True, null=True)
 
     def delete(self, *args, **kwargs):
         self.gps_device.delete()

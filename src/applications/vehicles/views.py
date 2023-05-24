@@ -5,20 +5,19 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
+from rest_framework.status import HTTP_204_NO_CONTENT
 
 from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
-from applications.traccar.models import Device
 from applications.traccar.services.positions import TraccarPositions
-from applications.traccar.utils import post, put, delete
+from applications.traccar.utils import delete
 from applications.users.models import ActionType
-from applications.vehicles.exceptions.number_plate_already_in_use import NumberPlateAlreadyInUse
-from applications.vehicles.exceptions.was_created_again import VehicleCreatedAgainError
-from applications.vehicles.models import VehicleRegistrationHistory, Vehicle
+from applications.vehicles.models import VehicleRegistrationHistory
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer, DisableVehicleSerializer
+from applications.vehicles.services.creator import VehicleCreator
 from applications.vehicles.services.queryset import get_vehicles_queryset
+from applications.vehicles.services.updater import VehicleUpdater
 from shared import permissions
 from utils.api.query import query_bool
 
@@ -63,38 +62,7 @@ class VehicleViewSet(viewsets.ViewSet):
         logger.info('Create vehicle request received.')
         serializer = CreateOrUpdateVehicleSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            vehicle = Vehicle.objects.get(number_plate=serializer.initial_data['number_plate'])
-        except Vehicle.DoesNotExist:
-            vehicle = None
-
-        if vehicle and vehicle.is_deleted:
-            # Vehicle already exists but was deleted. We can create it again.
-            VehicleRegistrationHistory.objects.create(vehicle=vehicle, tenant=tenant, action=ActionType.CREATED)
-            vehicle.is_deleted = False
-            vehicle.save()
-            raise VehicleCreatedAgainError()
-        elif vehicle and not vehicle.is_deleted:
-            # Vehicle already exists and is not deleted. We cannot create it again.
-            raise NumberPlateAlreadyInUse()
-
-        # Vehicle does not exist. We can create it.
-        if not serializer.initial_data.__contains__('gps_device'):
-            return Response({'gps_device': ['Este campo es requerido']}, status=HTTP_400_BAD_REQUEST)
-
-        imei = serializer.initial_data['gps_device']
-        name = get_vehicle_name_for_traccar(tenant, serializer)
-        response = post('devices', data={'uniqueId': imei, 'name': name})
-
-        if not response.ok:
-            logger.error('Traccar sent a device creation response (status {}).'.format(response.status_code))
-            return Response({'errors': 'Error trying to create gps device'}, status=response.status_code)
-
-        j_device = response.json()
-        device = Device(id=j_device['id'], imei=j_device['uniqueId'], name=j_device['name'], tenant=tenant)
-        device.save()
-        vehicle = serializer.save(tenant=requester.tenant, gps_device=device)
-        VehicleRegistrationHistory.objects.create(vehicle=vehicle, tenant=tenant, action=ActionType.CREATED)
+        VehicleCreator.create(tenant, serializer)
         return Response(serializer.data)
 
     @swagger_auto_schema(request_body=CreateOrUpdateVehicleSerializer, responses={200: CreateOrUpdateVehicleSerializer()})
@@ -104,27 +72,11 @@ class VehicleViewSet(viewsets.ViewSet):
         """
         logger.info('Update vehicle request received.')
         requester = self.request.user
-        tenant = requester.tenant
         queryset = get_allowed_vehicles_queryset(requester, even_disabled=True)
         vehicle = get_object_or_404(queryset, pk=pk)
         serializer = CreateOrUpdateVehicleSerializer(vehicle, self.request.data)
         serializer.is_valid(raise_exception=True)
-
-        if not serializer.initial_data.__contains__('gps_device'):
-            return Response({'gps_device': ['Este campo es requerido']}, status=HTTP_400_BAD_REQUEST)
-
-        device = vehicle.gps_device
-        imei = serializer.initial_data['gps_device']
-        name = get_vehicle_name_for_traccar(tenant, serializer)
-        response = put(f'devices/{device.id}', data={'id': device.id, 'uniqueId': imei, 'name': name})
-
-        if not response.ok:
-            return Response({'errors': 'Error trying to edit gps device'}, status=response.status_code)
-
-        device.imei = imei
-        device.name = name
-        device.save()
-        serializer.save(gps_device=device)
+        VehicleUpdater.update(vehicle, serializer)
         return Response(serializer.data)
 
     @swagger_auto_schema(request_body=DisableVehicleSerializer, responses={200: DisableVehicleSerializer()})
