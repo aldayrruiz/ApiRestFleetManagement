@@ -121,3 +121,5 @@ production.py
 /src/fleet_management/init_pruebas_tenant.py
 !/src/applications/maintenance/**/wheels/
 /pdf/*
+
+/**/docker-compose.prod.yml
