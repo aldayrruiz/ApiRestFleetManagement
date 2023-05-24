@@ -8,6 +8,7 @@ coreschema==0.0.4
 defusedxml==0.7.1
 Django==4.1.7
 django-cors-headers==3.13.0
+django-resized==1.0.2
 djangorestframework==3.14.0
 docopt==0.6.2
 drf-extra-fields==3.4.1
