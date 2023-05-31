@@ -23,6 +23,7 @@ inflection==0.5.1
 isoduration==20.11.0
 itypes==1.2.0
 Jinja2==3.1.2
+kaleido==0.2.1
 MarkupSafe==2.1.2
 numpy==1.24.2
 opencv-python==4.7.0.68
