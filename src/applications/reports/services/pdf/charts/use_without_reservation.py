@@ -43,6 +43,7 @@ class UseWithoutReservationChart(ChartGenerator):
     def get_hours(self):
         hours = []
         for vehicle in self.vehicles:
+            logger.info(f'Processing vehicle {vehicle}')
             reservations = self.all_reservations.filter(vehicle=vehicle)
             # Si no hay reservas, obtener los viajes del mes, y sumar los tiempos
             if not reservations:
@@ -108,4 +109,4 @@ class UseWithoutReservationChart(ChartGenerator):
         )
 
     def get_stats(self):
-        return np.array(self.hours, np.float)
+        return np.array(self.hours, float)

@@ -88,5 +88,5 @@ class RealUseOfVehicleChart(ChartGenerator):
         )
 
     def get_stats(self):
-        return np.array(self.reserved_hours, np.float), \
-               np.array(self.free_hours, np.float)
+        return np.array(self.reserved_hours, float), \
+               np.array(self.free_hours, float)
