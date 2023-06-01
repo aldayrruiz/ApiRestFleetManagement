@@ -59,7 +59,11 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
         for reservation in reservations:
             device_id = reservation.vehicle.gps_device_id
 
-            reports = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/summary').json()
+            summary = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/summary').json()
+            if not summary:
+                distances.append(0)
+                max_speeds.append(0)
+                continue
             time.sleep(0.2)
             route = TraccarAPI.get(device_id, reservation.start, reservation.end, 'reports/route').json()
 
@@ -76,7 +80,7 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
             distance = from_meters_to_kilometers(float(np.sum(pos_distances)))
 
             # Convert units
-            report = report_units_converter(reports[0])
+            report = report_units_converter(summary[0])
             distances.append(distance)
             max_speeds.append(report['maxSpeed'])
 
@@ -126,6 +130,6 @@ class DistanceMaxAverageSpeedChart(ChartGenerator):
         )
 
     def get_stats(self):
-        return np.array(self.distances, np.float), \
-               np.array(self.max_speeds, np.float), \
-               np.array(self.average_speeds, np.float)
+        return np.array(self.distances, float), \
+               np.array(self.max_speeds, float), \
+               np.array(self.average_speeds, float)

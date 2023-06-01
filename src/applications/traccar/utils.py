@@ -9,9 +9,9 @@ auth = (config('TRACCAR_USER'), config('TRACCAR_PASSWORD'))
 headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
 
-def get(target, params, pk=None):
+def get(target, params, pk=None, timeout=1200):
     url = _get_url(target, pk)
-    return requests.get(url, headers=headers, params=params, auth=auth, timeout=10)
+    return requests.get(url, headers=headers, params=params, auth=auth, timeout=timeout)
 
 
 def post(target, data):

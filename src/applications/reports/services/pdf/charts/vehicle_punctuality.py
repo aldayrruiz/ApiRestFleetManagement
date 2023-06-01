@@ -73,6 +73,7 @@ class PunctualityChart(ChartGenerator):
         frees_out, frees_in = 0, 0
         not_taken = 0
         for reservation in reservations:
+            logger.info(f'Processing reservation {reservation.id}')
             previous_reservation, next_reservation = PunctualityHelpers.get_closer_reservations(reservation)
             [t_hours_out, t_hours_in, t_not_taken] = self.get_takes_punctuality(previous_reservation, reservation,
                                                                                 next_reservation)
@@ -99,13 +100,17 @@ class PunctualityChart(ChartGenerator):
         if not PunctualityHelpers.vehicle_moved_during_reservation(reservation):
             return [0, 0, reservation_duration]
 
-        time.sleep(0.1)
-
         # Obtener los stops y viajes para saber si el vehículo estaba en movimiento al inicio de la reserva.
-        stops = TraccarAPI.stops(device_id, start_limit, end_limit)
-        time.sleep(0.1)
-        trips = TraccarAPI.trips(device_id, start_limit, end_limit)
+        all_stops = TraccarAPI.new_stops(device_id, start_limit, end_limit)
+        stops = TraccarAPI.filter_routes(all_stops, start_limit, end_limit)
         stopped_at_start = PunctualityHelpers.stopped_at_reservation_start(reservation, stops)
+
+        if stopped_at_start:
+            return PunctualityChart.get_takes_punctuality_inner_reservation(stops, reservation, reservation_duration,
+                                                                            end_limit)
+
+        all_trips = TraccarAPI.new_trips(device_id, start_limit, end_limit)
+        trips = TraccarAPI.filter_routes(all_trips, start_limit, end_limit)
         trip_at_start = PunctualityHelpers.get_trip_at(start, trips)
 
         # Si no se ha encontrado ni que este inmóvil ni en movimiento durante el inicio de la reserva.
@@ -115,13 +120,7 @@ class PunctualityChart(ChartGenerator):
 
         # Si ocurre un stop durante el inicio de la reserva, solo contar la puntualidad dentro de la reserva.
         if stopped_at_start:
-            # Tomar el primer viaje dentro de la reserva como la puntualidad DENTRO de la reserva.
-            trips = TraccarAPI.trips(device_id, start, end_limit)
-            if not trips:
-                logger.error(f'El vehículo se ha movido, pero no tiene ningún viaje dentro de la reserva')
-                return [0, 0, reservation_duration]
-            hours_in = PunctualityHelpers.get_takes_hours_from_trips(trips, reservation)
-            return [0, hours_in, 0]
+            return PunctualityChart.get_takes_punctuality_inner_reservation(trips, reservation, reservation_duration, end_limit)
         # Si NO ocurre un stop durante el inicio de la reserva, solo contar la puntualidad fuera de la reserva.
         else:
             trip_start = parser.parse(trip_at_start['startTime'])
@@ -130,9 +129,18 @@ class PunctualityChart(ChartGenerator):
             return [hours_out, 0, 0]
 
     @staticmethod
+    def get_takes_punctuality_inner_reservation(trips, reservation, reservation_duration, end_limit):
+        # Tomar el primer viaje dentro de la reserva como la puntualidad DENTRO de la reserva.
+        trips = TraccarAPI.filter_routes(trips, reservation.start, end_limit)
+        if not trips:
+            logger.error(f'El vehículo se ha movido, pero no tiene ningún viaje dentro de la reserva')
+            return [0, 0, reservation_duration]
+        hours_in = PunctualityHelpers.get_takes_hours_from_trips(trips, reservation)
+        return [0, hours_in, 0]
+
+    @staticmethod
     def get_frees_punctuality(previous_reservation, reservation, next_reservation):
         device_id = reservation.vehicle.gps_device.id
-        start = reservation.start
         end = reservation.end
 
         # Calcular la puntualidad fuera de la reserva (antes o posteriormente), solo tener en cuenta un error de 1 hora.
@@ -144,20 +152,18 @@ class PunctualityChart(ChartGenerator):
         if not PunctualityHelpers.vehicle_moved_during_reservation(reservation):
             return [0, 0]
 
-        time.sleep(0.1)
-
-        trips = TraccarAPI.trips(device_id, initial_limit, last_limit)
+        all_trips = TraccarAPI.new_trips(device_id, initial_limit, last_limit)
+        trips = TraccarAPI.filter_routes(all_trips, initial_limit, last_limit)
         if not trips:
             logger.error('No ha ocurrido ningún TRIP durante toda la reserva. No se ha tomado el vehículo')
             return [0, 0]
 
-        time.sleep(0.1)
         trip_at_end = PunctualityHelpers.get_trip_at(end, trips)
         # Si NO ocurre un viaje durante el final de la reserva, solo contar la puntualidad dentro de la reserva.
         if not trip_at_end:
             # Consideramos los viajes que comiencen un poco antes de la reserva. Por si, el viaje empezaba antes.
             # Y ponemos como límite el final, dado que no ocurre un viaje al final.
-            trips = TraccarAPI.trips(device_id, initial_limit, end)
+            trips = TraccarAPI.filter_routes(trips, initial_limit, end)
             if not trips:
                 logger.error('No ha ocurrido ningún TRIP durante la reserva. No se ha tomado el vehículo')
                 return [0, 0]
@@ -203,8 +209,8 @@ class PunctualityChart(ChartGenerator):
                           orientation=self.orientation)
 
     def get_stats(self):
-        return np.array(self.takes_out, np.float), \
-               np.array(self.takes_in, np.float), \
-               np.array(self.not_taken, np.float), \
-               np.array(self.frees_out, np.float), \
-               np.array(self.frees_in, np.float)
+        return np.array(self.takes_out, float), \
+               np.array(self.takes_in, float), \
+               np.array(self.not_taken, float), \
+               np.array(self.frees_out, float), \
+               np.array(self.frees_in, float)

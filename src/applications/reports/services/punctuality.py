@@ -32,7 +32,7 @@ class PunctualityHelpers:
         end = reservation.end
 
         summary = TraccarAPI.get(device_id, start, end, 'reports/summary').json()
-        if summary[0]['distance'] == 0:
+        if not summary or summary[0]['distance'] == 0:
             logger.error('El vehículo no se ha movido, ergo NO HA OCURRIDO')
             return False
         return True

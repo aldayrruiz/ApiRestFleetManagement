@@ -78,4 +78,4 @@ class FuelConsumedChart(ChartGenerator):
         )
 
     def get_stats(self):
-        return np.array(self.fuels, np.float)
+        return np.array(self.fuels, float)
