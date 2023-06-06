@@ -47,16 +47,28 @@ class UseWithoutReservationChart(ChartGenerator):
             reservations = self.all_reservations.filter(vehicle=vehicle)
             # Si no hay reservas, obtener los viajes del mes, y sumar los tiempos
             if not reservations:
+                logger.info(f'No reservations found for vehicle {vehicle}')
                 first_day_this_month = self.first_day
                 first_day_next_month = self.first_day + relativedelta(months=1)
-                trips = TraccarAPI.trips(vehicle.gps_device.id, first_day_this_month, first_day_next_month)
-                if not trips or len(trips) == 0:
+                summaries = TraccarAPI.get(vehicle.gps_device.id, first_day_this_month, first_day_next_month, 'reports/summary').json()
+                if not summaries:
+                    logger.info(f'No summaries found for vehicle {vehicle}')
                     hours.append(0)
                     continue
-                durations = list(map(lambda trip: trip['duration'], trips))
-                total_duration = np.sum(np.array(durations))
-                duration_into_hours = self.get_hours_from_duration(total_duration)
-                hours.append(duration_into_hours)
+                summary = summaries[0]
+                duration = summary['engineHours'] / 1000
+                if duration == 0:
+                    logger.info(f'No duration found for vehicle {vehicle} with summary, trying with trips')
+                    try:
+                        trips = TraccarAPI.trips(vehicle.gps_device.id, first_day_this_month, first_day_next_month)
+                    except Exception as e:
+                        logger.error(f'Error getting trips for vehicle {vehicle}: {e}')
+                        hours.append(0)
+                        continue
+                    durations = list(map(lambda trip: trip['duration'], trips))
+                    duration = np.sum(np.array(durations))
+                    duration = self.get_hours_from_duration(duration)
+                hours.append(duration)
                 continue
             first_reservation = reservations.first()
             last_reservation = reservations.last()
