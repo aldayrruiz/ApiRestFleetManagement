@@ -50,6 +50,9 @@ class UseWithoutReservationChart(ChartGenerator):
                 first_day_this_month = self.first_day
                 first_day_next_month = self.first_day + relativedelta(months=1)
                 trips = TraccarAPI.trips(vehicle.gps_device.id, first_day_this_month, first_day_next_month)
+                if not trips or len(trips) == 0:
+                    hours.append(0)
+                    continue
                 durations = list(map(lambda trip: trip['duration'], trips))
                 total_duration = np.sum(np.array(durations))
                 duration_into_hours = self.get_hours_from_duration(total_duration)
