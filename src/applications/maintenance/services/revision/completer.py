@@ -15,6 +15,6 @@ class RevisionCompleter:
 
     def update_old_ones_to_completed(self):
         queryset = get_revision_queryset(self.requester, self.vehicle.id)
-        old_revisions = queryset.exclude(pk=self.new_revision.id).all()
+        old_revisions = queryset.exclude(pk=self.new_revision.id, status=MaintenanceStatus.COMPLETED).all()
         OperationCompleter.notify_operation_completed_if_last_one_pending_or_expired(old_revisions, self.new_revision)
         old_revisions.update(status=MaintenanceStatus.COMPLETED)

@@ -16,6 +16,6 @@ class WheelsCompleter:
 
     def update_old_ones_to_completed(self):
         queryset = get_wheels_queryset(self.requester, self.vehicle.id)
-        old_wheels = queryset.exclude(pk=self.new_wheels.id).all()
+        old_wheels = queryset.exclude(pk=self.new_wheels.id, status=MaintenanceStatus.COMPLETED).all()
         OperationCompleter.notify_operation_completed_if_last_one_pending_or_expired(old_wheels, self.new_wheels)
         old_wheels.update(status=MaintenanceStatus.COMPLETED)

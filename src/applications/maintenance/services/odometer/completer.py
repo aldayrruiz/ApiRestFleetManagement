@@ -15,6 +15,6 @@ class OdometerCompleter:
 
     def update_old_ones_to_completed(self):
         queryset = get_odometer_queryset(self.requester, self.vehicle.id)
-        old_odometers = queryset.exclude(pk=self.new_odometer.id).all()
+        old_odometers = queryset.exclude(pk=self.new_odometer.id, status=MaintenanceStatus.COMPLETED).all()
         OperationCompleter.notify_operation_completed_if_last_one_pending_or_expired(old_odometers, self.new_odometer)
         old_odometers.update(status=MaintenanceStatus.COMPLETED)
