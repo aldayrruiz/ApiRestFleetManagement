@@ -34,7 +34,7 @@ class OdometerStatusUpdater:
     def __update_odometer(self, odometer: Odometer, card: OdometerCard):
         km_period = card.km_period
         km_limit = odometer.old_kilometers + km_period
-        km_caution = km_limit - 200
+        km_caution = km_limit - 1000
         last_position = TraccarPositions.last_position(odometer.vehicle)
         current_kilometers = last_position['attributes']['totalDistance'] / 1000
         if current_kilometers < km_caution:

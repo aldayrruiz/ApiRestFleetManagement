@@ -15,7 +15,7 @@ class CleaningCompleter:
 
     def update_old_ones_to_completed(self):
         queryset = get_cleaning_queryset(self.requester, self.vehicle.id)
-        old_cleanings = queryset.exclude(pk=self.new_cleaning.id).all()
+        old_cleanings = queryset.exclude(pk=self.new_cleaning.id, status=MaintenanceStatus.COMPLETED).all()
         OperationCompleter.notify_operation_completed_if_last_one_pending_or_expired(old_cleanings, self.new_cleaning)
         old_cleanings.update(status=MaintenanceStatus.COMPLETED)
 

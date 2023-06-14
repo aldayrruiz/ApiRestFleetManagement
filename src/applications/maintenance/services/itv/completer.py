@@ -15,6 +15,6 @@ class ItvCompleter:
 
     def update_old_ones_to_completed(self):
         queryset = get_itv_queryset(self.requester, self.vehicle.id)
-        old_itvs = queryset.exclude(pk=self.new_itv.id).all()
+        old_itvs = queryset.exclude(pk=self.new_itv.id, status=MaintenanceStatus.COMPLETED).all()
         OperationCompleter.notify_operation_completed_if_last_one_pending_or_expired(old_itvs, self.new_itv)
         old_itvs.update(status=MaintenanceStatus.COMPLETED)
