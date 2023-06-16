@@ -34,22 +34,24 @@ for tenant in tenants:
     # REVISION
     revision_updater = RevisionStatusUpdater(tenant)
     revision_updater.update()
+    cause = revision_updater.get_cause_label()
 
     for revision in revision_updater.updates_to_pending:
-        MaintenanceOperationPendingEmail(tenant, revision, 'revisión').send()
+        MaintenanceOperationPendingEmail(tenant, revision, 'revisión', cause).send()
 
     for revision in revision_updater.updates_to_expired:
-        MaintenanceOperationExpiredEmail(tenant, revision, 'revisión').send()
+        MaintenanceOperationExpiredEmail(tenant, revision, 'revisión', cause).send()
 
     # WHEELS
     wheels_updater = WheelsStatusUpdater(tenant)
     wheels_updater.update()
+    cause = wheels_updater.get_cause_label()
 
     for wheels in wheels_updater.updates_to_pending:
-        MaintenanceOperationPendingEmail(tenant, wheels, 'cambio de neumáticos').send()
+        MaintenanceOperationPendingEmail(tenant, wheels, 'cambio de neumáticos', cause).send()
 
     for wheels in wheels_updater.updates_to_expired:
-        MaintenanceOperationExpiredEmail(tenant, wheels, 'cambio de neumáticos').send()
+        MaintenanceOperationExpiredEmail(tenant, wheels, 'cambio de neumáticos', cause).send()
 
     # ODOMETER
     odometer_updater = OdometerStatusUpdater(tenant)

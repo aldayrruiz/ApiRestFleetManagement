@@ -8,10 +8,11 @@ from utils.email.shared import EmailSender
 
 class MaintenanceOperationPendingEmail(EmailSender, MaintenanceOperationEmailSender):
 
-    def __init__(self, tenant: Tenant, operation, operation_label: str):
+    def __init__(self, tenant: Tenant, operation, operation_label: str, cause_label: str = None):
         self.tenant = tenant
         self.operation = operation
         self.operation_label = operation_label
+        self.cause_label = cause_label
         self.vehicle_label = self.get_vehicle_label(self.operation.vehicle)
         self.subject = f'Operación de mantenimiento pendiente de revisar'
         self.body = self.get_body()
@@ -29,6 +30,7 @@ class MaintenanceOperationPendingEmail(EmailSender, MaintenanceOperationEmailSen
         body = render_to_string('maintenance/pending.html',
                                 {'vehicle': self.operation.vehicle,
                                  'operation_label': self.operation_label,
+                                 'cause_label': self.cause_label,
                                  'url': self.get_maintenance_url()})
         return body
 
