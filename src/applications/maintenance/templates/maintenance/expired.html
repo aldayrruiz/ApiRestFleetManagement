@@ -7,6 +7,11 @@
 <body>
     La operación de {{ operation_label }} del vehículo
     {{ vehicle.brand }} {{ vehicle.model }} {{ vehicle.number_plate }} ha caducado.
+    {% if cause_label %}
+        <br>
+        Causa: {{ cause_label }}
+    {% endif %}
+    Gracias!.
     <br>
     Para más información acceda al siguiente link: <a href="{{ url }}">Link</a>
     <br>

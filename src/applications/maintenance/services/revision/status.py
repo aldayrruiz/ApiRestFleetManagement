@@ -12,9 +12,9 @@ class RevisionStatusUpdater(StateUpdater):
     def update(self):
         vehicles = Vehicle.objects.filter(tenant=self.tenant)
         for vehicle in vehicles:
-            self.__update_itv_states_of_vehicle(vehicle)
+            self.__update_revision_states_of_vehicle(vehicle)
 
-    def __update_itv_states_of_vehicle(self, vehicle):
+    def __update_revision_states_of_vehicle(self, vehicle):
         last_revision = vehicle.revisions.order_by('date').last()
         # Si la última revisión está completa, significa que se ha eliminado previamente la última operación, quedando
         # esta última con un estado que no debería tener de revisión. Por lo tanto, se debe actualizar el estado de la
