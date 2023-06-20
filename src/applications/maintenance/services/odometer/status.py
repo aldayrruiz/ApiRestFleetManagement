@@ -37,12 +37,16 @@ class OdometerStatusUpdater:
         km_caution = km_limit - 1000
         last_position = TraccarPositions.last_position(odometer.vehicle)
         current_kilometers = last_position['attributes']['totalDistance'] / 1000
+        new_status = None
         if current_kilometers < km_caution:
-            odometer.status = MaintenanceStatus.NEW
+            new_status = MaintenanceStatus.NEW
         if km_caution <= current_kilometers <= km_limit:
-            odometer.status = MaintenanceStatus.PENDING
+            new_status = MaintenanceStatus.PENDING
             self.updates_to_pending.append(odometer)
         elif current_kilometers > km_limit:
-            odometer.status = MaintenanceStatus.EXPIRED
+            new_status = MaintenanceStatus.EXPIRED
             self.updates_to_expired.append(odometer)
+        if new_status == odometer.status:
+            return
+        odometer.status = new_status
         odometer.save()

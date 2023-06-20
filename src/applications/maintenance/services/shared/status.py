@@ -50,6 +50,8 @@ class StateUpdater:
         km_number = states_to_numbers[self.state_changed_by_km]
         max_number = max(date_number, km_number)
         new_state = list(states_to_numbers.keys())[max_number]
+        if new_state == register.state:
+            return
         register.state = new_state
         register.save()
         if new_state == MaintenanceStatus.EXPIRED:

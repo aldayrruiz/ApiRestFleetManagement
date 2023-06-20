@@ -34,12 +34,16 @@ class CleaningStatusUpdater:
         duration = parse_duration(card.date_period)
         next_cleaning = cleaning.date + duration
         caution_date = next_cleaning - relativedelta(days=7)
+        new_status = None
         if now_utc() < caution_date:
-            cleaning.status = MaintenanceStatus.NEW
+            new_status = MaintenanceStatus.NEW
         if caution_date < now_utc() < next_cleaning:
-            cleaning.status = MaintenanceStatus.PENDING
+            new_status = MaintenanceStatus.PENDING
             self.updates_to_pending.append(cleaning)
         if now_utc() > next_cleaning:
-            cleaning.status = MaintenanceStatus.EXPIRED
+            new_status = MaintenanceStatus.EXPIRED
             self.updates_to_expired.append(cleaning)
+        if new_status == cleaning.status:
+            return
+        cleaning.status = new_status
         cleaning.save()
