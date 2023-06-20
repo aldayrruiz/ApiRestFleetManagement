@@ -29,11 +29,14 @@ class ItvStatusUpdater:
     def __update_itv(self, itv: Itv):
         caution_date = itv.next_revision - relativedelta(months=1)
         if now_utc() < caution_date:
-            itv.status = MaintenanceStatus.NEW
+            new_status = MaintenanceStatus.NEW
         if caution_date < now_utc() < itv.next_revision:
-            itv.status = MaintenanceStatus.PENDING
+            new_status = MaintenanceStatus.PENDING
             self.updates_to_pending.append(itv)
         if now_utc() > itv.next_revision:
-            itv.status = MaintenanceStatus.EXPIRED
+            new_status = MaintenanceStatus.EXPIRED
             self.updates_to_expired.append(itv)
+        if new_status == itv.status:
+            return
+        itv.status = new_status
         itv.save()
