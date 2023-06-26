@@ -49,14 +49,14 @@ class StateUpdater:
         date_number = states_to_numbers[self.state_changed_by_date]
         km_number = states_to_numbers[self.state_changed_by_km]
         max_number = max(date_number, km_number)
-        new_state = list(states_to_numbers.keys())[max_number]
-        if new_state == register.state:
+        new_status = list(states_to_numbers.keys())[max_number]
+        if new_status == register.status:
             return
-        register.state = new_state
+        register.status = new_status
         register.save()
-        if new_state == MaintenanceStatus.EXPIRED:
+        if new_status == MaintenanceStatus.EXPIRED:
             self.updates_to_expired.append(register)
-        if new_state == MaintenanceStatus.PENDING:
+        if new_status == MaintenanceStatus.PENDING:
             self.updates_to_pending.append(register)
 
     def get_cause_label(self):

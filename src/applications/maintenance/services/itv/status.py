@@ -28,6 +28,7 @@ class ItvStatusUpdater:
 
     def __update_itv(self, itv: Itv):
         caution_date = itv.next_revision - relativedelta(months=1)
+        new_status = None
         if now_utc() < caution_date:
             new_status = MaintenanceStatus.NEW
         if caution_date < now_utc() < itv.next_revision:
