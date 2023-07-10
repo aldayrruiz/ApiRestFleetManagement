@@ -21,6 +21,8 @@ class SummaryReport:
         response = TraccarAPI.get(device_id, real_start, real_end, 'reports/summary')
         if not response.ok:
             raise APIException('Could not receive report summary.', code=response.status_code)
+        if not response.json():
+            raise APIException('Could not receive report summary.', code=response.status_code)
         summary = response.json()[0]
 
         summary['realStartTime'] = from_date_to_str_date_traccar(real_start)
