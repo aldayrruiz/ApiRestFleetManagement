@@ -25,4 +25,4 @@ class SimpleRevisionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Revision
         fields = ['id', 'owner', 'vehicle', 'date', 'kilometers', 'motive', 'garage', 'next_revision',
-                  'next_kilometers', 'completed', 'status', 'last_updated', 'date_stored', 'photos']
+                  'next_kilometers', 'completed', 'status', 'cause_status', 'last_updated', 'date_stored', 'photos']
