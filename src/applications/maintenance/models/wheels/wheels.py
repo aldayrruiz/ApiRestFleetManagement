@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from applications.maintenance.models.shared.cause_status import CauseStatus
 from applications.maintenance.models.shared.status import MaintenanceStatus
 from applications.maintenance.models.wheels.location import WheelsLocation
 from applications.maintenance.models.wheels.operation import WheelsOperation
@@ -22,6 +23,7 @@ class Wheels(models.Model):
     next_revision = models.DateTimeField(null=True, blank=True)
     next_kilometers = models.DecimalField(default=0, max_digits=10, decimal_places=2, null=True, blank=True)
     completed = models.BooleanField(default=False)
+    cause_status = models.CharField(max_length=14, choices=CauseStatus.choices, default=CauseStatus.KILOMETERS)
     status = models.CharField(max_length=14, choices=MaintenanceStatus.choices, default=MaintenanceStatus.NEW)
     last_updated = models.DateTimeField(auto_now=True)
     date_stored = models.DateTimeField(auto_now_add=True)

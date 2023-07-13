@@ -1,3 +1,4 @@
+from applications.maintenance.models.shared.cause_status import CauseStatus
 from applications.maintenance.services.cleaning.status import CleaningStatusUpdater
 from applications.maintenance.services.emails.expired import MaintenanceOperationExpiredEmail
 from applications.maintenance.services.emails.pending import MaintenanceOperationPendingEmail
@@ -34,23 +35,25 @@ for tenant in tenants:
     # REVISION
     revision_updater = RevisionStatusUpdater(tenant)
     revision_updater.update()
-    cause = revision_updater.get_cause_label()
 
     for revision in revision_updater.updates_to_pending:
+        cause = 'kilometraje' if revision.cause_status == CauseStatus.KILOMETERS else 'fecha de revisión'
         MaintenanceOperationPendingEmail(tenant, revision, 'revisión', cause).send()
 
     for revision in revision_updater.updates_to_expired:
+        cause = 'kilometraje' if revision.cause_status == CauseStatus.KILOMETERS else 'fecha de revisión'
         MaintenanceOperationExpiredEmail(tenant, revision, 'revisión', cause).send()
 
     # WHEELS
     wheels_updater = WheelsStatusUpdater(tenant)
     wheels_updater.update()
-    cause = wheels_updater.get_cause_label()
 
     for wheels in wheels_updater.updates_to_pending:
+        cause = 'kilometraje' if wheels.cause_status == CauseStatus.KILOMETERS else 'fecha de revisión'
         MaintenanceOperationPendingEmail(tenant, wheels, 'cambio de neumáticos', cause).send()
 
     for wheels in wheels_updater.updates_to_expired:
+        cause = 'kilometraje' if wheels.cause_status == CauseStatus.KILOMETERS else 'fecha de revisión'
         MaintenanceOperationExpiredEmail(tenant, wheels, 'cambio de neumáticos', cause).send()
 
     # ODOMETER

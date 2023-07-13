@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from applications.maintenance.models.shared.cause_status import CauseStatus
 from applications.maintenance.models.shared.status import MaintenanceStatus
 from applications.tenants.models import Tenant
 from applications.vehicles.models import Vehicle
@@ -20,6 +21,7 @@ class Revision(models.Model):
     next_kilometers = models.DecimalField(default=0, max_digits=10, decimal_places=2, blank=True)
     completed = models.BooleanField(default=False)
     status = models.CharField(max_length=14, choices=MaintenanceStatus.choices, default=MaintenanceStatus.NEW)
+    cause_status = models.CharField(max_length=14, choices=CauseStatus.choices, default=CauseStatus.KILOMETERS)
     last_updated = models.DateTimeField(auto_now=True)
     date_stored = models.DateTimeField(auto_now_add=True)
     tenant = models.ForeignKey(Tenant, related_name='revisions', on_delete=models.CASCADE)
