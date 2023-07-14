@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from applications.allowed_vehicles.services.queryset import get_allowed_vehicles_queryset
 from applications.reservations.services.queryset import get_reservation_queryset
 from applications.reservations.services.timer import raise_error_if_reservation_has_not_ended
+from applications.traccar.models import Device
 from applications.traccar.services.api import TraccarAPI
 from applications.traccar.services.summary import SummaryReport
 from applications.traccar.utils import get
@@ -45,7 +46,10 @@ class PositionViewSet(viewsets.ViewSet):
         response = get(target='positions', params=params)
         if not response.ok:
             return Response({'errors': 'Could not receive positions.'}, status=response.status_code)
-        return Response(response.json())
+        positions = response.json()
+        devices = Device.objects.filter(tenant__id=requester.tenant.id)
+        positions = filter(lambda position: position['deviceId'] in devices.values_list('id', flat=True), positions)
+        return Response(positions)
 
     @action(detail=False, methods=['get'])
     def route(self, request):
