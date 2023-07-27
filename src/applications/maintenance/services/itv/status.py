@@ -28,16 +28,24 @@ class ItvStatusUpdater:
 
     def __update_itv(self, itv: Itv):
         caution_date = itv.next_revision - relativedelta(months=1)
+
+        # Get new status
         new_status = None
         if now_utc() < caution_date:
             new_status = MaintenanceStatus.NEW
         if caution_date < now_utc() < itv.next_revision:
             new_status = MaintenanceStatus.PENDING
-            self.updates_to_pending.append(itv)
         if now_utc() > itv.next_revision:
             new_status = MaintenanceStatus.EXPIRED
-            self.updates_to_expired.append(itv)
+
+        # Send email
         if new_status == itv.status:
             return
+        elif new_status == MaintenanceStatus.PENDING:
+            self.updates_to_pending.append(itv)
+        elif new_status == MaintenanceStatus.EXPIRED:
+            self.updates_to_expired.append(itv)
+
+        # Update status
         itv.status = new_status
         itv.save()
