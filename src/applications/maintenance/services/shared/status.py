@@ -51,17 +51,24 @@ class StateUpdater:
         km_number = states_to_numbers[state_changed_by_km]
         max_number = max(date_number, km_number)
         new_status = list(states_to_numbers.keys())[max_number]
+
+        # If status has not changed, we don't need to update it. And we don't need to send email.
         if new_status == register.status:
             return
-        register.status = new_status
+
         # Update cause status
         if state_changed_by_date in [MaintenanceStatus.PENDING, MaintenanceStatus.EXPIRED]:
             register.cause_status = CauseStatus.DATE
         if state_changed_by_km in [MaintenanceStatus.PENDING, MaintenanceStatus.EXPIRED]:
             register.caused_status = CauseStatus.KILOMETERS
-        register.save()
+
+        # Send email
         if new_status == MaintenanceStatus.EXPIRED:
             self.updates_to_expired.append(register)
         if new_status == MaintenanceStatus.PENDING:
             self.updates_to_pending.append(register)
+
+        # Update status
+        register.status = new_status
+        register.save()
 
