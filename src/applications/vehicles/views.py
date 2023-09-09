@@ -15,6 +15,8 @@ from applications.vehicles.models import VehicleRegistrationHistory
 from applications.vehicles.serializers.create import CreateOrUpdateVehicleSerializer
 from applications.vehicles.serializers.simple import SimpleVehicleSerializer
 from applications.vehicles.serializers.special import DetailedVehicleSerializer, DisableVehicleSerializer
+from applications.vehicles.services.commands.commands import GET_INFO_COMMAND
+from applications.vehicles.services.commands.sms_sender import SmsCommandSender
 from applications.vehicles.services.creator import VehicleCreator
 from applications.vehicles.services.queryset import get_vehicles_queryset
 from applications.vehicles.services.updater import VehicleUpdater
@@ -122,6 +124,14 @@ class VehicleViewSet(viewsets.ViewSet):
         last_position = TraccarPositions.last_position(vehicle)
         kilometers = last_position['attributes']['totalDistance'] / 1000
         return Response(kilometers)
+
+    @action(detail=False, methods=['post'])
+    def send_command(self, request, pk=None):
+        requester = self.request.user
+        queryset = get_vehicles_queryset(requester)
+        vehicle = get_object_or_404(queryset, pk=pk)
+        response = SmsCommandSender.send(vehicle, GET_INFO_COMMAND)
+        return Response(response)
 
     def get_permissions(self):
         """

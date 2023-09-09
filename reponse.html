@@ -1,0 +1,135 @@
+<!DOCTYPE html>\n
+<html lang="en">\n
+<head>\n
+    <meta charset="UTF-8">
+    \n
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    \n\n <title>Truphone</title>\n \n
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    \n\n
+    <link rel="stylesheet" type="text/css" href="/static/css/global.css">
+    \n
+    <link rel="stylesheet" type="text/css" href="/static/custom/css/custom.css">
+    \n\n
+    <link rel="stylesheet" type="text/css" href="/static/components/raw/login/login.scss">
+    \n
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    \n \n \n\n\n\n\n
+</head>
+\n
+<body>\n\n
+<div class="container-flex login-page">\n
+    <div class="login-page-content text--center ">\n <img class="logo--white mt--medium mb--xsmall"
+                                                          src="/static/img/svg/truphone-logo-white.svg" \n
+                                                          alt="Truphone logo">\n
+        <div class="form-wrap">\n
+            <div class="form-block__below">\n <p>Don’t have an account yet? <a href="/register">Sign up</a></p>-->\n
+            </div>
+            \n
+            <form class="form-block" method="POST">\n <input type="hidden" name="csrfmiddlewaretoken"
+                                                             value="80I40GkcJc6FG8UON7va49AkYViwnNrkvcgnHQI3tHrZQxHHhHXresl6lu1t7ysf">\n\n
+                <h2 class="form-title text--center">Log in</h2>\n
+                <div class="form-row">\n\n \n
+                    <div class="input-wrap is-email">\n <input type="email" name="email" id="email"
+                                                               data-error="Please enter your email" maxlength=""
+                                                               name="email" autocomplete="email" required>\n <label
+                            class="label" for="email">Email *</label>\n
+                    </div>
+                    \n \n
+                    <div class="error-text" for="email"></div>
+                    \n \n
+                    <div class="form-row">\n
+                        <div class="input-wrap is-password">\n\n <input type="password" name="password" id="password"
+                                                                        data-error="Please enter your password"
+                                                                        maxlength="" name="password"
+                                                                        autocomplete="current-password" required>\n
+                            <label class="label" for="password">Password *</label>\n\n
+                            <div class="icon--show-password">\n
+                                <svg class="icon">\n
+                                    <use xlink:href="#eye"></use>
+                                    \n
+                                </svg>
+                                \n
+                                <svg class="icon">\n
+                                    <use xlink:href="#eye-hide"></use>
+                                    \n
+                                </svg>
+                                \n
+                            </div>
+                            \n\n
+                        </div>
+                        \n
+                    </div>
+                    \n \n\n <a class="l-block mt--medium mb--xsmall fl--left text--small" href="/password_reset/">Forgot\n
+                        password?</a>\n
+                    <div class="mt--medium">\n
+                        <button type=\'submit\'
+                                class="btn\n            btn--primary\n            btn--large\n            btn--hover btn--full">
+                            \n Log in\n
+                        </button>
+                        \n
+                    </div>
+                    \n
+            </form>
+            \n
+        </div>
+        \n\n
+    </div>
+    \n \n\n\n\n\n \n\n
+    <script src="/static/components/raw/plans/plans.js"></script>
+    \n
+    <script src="/static/components/raw/header/header.js"></script>
+    \n\n\n\n\n
+    <script src="/static/custom/js/hotjar.js"></script>
+    \n\n
+    <script src="/static/js/main.bundle.js"></script>
+    \n\n
+</body>
+\n
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <path id="eye-a"
+              d="M14.4 6c-6 0-11.124 3.732-13.2 9 2.076 5.268 7.2 9 13.2 9 6 0 11.124-3.732 13.2-9-2.076-5.268-7.2-9-13.2-9zm0 15c-3.312 0-6-2.688-6-6s2.688-6 6-6 6 2.688 6 6-2.688 6-6 6zm0-9.6a3.595 3.595 0 00-3.6 3.6c0 1.992 1.608 3.6 3.6 3.6S18 16.992 18 15s-1.608-3.6-3.6-3.6z"/>
+        <path id="tick-a"
+              d="M21.696 5.067l-.734-.754a1.017 1.017 0 00-1.468 0L8.745 15.356a.51.51 0 01-.734.001L4.493 11.76a1.02 1.02 0 00-1.468.004l-.724.748a1.09 1.09 0 00.007 1.511l5.743 5.824a.51.51 0 00.732-.003L21.696 6.575a1.086 1.086 0 000-1.508"/>
+    </defs>
+    <symbol id="arrow" viewBox="0 0 12 20">
+        <path fill="currentColor" fill-rule="evenodd"
+              d="M1.636 20a1.66 1.66 0 01-1.156-.462 1.54 1.54 0 010-2.233L8.05 10 .48 2.695a1.538 1.538 0 010-2.232 1.678 1.678 0 012.314 0l8.727 8.42a1.54 1.54 0 010 2.234l-8.727 8.421c-.32.308-.74.462-1.158.462"/>
+    </symbol>
+    <symbol id="close" viewBox="0 0 36 36">
+        <path fill-rule="evenodd"
+              d="M26.098 23.785a1.637 1.637 0 11-2.313 2.315L18 20.314 12.215 26.1a1.637 1.637 0 01-2.313-2.315L15.686 18l-5.784-5.785A1.637 1.637 0 1112.215 9.9L18 15.686l5.785-5.784c.64-.64 1.675-.64 2.313 0 .64.636.64 1.674 0 2.313L20.314 18l5.784 5.785zM18 0C8.06 0 0 8.06 0 18s8.06 18 18 18 18-8.06 18-18S27.94 0 18 0z"/>
+    </symbol>
+    <symbol id="cross">
+        <path fill="#00313F" fill-rule="evenodd"
+              d="M7.05 19.778l4.95-4.95 4.95 4.95a1 1 0 001.414 0l1.414-1.414a1 1 0 000-1.414L14.83 12l4.95-4.949a1 1 0 000-1.414l-1.414-1.414a1 1 0 00-1.415 0L12 9.173 7.05 4.221a1 1 0 00-1.414 0L4.222 5.636a1 1 0 000 1.414L9.172 12l-4.95 4.95a1 1 0 000 1.414l1.414 1.414a1 1 0 001.414 0"/>
+    </symbol>
+    <symbol id="customise" viewBox="0 0 20 20">
+        <path d="M3.618 18.341a2 2 0 01-2.005-1.995 2 2 0 012.005-1.995 2 2 0 012.006 1.995 2 2 0 01-2.006 1.995M19.741 3.125L16.38 6.472 13.543 3.65 16.894.316A6.382 6.382 0 0014.965 0c-2.768.012-5.002 2.254-4.99 5.01.003.494.079.968.215 1.419l-8.982 7.296a3.593 3.593 0 00-1.207 2.587A3.59 3.59 0 001.07 18.96 3.583 3.583 0 003.625 20a3.622 3.622 0 002.702-1.225l7.255-9c.454.13.931.203 1.427.2 2.77-.011 5.004-2.254 4.99-5.009-.002-.723-.162-1.405-.258-1.84"/>
+    </symbol>
+    <symbol id="exclamation-mark" viewBox="0 0 20 20">
+        <path fill-rule="evenodd"
+              d="M9 13h2V3H9v10zm0 4h2v-2H9v2zm1-17C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0z"/>
+    </symbol>
+    <symbol id="eye-hide" viewBox="0 0 29 29">
+        <path fill="#00313F" fill-rule="evenodd"
+              d="M22.673 3.578l2.632 2.456L6.482 26.219 3.85 23.764l2.271-2.436A14.266 14.266 0 011.2 15c2.076-5.268 7.2-9 13.2-9 1.807 0 3.535.339 5.124.956l3.149-3.378zm-2.515 9.73l3.557-3.813A14.257 14.257 0 0127.6 15c-2.076 5.268-7.2 9-13.2 9-1.297 0-2.553-.174-3.746-.5l2.46-2.638a6.002 6.002 0 007.044-7.553l3.557-3.814zM14.4 9a6.002 6.002 0 00-5.189 9.013l1.766-1.894A3.61 3.61 0 0110.8 15c0-1.992 1.608-3.6 3.6-3.6.303 0 .597.037.879.107l1.765-1.894A5.972 5.972 0 0014.4 9z"
+              opacity=".4"/>
+    </symbol>
+    <symbol id="eye" viewBox="0 0 29 29">
+        <use fill="#00313F" fill-rule="evenodd" opacity=".4" xlink:href="#eye-a"/>
+    </symbol>
+    <symbol id="question" viewBox="0 0 24 24">
+        <path d="M13.68 13.74l-.189.07c-.361.2-.59.59-.59 1v.11h-2v-.11c0-1.2.699-2.31 1.779-2.83l.19-.07c.861-.44 1.3-1.41 1.081-2.39a2.083 2.083 0 00-1.541-1.54c-.66-.15-1.31-.01-1.83.4-.4.32-.67.78-.759 1.28L8.05 8.6a3.99 3.99 0 011.29-1.78 4.1 4.1 0 013.52-.79 4.072 4.072 0 013.05 3.05c.43 1.91-.49 3.83-2.23 4.66M12 19.39c-.81 0-1.469-.66-1.469-1.47 0-.81.659-1.47 1.469-1.47.811 0 1.47.66 1.47 1.47 0 .81-.659 1.47-1.47 1.47M11.96 2C6.46 2 2 6.46 2 11.96c0 5.5 4.46 9.96 9.96 9.96 5.5 0 9.96-4.46 9.96-9.96 0-5.5-4.46-9.96-9.96-9.96"/>
+    </symbol>
+    <symbol id="refresh">
+        <path fill="#00313F" fill-rule="evenodd"
+              d="M21.899 10.572L22 2.373l-2.9 2.145c-.305-.264-.62-.516-.952-.742A10.236 10.236 0 0012.372 2C6.652 2 2 6.71 2 12.5S6.652 23 12.372 23c3.957 0 7.513-2.226 9.283-5.81.334-.678.062-1.5-.606-1.838a1.342 1.342 0 00-1.815.613c-1.308 2.65-3.938 4.297-6.862 4.297-4.227 0-7.667-3.482-7.667-7.763 0-4.279 3.44-7.76 7.667-7.76a7.56 7.56 0 014.267 1.311c.066.046.128.1.194.146l-2.68 1.983 7.746 2.393z"/>
+    </symbol>
+    <symbol id="tick">
+        <use fill="#00313F" fill-rule="evenodd" xlink:href="#tick-a"/>
+    </symbol>
+</svg>
+\n\n
+</html>
