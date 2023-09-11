@@ -38,14 +38,14 @@ class ReservationViewSet(viewsets.ViewSet):
         List own reservations. If takeAll is given, it lists all reservations from everyone.
         """
         take_all = query_bool(self.request, 'takeAll')
-        vehicle_id = query_str(self.request, 'vehicleId')
+        vehicle_id = query_str(self.request, 'vehicleId', required=False)
         _from = query_date(self.request, 'from')
         _to = query_date(self.request, 'to')
 
         logger.info(f'List reservations request received. '
                     f'[takeAll: {take_all}, vehicleId: {vehicle_id}, from: {_from}, to: {_to}]')
         requester = self.request.user
-        queryset = get_reservation_queryset(requester, take_all, vehicle_id, _from, _to)
+        queryset = get_reservation_queryset(requester=requester, take_all=take_all, vehicle_id=vehicle_id, _from=_from, _to=_to)
         serializer = SimpleReservationSerializer(queryset, many=True)
         return Response(serializer.data)
 

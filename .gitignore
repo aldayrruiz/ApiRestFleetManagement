@@ -123,3 +123,4 @@ production.py
 /pdf/*
 
 /**/docker-compose.prod.yml
+/fleet.yaml

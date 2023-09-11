@@ -33,6 +33,8 @@ def query_str(request, query: str, required=False):
 
     if required and value in INVALID_STRINGS:
         raise ValidationError(f'Query {query} is required.')
+    if not required and value in INVALID_STRINGS:
+        return None
     return value
 
 
